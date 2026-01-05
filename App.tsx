@@ -40,7 +40,12 @@ interface AppContextType {
 export const AppContext = createContext<AppContextType | null>(null);
 
 const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isConnected, setIsConnected] = useState(false);
+  const [isConnected, setIsConnected] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !!localStorage.getItem('wallet_address');
+    }
+    return false;
+  });
 
   // Initialize user from localStorage or default
   const initializeUser = (): User => {

@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AppContext } from '../App';
 import { detectWallet, connectWallet, WalletType, WalletInfo } from '../services/walletService';
 import { generateReferralCode, validateReferralCode, NEW_USER_BONUS } from '../services/referralService';
-import { supabase } from '../services/supabase';
+import { supabase, isSupabaseConfigured } from '../services/supabase';
 
 const Auth: React.FC = () => {
   const navigate = useNavigate();
@@ -26,8 +26,16 @@ const Auth: React.FC = () => {
 
   // Detect available wallet on mount
   useEffect(() => {
-    const wallet = detectWallet();
-    setAvailableWallet(wallet);
+    const checkWallet = () => {
+      const wallet = detectWallet();
+      setAvailableWallet(wallet);
+    };
+
+    checkWallet();
+
+    // Check again after a second in case injection was slow
+    const timer = setTimeout(checkWallet, 1000);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleConnect = async () => {
@@ -151,38 +159,52 @@ const Auth: React.FC = () => {
 
     setIsConnecting(true);
 
-    // Simulate connection
     const mockAddress = '0xGUEST' + Math.random().toString(16).slice(2, 10);
 
-    // Check if mock user exists (unlikely given randomness but good for pattern)
-    const { data: profile } = await supabase
-      .from('profiles')
-      .insert({
-        wallet_address: mockAddress,
-        username: 'Guest Player',
-        referral_code: generateReferralCode('GUEST'),
-        balance: 10000,
-        is_new_user: false,
-        bonus_claimed: true,
-      })
-      .select()
-      .single();
+    try {
+      if (!isSupabaseConfigured) {
+        throw new Error('Database not configured. Please add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to environment variables.');
+      }
 
-    if (profile) {
-      context.setUser({
-        address: profile.wallet_address,
-        username: profile.username,
-        balance: Number(profile.balance),
-        referralCode: profile.referral_code,
-        isNewUser: false,
-        newUserBonusClaimed: true,
-        joinedDate: new Date(profile.joined_date).getTime()
-      });
+      // Check if mock user exists (unlikely given randomness but good for pattern)
+      const { data: profile, error: insertError } = await supabase
+        .from('profiles')
+        .insert({
+          wallet_address: mockAddress,
+          username: 'Guest Player',
+          referral_code: generateReferralCode('GUEST'),
+          balance: 10000,
+          is_new_user: false,
+          bonus_claimed: true,
+        })
+        .select()
+        .single();
 
-      localStorage.setItem('wallet_address', mockAddress);
-      localStorage.setItem('wallet_type', 'metamask');
-      context.setIsConnected(true);
-      navigate('/lobby');
+      if (insertError) {
+        console.error('Guest insert error:', insertError);
+        throw new Error(`Failed to create guest session: ${insertError.message}`);
+      }
+
+      if (profile) {
+        context.setUser({
+          address: profile.wallet_address,
+          username: profile.username,
+          balance: Number(profile.balance),
+          referralCode: profile.referral_code,
+          isNewUser: false,
+          newUserBonusClaimed: true,
+          joinedDate: new Date(profile.joined_date).getTime()
+        });
+
+        localStorage.setItem('wallet_address', mockAddress);
+        localStorage.setItem('wallet_type', 'metamask');
+        context.setIsConnected(true);
+        navigate('/lobby');
+      }
+    } catch (err: any) {
+      console.error('Guest connect error:', err);
+      setError(err.message || 'Failed to start guest session.');
+      setIsConnecting(false);
     }
   };
 
