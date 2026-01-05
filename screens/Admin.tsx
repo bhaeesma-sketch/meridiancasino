@@ -1,6 +1,6 @@
-import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../App';
+import { supabase } from '../services/supabase';
 
 interface Withdrawal {
   id: string;
@@ -99,114 +99,99 @@ const Admin: React.FC = () => {
   const [isApproving, setIsApproving] = useState(false);
   const [dateRange, setDateRange] = useState<'today' | 'week' | 'month' | 'all'>('week');
 
-  // Mock data - Replace with actual API calls
+  // Fetch data from Supabase
   useEffect(() => {
-    // Fetch withdrawals
-    setWithdrawals([
-      {
-        id: '1',
-        userId: 'user1',
-        username: 'CryptoKing99',
-        walletAddress: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb',
-        amount: 5000,
-        token: 'USDT',
-        chain: 'ethereum',
-        destinationAddress: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb',
-        status: 'pending_approval',
-        riskLevel: 'high',
-        requestedAt: new Date()
-      },
-      {
-        id: '2',
-        userId: 'user2',
-        username: 'Gambler123',
-        walletAddress: 'TXYZabc123...',
-        amount: 75,
-        token: 'USDT',
-        chain: 'tron',
-        destinationAddress: 'TXYZabc123...',
-        status: 'pending_auto',
-        riskLevel: 'low',
-        requestedAt: new Date(),
-        autoApproveAt: new Date(Date.now() + 2 * 60 * 60 * 1000)
+    const fetchData = async () => {
+      // Fetch users (profiles)
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (profiles && !profilesError) {
+        setUsers(profiles.map(p => ({
+          id: p.id,
+          username: p.username || (p.wallet_address.slice(0, 8) + '...' + p.wallet_address.slice(-4)),
+          walletAddress: p.wallet_address,
+          balance: Number(p.balance),
+          totalDeposited: 0, // Need transactions table for this
+          totalWithdrawn: 0,
+          totalWagered: 0,
+          totalWon: 0,
+          status: 'active',
+          kycStatus: 'level1',
+          referralCode: p.referral_code,
+          referredBy: p.referred_by,
+          createdAt: new Date(p.created_at),
+          lastLogin: new Date(p.joined_date)
+        })));
       }
-    ]);
 
-    // Fetch users
-    setUsers([
-      {
-        id: '1',
-        username: 'CryptoKing99',
-        walletAddress: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb',
-        balance: 12450.50,
-        totalDeposited: 50000,
-        totalWithdrawn: 37550,
-        totalWagered: 250000,
-        totalWon: 12500,
-        status: 'active',
-        kycStatus: 'level2',
-        referralCode: 'CRYPTOKING99A1B2',
-        createdAt: new Date(Date.now() - 86400000 * 30),
-        lastLogin: new Date()
+      // Fetch game history
+      const { data: history, error: historyError } = await supabase
+        .from('game_history')
+        .select('*')
+        .order('timestamp', { ascending: false });
+
+      if (history && !historyError) {
+        setTransactions(history.map(h => ({
+          id: h.id.toString(),
+          userId: h.user_id,
+          username: h.username || 'Anonymous',
+          type: h.payout > 0 ? 'win' : 'bet',
+          amount: Math.abs(Number(h.payout)),
+          token: 'USD',
+          status: 'completed',
+          timestamp: new Date(h.timestamp)
+        })));
+
+        // Calculate Game Stats
+        const games = ['Dice', 'Roulette', 'Blackjack', 'Plinko', 'Limbo'];
+        const statsByGame = games.map(gameName => {
+          const gameRuns = history.filter(h => h.game_name === gameName);
+          const wagered = gameRuns.length * 100; // Mocking wager as it's not in DB yet
+          const won = gameRuns.reduce((sum, h) => sum + (Number(h.payout) * 45000), 0); // Reverse mock payout
+          return {
+            game: gameName,
+            totalPlays: gameRuns.length,
+            totalWagered: wagered,
+            totalWon: won,
+            netRevenue: wagered - won,
+            rtp: wagered > 0 ? won / wagered : 0,
+            averageBet: 100,
+            biggestWin: Math.max(...gameRuns.map(h => Number(h.payout) * 45000), 0)
+          };
+        });
+        setGameStats(statsByGame);
+
+        // System Stats
+        const totalWagered = statsByGame.reduce((sum, g) => sum + g.totalWagered, 0);
+        const totalWon = statsByGame.reduce((sum, g) => sum + g.totalWon, 0);
+        setStats({
+          totalUsers: profiles?.length || 0,
+          activeUsers: users.length, // Rough estimate
+          totalDeposits: 0,
+          totalWithdrawals: 0,
+          pendingWithdrawals: 0,
+          hotWalletBalance: 0,
+          systemBalance: profiles?.reduce((sum, p) => sum + Number(p.balance), 0) || 0,
+          totalWagered: totalWagered,
+          totalPaidOut: totalWon,
+          houseEdge: totalWagered > 0 ? ((totalWagered - totalWon) / totalWagered) * 100 : 0,
+          averageBet: 100,
+          topGame: statsByGame.sort((a, b) => b.totalPlays - a.totalPlays)[0]?.game || 'N/A'
+        });
       }
-    ]);
+    };
 
-    // Fetch transactions
-    setTransactions([
-      {
-        id: 'tx1',
-        userId: 'user1',
-        username: 'CryptoKing99',
-        type: 'deposit',
-        amount: 1000,
-        token: 'USDT',
-        status: 'completed',
-        timestamp: new Date(Date.now() - 3600000)
-      },
-      {
-        id: 'tx2',
-        userId: 'user1',
-        username: 'CryptoKing99',
-        type: 'bet',
-        amount: 500,
-        token: 'USDT',
-        status: 'completed',
-        timestamp: new Date(Date.now() - 1800000),
-        details: 'Dice Game - Lost'
-      }
-    ]);
-
-    // Fetch game stats
-    setGameStats([
-      { game: 'Dice', totalPlays: 1250, totalWagered: 125000, totalWon: 1250, netRevenue: 123750, rtp: 0.01, averageBet: 100, biggestWin: 5000 },
-      { game: 'Roulette', totalPlays: 890, totalWagered: 89000, totalWon: 890, netRevenue: 88110, rtp: 0.01, averageBet: 100, biggestWin: 3600 },
-      { game: 'Blackjack', totalPlays: 650, totalWagered: 65000, totalWon: 650, netRevenue: 64350, rtp: 0.01, averageBet: 100, biggestWin: 2500 },
-      { game: 'Plinko', totalPlays: 420, totalWagered: 42000, totalWon: 420, netRevenue: 41580, rtp: 0.01, averageBet: 100, biggestWin: 1000 },
-      { game: 'Limbo', totalPlays: 310, totalWagered: 31000, totalWon: 310, netRevenue: 30690, rtp: 0.01, averageBet: 100, biggestWin: 1500 }
-    ]);
-
-    // Fetch stats
-    setStats({
-      totalUsers: 1234,
-      activeUsers: 456,
-      totalDeposits: 1250000,
-      totalWithdrawals: 850000,
-      pendingWithdrawals: 25000,
-      hotWalletBalance: 35000,
-      systemBalance: 400000,
-      totalWagered: 352000,
-      totalPaidOut: 3520,
-      houseEdge: 99.0,
-      averageBet: 95.50,
-      topGame: 'Dice'
-    });
-  }, []);
+    fetchData();
+  }, [users.length]);
 
   const handleApproveWithdrawal = async (withdrawalId: string) => {
     setIsApproving(true);
     // TODO: API call to approve withdrawal
     await new Promise(resolve => setTimeout(resolve, 1000));
-    setWithdrawals(prev => prev.map(w => 
+    setWithdrawals(prev => prev.map(w =>
       w.id === withdrawalId ? { ...w, status: 'approved' as const } : w
     ));
     setIsApproving(false);
@@ -215,7 +200,7 @@ const Admin: React.FC = () => {
 
   const handleRejectWithdrawal = async (withdrawalId: string, reason: string) => {
     // TODO: API call to reject withdrawal
-    setWithdrawals(prev => prev.map(w => 
+    setWithdrawals(prev => prev.map(w =>
       w.id === withdrawalId ? { ...w, status: 'rejected' as const } : w
     ));
     setSelectedWithdrawal(null);
@@ -223,7 +208,7 @@ const Admin: React.FC = () => {
 
   const handleFreezeUser = async (userId: string) => {
     // TODO: API call to freeze user
-    setUsers(prev => prev.map(u => 
+    setUsers(prev => prev.map(u =>
       u.id === userId ? { ...u, status: 'frozen' as const } : u
     ));
   };
@@ -255,8 +240,8 @@ const Admin: React.FC = () => {
             <p className="text-white/60 text-sm mt-1">Complete platform management and analytics</p>
           </div>
           <div className="flex items-center gap-3">
-            <select 
-              value={dateRange} 
+            <select
+              value={dateRange}
               onChange={(e) => setDateRange(e.target.value as any)}
               className="bg-black/60 border border-white/10 rounded-lg px-4 py-2 text-white text-sm"
             >
@@ -291,11 +276,10 @@ const Admin: React.FC = () => {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id as any)}
-            className={`px-4 md:px-6 py-2 md:py-3 rounded-lg font-bold text-sm md:text-base transition-all whitespace-nowrap flex items-center gap-2 ${
-              activeTab === tab.id
+            className={`px-4 md:px-6 py-2 md:py-3 rounded-lg font-bold text-sm md:text-base transition-all whitespace-nowrap flex items-center gap-2 ${activeTab === tab.id
                 ? 'bg-quantum-gold text-black shadow-gold-glow'
                 : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'
-            }`}
+              }`}
           >
             <span className="material-symbols-outlined text-lg">{tab.icon}</span>
             {tab.label}
@@ -471,20 +455,18 @@ const Admin: React.FC = () => {
                       <td className="py-3 px-4 text-red-400 text-right">{formatCurrency(user.totalWithdrawn)}</td>
                       <td className="py-3 px-4 text-white/70 text-right">{formatCurrency(user.totalWagered)}</td>
                       <td className="py-3 px-4 text-center">
-                        <span className={`px-2 py-1 rounded text-xs font-bold ${
-                          user.status === 'active' ? 'bg-green-500/20 text-green-400' :
-                          user.status === 'suspended' ? 'bg-yellow-500/20 text-yellow-400' :
-                          'bg-red-500/20 text-red-400'
-                        }`}>
+                        <span className={`px-2 py-1 rounded text-xs font-bold ${user.status === 'active' ? 'bg-green-500/20 text-green-400' :
+                            user.status === 'suspended' ? 'bg-yellow-500/20 text-yellow-400' :
+                              'bg-red-500/20 text-red-400'
+                          }`}>
                           {user.status}
                         </span>
                       </td>
                       <td className="py-3 px-4 text-center">
-                        <span className={`px-2 py-1 rounded text-xs font-bold ${
-                          user.kycStatus === 'level2' ? 'bg-green-500/20 text-green-400' :
-                          user.kycStatus === 'level1' ? 'bg-blue-500/20 text-blue-400' :
-                          'bg-gray-500/20 text-gray-400'
-                        }`}>
+                        <span className={`px-2 py-1 rounded text-xs font-bold ${user.kycStatus === 'level2' ? 'bg-green-500/20 text-green-400' :
+                            user.kycStatus === 'level1' ? 'bg-blue-500/20 text-blue-400' :
+                              'bg-gray-500/20 text-gray-400'
+                          }`}>
                           {user.kycStatus}
                         </span>
                       </td>
@@ -551,19 +533,17 @@ const Admin: React.FC = () => {
                       <td className="py-3 px-4 text-white/70 font-mono text-xs">{tx.id}</td>
                       <td className="py-3 px-4 text-white font-bold">{tx.username}</td>
                       <td className="py-3 px-4">
-                        <span className={`px-2 py-1 rounded text-xs font-bold ${
-                          tx.type === 'deposit' ? 'bg-green-500/20 text-green-400' :
-                          tx.type === 'withdrawal' ? 'bg-red-500/20 text-red-400' :
-                          tx.type === 'bet' ? 'bg-blue-500/20 text-blue-400' :
-                          tx.type === 'win' ? 'bg-yellow-500/20 text-yellow-400' :
-                          'bg-purple-500/20 text-purple-400'
-                        }`}>
+                        <span className={`px-2 py-1 rounded text-xs font-bold ${tx.type === 'deposit' ? 'bg-green-500/20 text-green-400' :
+                            tx.type === 'withdrawal' ? 'bg-red-500/20 text-red-400' :
+                              tx.type === 'bet' ? 'bg-blue-500/20 text-blue-400' :
+                                tx.type === 'win' ? 'bg-yellow-500/20 text-yellow-400' :
+                                  'bg-purple-500/20 text-purple-400'
+                          }`}>
                           {tx.type}
                         </span>
                       </td>
-                      <td className={`py-3 px-4 text-right font-bold ${
-                        tx.type === 'deposit' || tx.type === 'win' || tx.type === 'bonus' ? 'text-green-400' : 'text-red-400'
-                      }`}>
+                      <td className={`py-3 px-4 text-right font-bold ${tx.type === 'deposit' || tx.type === 'win' || tx.type === 'bonus' ? 'text-green-400' : 'text-red-400'
+                        }`}>
                         {tx.type === 'deposit' || tx.type === 'win' || tx.type === 'bonus' ? '+' : '-'}{formatCurrency(tx.amount)}
                       </td>
                       <td className="py-3 px-4 text-white/70">{tx.token}</td>
@@ -615,22 +595,20 @@ const Admin: React.FC = () => {
                       <td className="py-3 px-4 text-white/70 font-mono text-xs">{w.destinationAddress.slice(0, 12)}...{w.destinationAddress.slice(-8)}</td>
                       <td className="py-3 px-4 text-white/70 uppercase">{w.chain}</td>
                       <td className="py-3 px-4">
-                        <span className={`px-2 py-1 rounded text-xs font-bold ${
-                          w.status === 'pending_approval' ? 'bg-orange-500/20 text-orange-400' :
-                          w.status === 'pending_auto' ? 'bg-blue-500/20 text-blue-400' :
-                          w.status === 'approved' ? 'bg-green-500/20 text-green-400' :
-                          w.status === 'rejected' ? 'bg-red-500/20 text-red-400' :
-                          'bg-gray-500/20 text-gray-400'
-                        }`}>
+                        <span className={`px-2 py-1 rounded text-xs font-bold ${w.status === 'pending_approval' ? 'bg-orange-500/20 text-orange-400' :
+                            w.status === 'pending_auto' ? 'bg-blue-500/20 text-blue-400' :
+                              w.status === 'approved' ? 'bg-green-500/20 text-green-400' :
+                                w.status === 'rejected' ? 'bg-red-500/20 text-red-400' :
+                                  'bg-gray-500/20 text-gray-400'
+                          }`}>
                           {w.status.replace('_', ' ')}
                         </span>
                       </td>
                       <td className="py-3 px-4">
-                        <span className={`px-2 py-1 rounded text-xs font-bold ${
-                          w.riskLevel === 'high' ? 'bg-red-500/20 text-red-400' :
-                          w.riskLevel === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
-                          'bg-green-500/20 text-green-400'
-                        }`}>
+                        <span className={`px-2 py-1 rounded text-xs font-bold ${w.riskLevel === 'high' ? 'bg-red-500/20 text-red-400' :
+                            w.riskLevel === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                              'bg-green-500/20 text-green-400'
+                          }`}>
                           {w.riskLevel}
                         </span>
                       </td>

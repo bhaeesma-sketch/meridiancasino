@@ -41,7 +41,7 @@ const Dice: React.FC = () => {
     sounds.playRoll();
 
     // Deduct bet immediately
-    context.setUser(prev => ({ ...prev, balance: prev.balance - bet }));
+    context.updateBalance(-bet);
 
     const duration = 3000; // Longer for dramatic 3D roll
     const finalRoll = Math.random() * 100;
@@ -118,7 +118,7 @@ const Dice: React.FC = () => {
             if (won) {
               setTimeout(() => sounds.playWin(), 100);
               const payout = bet * parseFloat(multiplier);
-              context.setUser(prev => ({ ...prev, balance: prev.balance + payout }));
+              context.updateBalance(payout);
               context.addHistory({
                 id: Date.now().toString() + Math.random().toString(),
                 game: 'Dice',

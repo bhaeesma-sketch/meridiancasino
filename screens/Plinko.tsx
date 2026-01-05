@@ -98,7 +98,7 @@ const Plinko: React.FC = () => {
               else sounds.playLose();
 
               if (context) {
-                context.setUser(prev => ({ ...prev, balance: prev.balance + payout }));
+                context.updateBalance(payout);
                 context.addHistory({
                   id: Date.now().toString() + Math.random().toString(),
                   game: 'Plinko',
@@ -148,7 +148,7 @@ const Plinko: React.FC = () => {
     if (balls.length > 2) return; // Limit concurrent balls
 
     sounds.playClick();
-    context.setUser(prev => ({ ...prev, balance: prev.balance - bet }));
+    context.updateBalance(-bet);
 
     const newId = ballCounter.current++;
     const path: number[] = [0]; // Start at center

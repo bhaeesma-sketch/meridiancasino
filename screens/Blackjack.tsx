@@ -81,7 +81,7 @@ const Blackjack: React.FC = () => {
     setMessage('');
     setIsDealing(true);
     sounds.playDeal();
-    context.setUser(prev => ({ ...prev, balance: prev.balance - bet }));
+    context.updateBalance(-bet);
 
     // Deal initial cards with animation
     let remainingDeck = [...newDeck];
@@ -216,14 +216,14 @@ const Blackjack: React.FC = () => {
       setMessage('DEALER SYNC COMPLETE');
     } else {
       // Push
-      context?.setUser(prev => ({ ...prev, balance: prev.balance + bet }));
+      context?.updateBalance(bet);
       setMessage('NEUTRAL SYNC: PUSH');
     }
 
     if (won) {
       setTimeout(() => sounds.playWin(), 200);
       const payout = bet * multiplier;
-      context?.setUser(prev => ({ ...prev, balance: prev.balance + payout }));
+      context?.updateBalance(payout);
       context?.addHistory({
         id: Date.now().toString() + Math.random().toString(),
         game: 'Blackjack',

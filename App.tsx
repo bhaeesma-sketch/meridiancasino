@@ -3,6 +3,7 @@ import React, { useState, useEffect, createContext, useContext } from 'react';
 import { HashRouter, Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { GameMode, User, GameHistoryItem } from './types';
 import { generateReferralCode } from './services/referralService';
+import { supabase } from './services/supabase';
 import Lobby from './screens/Lobby';
 import Plinko from './screens/Plinko';
 import Roulette from './screens/Roulette';
@@ -25,8 +26,10 @@ import SettingsModal from './components/SettingsModal';
 interface AppContextType {
   user: User;
   setUser: React.Dispatch<React.SetStateAction<User>>;
+  updateBalance: (delta: number) => Promise<void>;
+  updateProfile: (updates: Partial<User>) => Promise<void>;
   history: GameHistoryItem[];
-  addHistory: (item: GameHistoryItem) => void;
+  addHistory: (item: GameHistoryItem) => Promise<void>;
   activeMode: GameMode;
   isConnected: boolean;
   setIsConnected: (val: boolean) => void;
@@ -92,24 +95,157 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   // Load user data when wallet is connected
   useEffect(() => {
-    if (isConnected && typeof window !== 'undefined') {
-      const walletAddress = localStorage.getItem('wallet_address');
-      if (walletAddress) {
-        const userData = localStorage.getItem(`user_${walletAddress}`);
-        if (userData) {
-          const parsed = JSON.parse(userData);
-          setUser(prev => ({
-            ...prev,
-            referralCode: parsed.referralCode || prev.referralCode,
-            referredBy: parsed.referredBy,
-            isNewUser: parsed.isNewUser !== false,
-            newUserBonusClaimed: parsed.newUserBonusClaimed || false,
-            joinedDate: parsed.joinedDate || Date.now()
-          }));
+    const fetchUser = async () => {
+      if (isConnected && typeof window !== 'undefined') {
+        const walletAddress = localStorage.getItem('wallet_address');
+        if (walletAddress) {
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('wallet_address', walletAddress)
+            .single();
+
+          if (profile && !error) {
+            setUser({
+              address: profile.wallet_address,
+              username: profile.username || (profile.wallet_address.slice(0, 8) + '...' + profile.wallet_address.slice(-4)),
+              balance: Number(profile.balance),
+              avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.wallet_address)}&background=FFD700&color=000&size=128`,
+              tier: (profile as any).tier || "Bronze",
+              wagered: (profile as any).wagered || 0,
+              winRate: (profile as any).win_rate || 0,
+              referralCode: profile.referral_code,
+              referredBy: profile.referred_by,
+              referralEarnings: (profile as any).referral_earnings || 0,
+              referralCount: (profile as any).referral_count || 0,
+              activeReferrals: (profile as any).active_referrals || 0,
+              isNewUser: profile.is_new_user,
+              newUserBonusClaimed: profile.bonus_claimed,
+              joinedDate: new Date(profile.joined_date).getTime()
+            });
+          }
         }
       }
+    };
+
+    fetchUser();
+
+    // Load global history from Supabase
+    const fetchHistory = async () => {
+      const { data, error } = await supabase
+        .from('game_history')
+        .select('*')
+        .order('timestamp', { ascending: false })
+        .limit(20);
+
+      if (data && !error) {
+        setHistory(data.map(item => ({
+          id: item.id.toString(),
+          game: item.game_name,
+          multiplier: Number(item.multiplier),
+          payout: Number(item.payout),
+          timestamp: new Date(item.timestamp).getTime(),
+          username: item.username || 'Anonymous'
+        })));
+      }
+    };
+
+    fetchHistory();
+
+    // Subscribe to real-time history updates
+    const historyChannel = supabase
+      .channel('game_history_changes')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'game_history' },
+        (payload) => {
+          const newItem = payload.new;
+          setHistory(prev => [{
+            id: newItem.id.toString(),
+            game: newItem.game_name,
+            multiplier: Number(newItem.multiplier),
+            payout: Number(newItem.payout),
+            timestamp: new Date(newItem.timestamp).getTime(),
+            username: newItem.username || 'Anonymous'
+          }, ...prev].slice(0, 20));
+        }
+      )
+      .subscribe();
+
+    // Subscribe to user profile updates for balance sync
+    let profileChannel: any;
+    const walletAddress = localStorage.getItem('wallet_address');
+    if (walletAddress) {
+      profileChannel = supabase
+        .channel(`profile_${walletAddress}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'profiles',
+            filter: `wallet_address=eq.${walletAddress}`
+          },
+          (payload) => {
+            const updatedProfile = payload.new;
+            setUser(prev => ({
+              ...prev,
+              balance: Number(updatedProfile.balance),
+              isNewUser: updatedProfile.is_new_user,
+              newUserBonusClaimed: updatedProfile.bonus_claimed
+            }));
+          }
+        )
+        .subscribe();
     }
+
+    return () => {
+      supabase.removeChannel(historyChannel);
+      if (profileChannel) supabase.removeChannel(profileChannel);
+    };
   }, [isConnected]);
+
+  const updateBalance = async (delta: number) => {
+    if (!user.address) return;
+
+    const newBalance = user.balance + delta;
+
+    // Optimistic update
+    setUser(prev => ({ ...prev, balance: newBalance }));
+
+    // Supabase update
+    const { error } = await supabase
+      .from('profiles')
+      .update({ balance: newBalance })
+      .eq('wallet_address', user.address);
+
+    if (error) {
+      console.error('Error updating balance in Supabase:', error);
+    }
+  };
+
+  const updateProfile = async (updates: Partial<User>) => {
+    if (!user.address) return;
+
+    // Optimistic update
+    setUser(prev => ({ ...prev, ...updates }));
+
+    // Map User fields to Supabase profile fields
+    const supabaseUpdates: any = {};
+    if (updates.username) supabaseUpdates.username = updates.username;
+    if (updates.balance !== undefined) supabaseUpdates.balance = updates.balance;
+    if (updates.newUserBonusClaimed !== undefined) supabaseUpdates.bonus_claimed = updates.newUserBonusClaimed;
+    if (updates.isNewUser !== undefined) supabaseUpdates.is_new_user = updates.isNewUser;
+
+    const { error } = await supabase
+      .from('profiles')
+      .update(supabaseUpdates)
+      .eq('wallet_address', user.address);
+
+    if (error) {
+      console.error('Error updating profile in Supabase:', error);
+    }
+  };
 
   const [history, setHistory] = useState<GameHistoryItem[]>([
     { id: '1', game: 'Dice', multiplier: 2.0, payout: 0.05, timestamp: Date.now(), username: 'Urban Gambler' },
@@ -120,13 +256,36 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [activeMode, setActiveMode] = useState<GameMode>('Lobby');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  const addHistory = (item: GameHistoryItem) => {
+  const addHistory = async (item: GameHistoryItem) => {
     setHistory(prev => [item, ...prev].slice(0, 20));
+
+    // Save to Supabase if wallet is connected
+    if (isConnected && user.address) {
+      // Find the profile UUID for the foreign key
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('wallet_address', user.address)
+        .single();
+
+      if (profile) {
+        await supabase.from('game_history').insert({
+          user_id: profile.id,
+          game_name: item.game,
+          multiplier: item.multiplier,
+          payout: item.payout,
+          username: item.username,
+          timestamp: new Date(item.timestamp).toISOString()
+        });
+      }
+    }
   };
 
   return (
     <AppContext.Provider value={{
       user, setUser,
+      updateBalance,
+      updateProfile,
       history, addHistory,
       activeMode,
       isConnected, setIsConnected,

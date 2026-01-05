@@ -61,7 +61,7 @@ const Limbo: React.FC = () => {
     sounds.playRoll();
 
     // Deduct bet immediately
-    context.setUser(prev => ({ ...prev, balance: prev.balance - bet }));
+    context.updateBalance(-bet);
 
     // Generate crash point
     const crashPoint = generateCrashPoint();
@@ -88,7 +88,7 @@ const Limbo: React.FC = () => {
           if (won) {
             sounds.playWin();
             const payout = bet * targetMultiplier;
-            context.setUser(prev => ({ ...prev, balance: prev.balance + payout }));
+            context.updateBalance(payout);
             context.addHistory({
               id: Date.now().toString() + Math.random().toString(),
               game: 'Limbo',
@@ -201,8 +201,8 @@ const Limbo: React.FC = () => {
 
         <div className="relative z-10 text-center">
           <div className={`text-7xl md:text-9xl lg:text-[140px] font-mono font-black leading-none transition-all duration-100 ${isWin === true ? 'text-green-400 drop-shadow-[0_0_30px_rgba(74,222,128,0.6)]' :
-              isWin === false ? 'text-red-400 drop-shadow-[0_0_30px_rgba(248,113,113,0.6)]' :
-                isRunning ? 'text-cyan-400 drop-shadow-[0_0_30px_rgba(34,211,238,0.6)]' : 'text-white/80'
+            isWin === false ? 'text-red-400 drop-shadow-[0_0_30px_rgba(248,113,113,0.6)]' :
+              isRunning ? 'text-cyan-400 drop-shadow-[0_0_30px_rgba(34,211,238,0.6)]' : 'text-white/80'
             }`}>
             {crashedAt !== null ? crashedAt.toFixed(2) : currentMultiplier.toFixed(2)}x
           </div>

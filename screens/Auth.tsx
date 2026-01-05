@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AppContext } from '../App';
 import { detectWallet, connectWallet, WalletType, WalletInfo } from '../services/walletService';
 import { generateReferralCode, validateReferralCode, NEW_USER_BONUS } from '../services/referralService';
+import { supabase } from '../services/supabase';
 
 const Auth: React.FC = () => {
   const navigate = useNavigate();
@@ -58,50 +59,82 @@ const Auth: React.FC = () => {
       // 3. Send signature to backend for verification
       // 4. Backend returns JWT token
 
-      // For now, we'll simulate the connection
-      // Store wallet info
+      // Supabase Integration: Check for existing user
+      const { data: existingProfile, error: fetchError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('wallet_address', walletInfo.address)
+        .single();
+
+      if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 is "no rows returned"
+        console.error('Error fetching profile:', fetchError);
+        setError('Failed to fetch user profile. Please try again.');
+        setIsConnecting(false);
+        return;
+      }
+
+      let userProfile = existingProfile;
+      const isNewUser = !existingProfile;
+
+      if (isNewUser) {
+        // Handle referral code if present
+        const pendingRefCode = localStorage.getItem('pending_referral_code') || referralCode;
+        let referredBy = null;
+        if (pendingRefCode && validateReferralCode(pendingRefCode)) {
+          referredBy = pendingRefCode.toUpperCase();
+        }
+
+        // Generate referral code for new user
+        const newUserRefCode = generateReferralCode(walletInfo.address.slice(0, 8));
+
+        // Bonus amount: $25 if referred, $10 otherwise
+        const bonusAmount = referredBy ? NEW_USER_BONUS.withReferral : NEW_USER_BONUS.withoutReferral;
+
+        // Create new profile in Supabase
+        const { data: newProfile, error: insertError } = await supabase
+          .from('profiles')
+          .insert({
+            wallet_address: walletInfo.address,
+            username: `User_${walletInfo.address.slice(-4)}`,
+            referral_code: newUserRefCode,
+            referred_by: referredBy,
+            balance: bonusAmount, // Set initial bonus balance
+            is_new_user: true,
+            bonus_claimed: true, // Auto-claim on first connect for simplicity in this flow
+          })
+          .select()
+          .single();
+
+        if (insertError) {
+          console.error('Error creating profile:', insertError);
+          setError('Failed to create user profile. Please try again.');
+          setIsConnecting(false);
+          return;
+        }
+        userProfile = newProfile;
+      }
+
+      // Store in context and localStorage (as fallback/cache)
       localStorage.setItem('wallet_address', walletInfo.address);
       localStorage.setItem('wallet_type', walletInfo.walletType || '');
 
-      // Check if this is a new user (no existing data)
-      const isNewUser = !localStorage.getItem(`user_${walletInfo.address}`);
-
-      // Handle referral code if present
-      const pendingRefCode = localStorage.getItem('pending_referral_code') || referralCode;
-      let referredBy = null;
-      if (pendingRefCode && validateReferralCode(pendingRefCode)) {
-        referredBy = pendingRefCode.toUpperCase();
-        localStorage.setItem(`referral_${walletInfo.address}`, referredBy);
-      }
-
-      // Generate referral code for new user
-      const userRefCode = generateReferralCode(walletInfo.address.slice(0, 8));
-      localStorage.setItem(`user_${walletInfo.address}`, JSON.stringify({
-        address: walletInfo.address,
-        referralCode: userRefCode,
-        referredBy: referredBy,
-        isNewUser: isNewUser,
-        newUserBonusClaimed: false,
-        joinedDate: Date.now()
-      }));
-
-      // Update user context
-      context.setUser(prev => ({
-        ...prev,
-        referralCode: userRefCode,
-        referredBy: referredBy || undefined,
-        isNewUser: isNewUser,
-        newUserBonusClaimed: false,
-        joinedDate: Date.now()
-      }));
+      // Update user context with data from Supabase
+      context.setUser({
+        address: userProfile.wallet_address,
+        username: userProfile.username,
+        balance: Number(userProfile.balance),
+        referralCode: userProfile.referral_code,
+        referredBy: userProfile.referred_by || undefined,
+        isNewUser: userProfile.is_new_user,
+        newUserBonusClaimed: userProfile.bonus_claimed,
+        joinedDate: new Date(userProfile.joined_date).getTime()
+      });
 
       // Set connected state
       context.setIsConnected(true);
 
       // Clear pending referral code
-      if (pendingRefCode) {
-        localStorage.removeItem('pending_referral_code');
-      }
+      localStorage.removeItem('pending_referral_code');
 
       // Navigate to lobby
       navigate('/lobby');
@@ -113,38 +146,44 @@ const Auth: React.FC = () => {
     }
   };
 
-  const handleGuestConnect = () => {
+  const handleGuestConnect = async () => {
     if (!context) return;
 
     setIsConnecting(true);
 
     // Simulate connection
     const mockAddress = '0xGUEST' + Math.random().toString(16).slice(2, 10);
-    localStorage.setItem('wallet_address', mockAddress);
-    localStorage.setItem('wallet_type', 'metamask');
 
-    const isNewUser = !localStorage.getItem(`user_${mockAddress}`);
-    const userRefCode = generateReferralCode('GUEST');
+    // Check if mock user exists (unlikely given randomness but good for pattern)
+    const { data: profile } = await supabase
+      .from('profiles')
+      .insert({
+        wallet_address: mockAddress,
+        username: 'Guest Player',
+        referral_code: generateReferralCode('GUEST'),
+        balance: 10000,
+        is_new_user: false,
+        bonus_claimed: true,
+      })
+      .select()
+      .single();
 
-    localStorage.setItem(`user_${mockAddress}`, JSON.stringify({
-      address: mockAddress,
-      referralCode: userRefCode,
-      isNewUser: isNewUser,
-      newUserBonusClaimed: false,
-      joinedDate: Date.now()
-    }));
+    if (profile) {
+      context.setUser({
+        address: profile.wallet_address,
+        username: profile.username,
+        balance: Number(profile.balance),
+        referralCode: profile.referral_code,
+        isNewUser: false,
+        newUserBonusClaimed: true,
+        joinedDate: new Date(profile.joined_date).getTime()
+      });
 
-    context.setUser(prev => ({
-      ...prev,
-      referralCode: userRefCode,
-      isNewUser: isNewUser,
-      newUserBonusClaimed: false,
-      joinedDate: Date.now(),
-      balance: 10000 // Ensure guest gets balance
-    }));
-
-    context.setIsConnected(true);
-    navigate('/lobby');
+      localStorage.setItem('wallet_address', mockAddress);
+      localStorage.setItem('wallet_type', 'metamask');
+      context.setIsConnected(true);
+      navigate('/lobby');
+    }
   };
 
   const walletName = availableWallet === 'metamask' ? 'MetaMask' :

@@ -100,23 +100,11 @@ const Profile: React.FC = () => {
               onClick={() => {
                 if (context) {
                   const bonusAmount = user.referredBy ? NEW_USER_BONUS.withReferral : NEW_USER_BONUS.withoutReferral;
-                  context.setUser(prev => ({
-                    ...prev,
-                    balance: prev.balance + bonusAmount,
-                    newUserBonusClaimed: true
-                  }));
-                  // Update localStorage
-                  if (typeof window !== 'undefined') {
-                    const walletAddress = localStorage.getItem('wallet_address');
-                    if (walletAddress) {
-                      const userData = localStorage.getItem(`user_${walletAddress}`);
-                      if (userData) {
-                        const parsed = JSON.parse(userData);
-                        parsed.newUserBonusClaimed = true;
-                        localStorage.setItem(`user_${walletAddress}`, JSON.stringify(parsed));
-                      }
-                    }
-                  }
+                  context.updateBalance(bonusAmount);
+                  context.updateProfile({
+                    newUserBonusClaimed: true,
+                    isNewUser: false
+                  });
                 }
               }}
               className="px-6 md:px-8 py-3 md:py-4 bg-quantum-gold text-black font-black text-lg md:text-xl uppercase rounded-xl hover:scale-105 transition-all shadow-gold-glow"

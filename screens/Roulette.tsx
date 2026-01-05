@@ -48,7 +48,7 @@ const Roulette: React.FC = () => {
     setIsWin(null);
     setWinningNumber(null);
     sounds.playWhirr(4);
-    context.setUser(prev => ({ ...prev, balance: prev.balance - betAmount }));
+    context.updateBalance(-betAmount);
 
     const duration = 4000;
     const finalRotation = wheelRotation + 360 * 5 + Math.random() * 360;
@@ -86,7 +86,7 @@ const Roulette: React.FC = () => {
           else if (colorMatch && winningNum !== 0) multiplier = 2; // Color bet pays 1:1 (2x)
 
           const payout = betAmount * multiplier;
-          context.setUser(prev => ({ ...prev, balance: prev.balance + payout }));
+          context.updateBalance(payout);
           context.addHistory({
             id: Date.now().toString() + Math.random().toString(),
             game: 'Roulette',
