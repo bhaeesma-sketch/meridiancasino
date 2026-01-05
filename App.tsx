@@ -81,9 +81,9 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   };
 
   const getDefaultUser = (): User => ({
-    username: "Guest",
-    balance: 10000,
-    avatar: "https://ui-avatars.com/api/?name=Guest&background=FFD700&color=000&size=128",
+    username: "Awaiting Auth...",
+    balance: 0,
+    avatar: "https://ui-avatars.com/api/?name=User&background=FFD700&color=000&size=128",
     tier: "Bronze",
     wagered: 0,
     winRate: 0,

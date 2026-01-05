@@ -154,59 +154,6 @@ const Auth: React.FC = () => {
     }
   };
 
-  const handleGuestConnect = async () => {
-    if (!context) return;
-
-    setIsConnecting(true);
-
-    const mockAddress = '0xGUEST' + Math.random().toString(16).slice(2, 10);
-
-    try {
-      if (!isSupabaseConfigured) {
-        throw new Error('Database not configured. Please add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to environment variables.');
-      }
-
-      // Check if mock user exists (unlikely given randomness but good for pattern)
-      const { data: profile, error: insertError } = await supabase
-        .from('profiles')
-        .insert({
-          wallet_address: mockAddress,
-          username: 'Guest Player',
-          referral_code: generateReferralCode('GUEST'),
-          balance: 10000,
-          is_new_user: false,
-          bonus_claimed: true,
-        })
-        .select()
-        .single();
-
-      if (insertError) {
-        console.error('Guest insert error:', insertError);
-        throw new Error(`Failed to create guest session: ${insertError.message}`);
-      }
-
-      if (profile) {
-        context.setUser({
-          address: profile.wallet_address,
-          username: profile.username,
-          balance: Number(profile.balance),
-          referralCode: profile.referral_code,
-          isNewUser: false,
-          newUserBonusClaimed: true,
-          joinedDate: new Date(profile.joined_date).getTime()
-        });
-
-        localStorage.setItem('wallet_address', mockAddress);
-        localStorage.setItem('wallet_type', 'metamask');
-        context.setIsConnected(true);
-        navigate('/lobby');
-      }
-    } catch (err: any) {
-      console.error('Guest connect error:', err);
-      setError(err.message || 'Failed to start guest session.');
-      setIsConnecting(false);
-    }
-  };
 
   const walletName = availableWallet === 'metamask' ? 'MetaMask' :
     availableWallet === 'tronlink' ? 'TronLink' :
@@ -381,14 +328,6 @@ const Auth: React.FC = () => {
               <div className="absolute inset-0 rounded-2xl bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
             </button>
 
-            <button
-              onClick={handleGuestConnect}
-              disabled={isConnecting}
-              className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center gap-2 text-white/70 font-bold uppercase hover:bg-white/10 hover:text-white transition-all transition-all"
-            >
-              <span className="material-symbols-outlined">person</span>
-              Play as Guest (Demo Mode)
-            </button>
           </div>
 
           {/* Refer & Earn Info Section */}
