@@ -13,11 +13,11 @@ export interface User {
   referralEarnings?: number;
   referralCount?: number;
   activeReferrals?: number;
-  isNewUser?: boolean;
-  newUserBonusClaimed?: boolean;
-  joinedDate?: number;
-  isAdmin?: boolean;
   address?: string;
+  real_balance: number;
+  bonus_balance: number;
+  valid_referral_count: number;
+  is_first_deposit: boolean;
 }
 
 export interface ReferralStats {

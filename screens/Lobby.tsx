@@ -132,22 +132,24 @@ const Lobby: React.FC = () => {
                 sounds.playClick();
                 navigate(game.path);
               }}
-              className="group relative aspect-[16/10] rounded-2xl overflow-hidden border border-white/10 bg-space-gray/10 backdrop-blur-2xl cursor-pointer transition-all duration-500 premium-card animate-deep-fade-up shadow-plasma-card"
+              className="group relative flex flex-col rounded-[2.5rem] overflow-hidden border border-white/10 bg-black/40 backdrop-blur-3xl cursor-pointer transition-all duration-700 premium-card animate-deep-fade-up shadow-[0_40px_100px_-20px_rgba(0,0,0,0.8)] hover:shadow-gold-glow-sm hover:scale-[1.02] active:scale-95"
               style={{
-                animationDelay: `${idx * 0.1}s`
+                animationDelay: `${idx * 0.1}s`,
+                minHeight: '280px'
               }}
             >
-              <div className="card-content h-full">
+              <div className="card-content h-full relative z-10">
                 <div
-                  className="absolute inset-0 bg-cover bg-center opacity-30 group-hover:opacity-50 transition-all duration-700 ease-out group-hover:scale-110"
+                  className="absolute inset-0 bg-cover bg-center opacity-40 group-hover:opacity-60 transition-all duration-700 ease-out group-hover:scale-105"
                   style={{ backgroundImage: `url(${game.img})` }}
                 ></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
                 <div className="absolute inset-0 holographic-card-gradient opacity-0 group-hover:opacity-100 group-hover:animate-holo-shimmer pointer-events-none transition-opacity duration-500"></div>
 
                 <div className="relative z-20 h-full p-4 flex flex-col justify-between">
                   <div className="flex justify-between items-start">
-                    <div className="p-2 rounded-lg bg-black/40 border border-white/10 backdrop-blur-sm group-hover:border-quantum-gold/30 group-hover:text-quantum-gold transition-colors">
-                      <span className={`material-symbols-outlined text-xl ${game.color} group-hover:text-inherit`}>{game.icon}</span>
+                    <div className="p-3 rounded-2xl bg-black/60 border border-white/10 backdrop-blur-md group-hover:border-quantum-gold/50 group-hover:bg-quantum-gold/10 group-hover:text-quantum-gold transition-all duration-500">
+                      <span className={`material-symbols-outlined text-2xl ${game.color} group-hover:text-inherit`}>{game.icon}</span>
                     </div>
                     <div className="flex flex-col items-end gap-1">
                       <div className="px-2 py-0.5 rounded bg-black/60 border border-white/5 text-[8px] font-mono text-white/40 uppercase tracking-widest group-hover:text-quantum-gold/80 transition-colors">
@@ -159,17 +161,17 @@ const Lobby: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-2">
-                    <div>
-                      <h4 className="text-lg md:text-xl font-heading font-extrabold text-white uppercase group-hover:text-quantum-gold transition-all duration-300">
+                  <div className="flex flex-col gap-3">
+                    <div className="px-1">
+                      <h4 className="text-2xl md:text-3xl font-heading font-black text-white uppercase group-hover:text-quantum-gold transition-all duration-500 tracking-tighter">
                         {game.name}
                       </h4>
-                      <p className="text-[10px] text-white/40 uppercase font-bold tracking-widest mt-0.5">
+                      <p className="text-[9px] text-white/40 uppercase font-bold tracking-[0.2em] mt-1">
                         {game.desc}
                       </p>
                     </div>
-                    <button className="w-full py-2 bg-quantum-gold text-black font-black uppercase text-[10px] rounded-lg shadow-gold-glow-sm transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-1.5">
-                      <span className="material-symbols-outlined text-xs font-black">play_arrow</span>
+                    <button className="w-full py-4 bg-gradient-to-r from-yellow-400 via-quantum-gold to-yellow-600 text-black font-black uppercase text-sm rounded-2xl shadow-gold-glow hover:shadow-[0_0_40px_rgba(255,215,0,0.5)] transition-all duration-500 flex items-center justify-center gap-3 active:scale-95 group-hover:translate-y-[-2px]">
+                      <span className="material-symbols-outlined text-xl font-black">play_arrow</span>
                       Launch Game
                     </button>
                   </div>

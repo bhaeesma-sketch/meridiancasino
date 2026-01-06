@@ -157,12 +157,14 @@ const Auth: React.FC = () => {
       context.setUser({
         address: userProfile.wallet_address,
         username: userProfile.username,
-        balance: Number(userProfile.balance),
+        balance: Number(userProfile.real_balance || userProfile.balance || 0),
+        real_balance: Number(userProfile.real_balance || 0),
+        bonus_balance: Number(userProfile.bonus_balance || 0),
+        valid_referral_count: userProfile.valid_referral_count || 0,
+        is_first_deposit: userProfile.is_first_deposit || false,
         referralCode: userProfile.referral_code,
         referredBy: userProfile.referred_by || undefined,
-        isNewUser: userProfile.is_new_user,
-        newUserBonusClaimed: userProfile.bonus_claimed,
-        joinedDate: new Date(userProfile.joined_date).getTime()
+        isAdmin: userProfile.is_admin
       });
 
       // Set connected state
@@ -260,7 +262,7 @@ const Auth: React.FC = () => {
             </h1>
           </div>
 
-          <p className="text-white/40 text-[11px] mb-8 tracking-[0.25em] uppercase font-bold">
+          <p className="text-quantum-gold text-[11px] mb-8 tracking-[0.4em] uppercase font-black italic">
             Quantum Legacy Ecosystem
           </p>
 
@@ -545,12 +547,14 @@ const Auth: React.FC = () => {
             // Set user in context
             context.setUser({
               address: address,
-              balance: Number(userProfile.balance),
+              balance: Number(userProfile.real_balance || userProfile.balance || 0),
+              real_balance: Number(userProfile.real_balance || 0),
+              bonus_balance: Number(userProfile.bonus_balance || 0),
+              valid_referral_count: userProfile.valid_referral_count || 0,
+              is_first_deposit: userProfile.is_first_deposit || false,
               referralCode: userProfile.referral_code,
               referredBy: userProfile.referred_by || undefined,
-              isNewUser: userProfile.is_new_user,
-              newUserBonusClaimed: userProfile.bonus_claimed,
-              joinedDate: new Date(userProfile.joined_date).getTime()
+              isAdmin: userProfile.is_admin
             });
 
             context.setIsConnected(true);

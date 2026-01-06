@@ -73,9 +73,11 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           referralEarnings: 0,
           referralCount: 0,
           activeReferrals: 0,
-          isNewUser: parsed.isNewUser !== false,
-          newUserBonusClaimed: parsed.newUserBonusClaimed || false,
-          joinedDate: parsed.joinedDate || Date.now()
+          real_balance: parsed.real_balance || 0,
+          bonus_balance: parsed.bonus_balance || 0,
+          valid_referral_count: parsed.valid_referral_count || 0,
+          is_first_deposit: parsed.is_first_deposit || false,
+          address: walletAddress
         };
       }
     }
@@ -94,9 +96,10 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     referralEarnings: 0,
     referralCount: 0,
     activeReferrals: 0,
-    isNewUser: true,
-    newUserBonusClaimed: false,
-    joinedDate: Date.now()
+    real_balance: 0,
+    bonus_balance: 0,
+    valid_referral_count: 0,
+    is_first_deposit: false
   });
 
   const [user, setUser] = useState<User>(initializeUser());
@@ -127,6 +130,10 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               referralEarnings: (profile as any).referral_earnings || 0,
               referralCount: (profile as any).referral_count || 0,
               activeReferrals: (profile as any).active_referrals || 0,
+              real_balance: Number(profile.real_balance || profile.balance || 0),
+              bonus_balance: Number(profile.bonus_balance || 0),
+              valid_referral_count: profile.valid_referral_count || 0,
+              is_first_deposit: profile.is_first_deposit || false,
               isNewUser: profile.is_new_user,
               newUserBonusClaimed: profile.bonus_claimed,
               joinedDate: new Date(profile.joined_date).getTime(),
@@ -199,9 +206,11 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             const updatedProfile = payload.new;
             setUser(prev => ({
               ...prev,
-              balance: Number(updatedProfile.balance),
-              isNewUser: updatedProfile.is_new_user,
-              newUserBonusClaimed: updatedProfile.bonus_claimed
+              balance: Number(updatedProfile.real_balance || updatedProfile.balance || 0),
+              real_balance: Number(updatedProfile.real_balance || 0),
+              bonus_balance: Number(updatedProfile.bonus_balance || 0),
+              valid_referral_count: updatedProfile.valid_referral_count || 0,
+              is_first_deposit: updatedProfile.is_first_deposit || false
             }));
           }
         )
@@ -217,15 +226,15 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const updateBalance = async (delta: number) => {
     if (!user.address) return;
 
-    const newBalance = user.balance + delta;
+    const newBalance = user.real_balance + delta;
 
-    // Optimistic update
-    setUser(prev => ({ ...prev, balance: newBalance }));
+    // Update local state and Supabase - defaults to real_balance for games
+    setUser(prev => ({ ...prev, balance: newBalance, real_balance: newBalance }));
 
     // Supabase update
     const { error } = await supabase
       .from('profiles')
-      .update({ balance: newBalance })
+      .update({ balance: newBalance, real_balance: newBalance })
       .eq('wallet_address', user.address);
 
     if (error) {
@@ -242,9 +251,14 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     // Map User fields to Supabase profile fields
     const supabaseUpdates: any = {};
     if (updates.username) supabaseUpdates.username = updates.username;
-    if (updates.balance !== undefined) supabaseUpdates.balance = updates.balance;
-    if (updates.newUserBonusClaimed !== undefined) supabaseUpdates.bonus_claimed = updates.newUserBonusClaimed;
-    if (updates.isNewUser !== undefined) supabaseUpdates.is_new_user = updates.isNewUser;
+    if (updates.balance !== undefined) {
+      supabaseUpdates.balance = updates.balance;
+      supabaseUpdates.real_balance = updates.balance;
+    }
+    if (updates.real_balance !== undefined) supabaseUpdates.real_balance = updates.real_balance;
+    if (updates.bonus_balance !== undefined) supabaseUpdates.bonus_balance = updates.bonus_balance;
+    if (updates.valid_referral_count !== undefined) supabaseUpdates.valid_referral_count = updates.valid_referral_count;
+    if (updates.is_first_deposit !== undefined) supabaseUpdates.is_first_deposit = updates.is_first_deposit;
 
     const { error } = await supabase
       .from('profiles')
@@ -253,6 +267,62 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
     if (error) {
       console.error('Error updating profile in Supabase:', error);
+    }
+  };
+
+  // Phase 2 & 3: Deposit and Referral Reward Logic
+  const processFirstDeposit = async () => {
+    if (!user.address || user.is_first_deposit) return;
+
+    console.log("Detecting first deposit...");
+    const bonusAmount = 10; // $10 bonus as requested
+
+    // Update state and DB
+    const updates = {
+      bonus_balance: user.bonus_balance + bonusAmount,
+      is_first_deposit: true
+    };
+
+    await updateProfile(updates);
+
+    // Phase 3: Check for Referrer reward
+    if (user.referredBy) {
+      await handleReferralReward(user.referredBy);
+    }
+  };
+
+  const handleReferralReward = async (referrerCode: string) => {
+    // 1. Find the referrer by code
+    const { data: referrer, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('referral_code', referrerCode)
+      .single();
+
+    if (error || !referrer) {
+      console.error("Referrer not found");
+      return;
+    }
+
+    const newCount = (referrer.valid_referral_count || 0) + 1;
+
+    if (newCount >= 5) {
+      // Reward referrer with $10 real balance and reset count
+      await supabase
+        .from('profiles')
+        .update({
+          real_balance: Number(referrer.real_balance || 0) + 10,
+          valid_referral_count: 0
+        })
+        .eq('id', referrer.id);
+
+      console.log(`Referrer ${referrer.username} rewarded $10!`);
+    } else {
+      // Just increment the count
+      await supabase
+        .from('profiles')
+        .update({ valid_referral_count: newCount })
+        .eq('id', referrer.id);
     }
   };
 
@@ -310,7 +380,8 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       activeMode,
       isConnected, setIsConnected,
       isSettingsOpen, setIsSettingsOpen,
-      is3DMode, setIs3DMode: toggleMode
+      is3DMode, setIs3DMode: toggleMode,
+      processFirstDeposit
     }}>
       {children}
     </AppContext.Provider>
@@ -336,11 +407,22 @@ const Navbar = () => {
         </h1>
       </div>
 
-      <div className="flex items-center gap-2 md:gap-4">
-        <div className="hidden sm:flex flex-col items-end px-3 md:px-4 py-1 md:py-1.5 rounded-lg bg-black/40 border border-white/5 relative overflow-hidden hud-scanner">
-          <div className="flex items-center gap-1.5 md:gap-2 text-quantum-gold">
-            <span className="material-symbols-outlined text-xs md:text-sm">account_balance_wallet</span>
-            <span className="font-mono text-xs md:text-sm font-bold">${user.balance.toLocaleString()}</span>
+      <div className="flex items-center gap-3 md:gap-6">
+        <div className="hidden sm:flex flex-col items-end px-4 py-2 rounded-2xl bg-black/60 border border-white/10 relative overflow-hidden group hover:border-quantum-gold/30 transition-all duration-500 shadow-gold-glow-sm">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+          <div className="flex items-center gap-2 text-quantum-gold">
+            <span className="material-symbols-outlined text-sm md:text-base font-bold">account_balance_wallet</span>
+            <span className="font-heading text-lg md:text-xl font-black tracking-tighter">${(user.real_balance + user.bonus_balance).toLocaleString()}</span>
+          </div>
+          <div className="flex items-center gap-3 mt-0.5">
+            <div className="flex items-center gap-1">
+              <span className="size-1 rounded-full bg-green-500"></span>
+              <span className="text-[8px] text-white/60 uppercase tracking-[0.2em] font-black">Real: ${user.real_balance.toLocaleString()}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="size-1 rounded-full bg-quantum-gold animate-pulse"></span>
+              <span className="text-[8px] text-quantum-gold uppercase tracking-[0.2em] font-black">Bonus: ${user.bonus_balance.toLocaleString()}</span>
+            </div>
           </div>
         </div>
         <div
