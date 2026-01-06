@@ -797,3 +797,37 @@ body {
     linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
   background-size: 20px 20px;
 }
+
+/* Energy Orb / Ball */
+.energy-orb {
+  background: radial-gradient(circle at 30% 30%, #fff, #FFD700, #B8860B);
+  box-shadow:
+    0 0 15px rgba(255, 215, 0, 0.8),
+    0 0 30px rgba(255, 215, 0, 0.4);
+  animation: orbPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes orbPulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+.projection-stage {
+  perspective: 1200px;
+  transform-style: preserve-3d;
+}
+
+.holographic-ring {
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.1) inset;
+  background: radial-gradient(circle, transparent 50%, rgba(255, 215, 0, 0.05) 100%);
+}
