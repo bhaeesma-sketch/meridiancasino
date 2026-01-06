@@ -128,9 +128,9 @@ const Auth: React.FC = () => {
           username: `User_${safeAddress.slice(-4)}`,
           referral_code: newUserRefCode,
           referred_by: referredBy,
-          balance: bonusAmount,
+          balance: 0, // Start with 0, claim in lobby
           is_new_user: true,
-          bonus_claimed: true
+          bonus_claimed: false
         };
 
         // Create new profile in Supabase
@@ -521,14 +521,13 @@ const Auth: React.FC = () => {
 
             if (!userProfile) {
               // Create new profile
-              const bonusAmount = referralCode ? NEW_USER_BONUS.withReferral : NEW_USER_BONUS.withoutReferral;
               const newProfile = {
                 id: crypto.randomUUID(),
                 wallet_address: address.toLowerCase(),
                 username: `User_${address.slice(0, 6)}`,
                 referral_code: generateReferralCode(`User_${address.slice(0, 6)}`),
                 referred_by: referralCode || null,
-                balance: bonusAmount,
+                balance: 0,
                 is_new_user: true,
                 bonus_claimed: false
               };

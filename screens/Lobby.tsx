@@ -1,12 +1,106 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../App';
 import { sounds } from '../services/soundService';
+import { NEW_USER_BONUS } from '../services/referralService';
+
+const BonusModal: React.FC<{ onClaim: () => void }> = ({ onClaim }) => {
+  const [isExploding, setIsExploding] = useState(false);
+
+  const handleClaim = () => {
+    setIsExploding(true);
+    setTimeout(onClaim, 1500);
+  };
+
+  return (
+    <div className="bonus-modal-overlay">
+      <div className="bonus-modal-content animate-holo-entry">
+        <div className="bonus-glow"></div>
+
+        <div className="bonus-token-scene">
+          <div className="bonus-token">
+            <div className="token-face token-front">$</div>
+            <div className="token-face token-back">$</div>
+            <div className="token-side"></div>
+          </div>
+        </div>
+
+        <h2 className="text-3xl font-heading font-black text-white uppercase mb-2 tracking-tighter">
+          Quantum Welcome
+        </h2>
+        <p className="text-quantum-gold text-lg font-mono font-bold mb-6 animate-pulse">
+          $10.00 BONUS DETECTED
+        </p>
+
+        <p className="text-white/60 text-xs mb-8 leading-relaxed max-w-[280px] mx-auto">
+          Welcome to the Future of Gaming. Your initial quantum credit is ready for activation.
+        </p>
+
+        <button
+          onClick={handleClaim}
+          disabled={isExploding}
+          className={`w-full py-4 bg-gradient-to-r from-yellow-400 to-quantum-gold text-black font-black uppercase rounded-2xl shadow-gold-glow hover:scale-[1.02] active:scale-95 transition-all relative overflow-hidden ${isExploding ? 'opacity-0' : ''}`}
+        >
+          Activate Bonus
+        </button>
+
+        {isExploding && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="text-quantum-gold font-black text-4xl animate-ping">CRITICAL SUCCESS!</div>
+            {[...Array(20)].map((_, i) => (
+              <div
+                key={i}
+                className="explosion-particle"
+                style={{
+                  left: '50%',
+                  top: '50%',
+                  transform: `translate(${(Math.random() - 0.5) * 400}px, ${(Math.random() - 0.5) * 400}px)`,
+                  transition: 'all 1s ease-out',
+                  opacity: 0,
+                  animation: `explode 1s ease-out forwards`
+                }}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+      <style>{`
+        @keyframes explode {
+          0% { transform: translate(0, 0); opacity: 1; }
+          100% { opacity: 0; }
+        }
+      `}</style>
+    </div>
+  );
+};
 
 const Lobby: React.FC = () => {
   const navigate = useNavigate();
   const context = useContext(AppContext);
+  const [showBonus, setShowBonus] = useState(false);
+
+  useEffect(() => {
+    if (context?.user && context.user.isNewUser && !context.user.newUserBonusClaimed) {
+      const timer = setTimeout(() => setShowBonus(true), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [context?.user]);
+
   if (!context) return null;
+
+  const handleClaimBonus = async () => {
+    sounds.playWin();
+    const bonusAmount = context.user.referredBy ? NEW_USER_BONUS.withReferral : NEW_USER_BONUS.withoutReferral;
+
+    // Update local state and Supabase
+    await context.updateProfile({
+      balance: context.user.balance + bonusAmount,
+      newUserBonusClaimed: true,
+      isNewUser: false // No longer "new" after claiming
+    });
+
+    setShowBonus(false);
+  };
 
   const games = [
     { name: 'Dice', desc: 'Roll for the stars.', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBM6cQQ6kFadFp1_-BNFkfInrsKXUox-MhuLAoQMS2qQVNqhEIf4brak0i8gzWF9ZKSCFAgbNOdyMNDF8deV997I1PtRl6kmNQaQb8SvllWZNJUjoztHzY9pxw-HDyk4Yx2vMLEltAcJP_6LmECIoYY6Lj-coktblFRu3lJryNWoezObRIu2t7w5lp2Ju3bcSLNJj1zigoOE0UXv2qlBgOHcYqR5E471G1CkpUDPVVVnZ1W4D0ohGSyGa-c5QsD093Yh1VED3FO5xs', path: '/dice', icon: 'casino', color: 'text-quantum-gold' },
@@ -85,6 +179,8 @@ const Lobby: React.FC = () => {
           ))}
         </div>
       </div>
+
+      {showBonus && <BonusModal onClaim={handleClaimBonus} />}
     </div>
   );
 };
