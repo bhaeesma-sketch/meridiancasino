@@ -25,7 +25,8 @@ export const LeftSidebar: React.FC = () => {
 
     return (
         <aside className="hidden lg:flex w-20 xl:w-64 flex-col h-full transition-all">
-            <div className="bg-glass-panel border border-white/10 rounded-2xl xl:rounded-3xl p-2 xl:p-5 flex flex-col h-full shadow-2xl relative overflow-hidden">
+            <div className="bg-glass-panel border border-white/10 rounded-2xl xl:rounded-3xl p-2 xl:p-5 flex flex-col h-full shadow-2xl relative overflow-hidden group">
+                <div className="data-stream opacity-20"></div>
                 <div className="flex-1 overflow-y-auto space-y-2 custom-scrollbar relative z-10">
                     {navItems.map((item) => (
                         <button
@@ -111,7 +112,8 @@ export const RightSidebar: React.FC = () => {
 
     return (
         <aside className="hidden xl:flex w-64 lg:w-72 flex-col h-full transition-all">
-            <div className="bg-glass-panel border border-white/10 rounded-2xl md:rounded-3xl p-4 md:p-5 flex flex-col h-full shadow-2xl relative overflow-hidden group/sidebar">
+            <div className="bg-glass-panel border border-white/10 rounded-2xl md:rounded-3xl p-4 md:p-5 flex flex-col h-full shadow-2xl relative overflow-hidden group">
+                <div className="data-stream opacity-20"></div>
                 <div className="absolute -top-24 -right-24 w-48 h-48 bg-plasma-purple/10 rounded-full blur-[60px] group-hover/sidebar:bg-plasma-purple/20 transition-colors"></div>
 
                 <h3 className="text-[10px] md:text-xs font-heading font-extrabold text-white uppercase tracking-widest mb-3 md:mb-4 relative z-10 flex items-center gap-2">

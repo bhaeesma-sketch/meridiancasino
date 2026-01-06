@@ -322,7 +322,7 @@ const Navbar = () => {
       </div>
 
       <div className="flex items-center gap-2 md:gap-4">
-        <div className="hidden sm:flex flex-col items-end px-3 md:px-4 py-1 md:py-1.5 rounded-lg bg-black/40 border border-white/5">
+        <div className="hidden sm:flex flex-col items-end px-3 md:px-4 py-1 md:py-1.5 rounded-lg bg-black/40 border border-white/5 relative overflow-hidden hud-scanner">
           <div className="flex items-center gap-1.5 md:gap-2 text-quantum-gold">
             <span className="material-symbols-outlined text-xs md:text-sm">account_balance_wallet</span>
             <span className="font-mono text-xs md:text-sm font-bold">${user.balance.toLocaleString()}</span>

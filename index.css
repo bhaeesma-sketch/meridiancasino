@@ -125,6 +125,60 @@ body {
    3D DICE STYLES
    ============================================ */
 
+/* 3D Dice / Cube Geometry */
+.scene {
+  width: 120px;
+  height: 120px;
+  perspective: 1000px;
+}
+
+.cube {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.cube__face {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  background: rgba(10, 10, 20, 0.85);
+  backdrop-filter: blur(8px);
+  box-shadow: inset 0 0 30px rgba(255, 215, 0, 0.05);
+}
+
+/* Face Transforms - 60px is half of 120px width/height */
+.cube__face--front {
+  transform: rotateY(0deg) translateZ(60px);
+}
+
+.cube__face--back {
+  transform: rotateY(180deg) translateZ(60px);
+}
+
+.cube__face--right {
+  transform: rotateY(90deg) translateZ(60px);
+}
+
+.cube__face--left {
+  transform: rotateY(-90deg) translateZ(60px);
+}
+
+.cube__face--top {
+  transform: rotateX(90deg) translateZ(60px);
+}
+
+.cube__face--bottom {
+  transform: rotateX(-90deg) translateZ(60px);
+}
+
 .dice-3d {
   width: 80px;
   height: 80px;
@@ -831,4 +885,121 @@ body {
   border: 1px solid rgba(255, 215, 0, 0.2);
   box-shadow: 0 0 20px rgba(255, 215, 0, 0.1) inset;
   background: radial-gradient(circle, transparent 50%, rgba(255, 215, 0, 0.05) 100%);
+}
+
+/* Advanced Atmospheric Utilities */
+.photon-field {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at 1px 1px, rgba(255, 215, 0, 0.1) 1px, transparent 1px);
+  background-size: 40px 40px;
+  animation: photonDrift 20s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes photonDrift {
+  from {
+    background-position: 0 0;
+  }
+
+  to {
+    background-position: 400px 400px;
+  }
+}
+
+.holo-glimmer {
+  background: linear-gradient(135deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.05) 45%,
+      rgba(255, 255, 255, 0.2) 50%,
+      rgba(255, 255, 255, 0.05) 55%,
+      transparent 100%);
+  background-size: 200% 200%;
+  animation: glimmer 3s linear infinite;
+}
+
+@keyframes glimmer {
+  0% {
+    background-position: -200% -200%;
+  }
+
+  100% {
+    background-position: 200% 200%;
+  }
+}
+
+.fresnel-edge {
+  box-shadow:
+    0 0 0 1px rgba(255, 215, 0, 0.1),
+    0 0 15px rgba(255, 215, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+.fresnel-edge:hover {
+  box-shadow:
+    0 0 0 1px rgba(255, 215, 0, 0.3),
+    0 0 30px rgba(255, 215, 0, 0.2);
+}
+
+/* Advanced HUD & Sidebar Deco */
+.data-stream {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom,
+      transparent 0%,
+      rgba(255, 215, 0, 0.03) 50%,
+      transparent 100%);
+  background-size: 100% 200%;
+  animation: dataFlow 8s linear infinite;
+  pointer-events: none;
+  opacity: 0.3;
+}
+
+@keyframes dataFlow {
+  from {
+    background-position: 0 -100%;
+  }
+
+  to {
+    background-position: 0 100%;
+  }
+}
+
+.hud-scanner {
+  position: relative;
+  overflow: hidden;
+}
+
+.hud-scanner::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: rgba(255, 215, 0, 0.5);
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  animation: scanHUD 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes scanHUD {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(100%);
+  }
+}
+
+.shimmer-panel {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
 }
