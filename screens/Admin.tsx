@@ -328,41 +328,9 @@ const Admin: React.FC = () => {
     }
   };
 
-  // Check if user is admin from database
-  const [isAdmin, setIsAdmin] = React.useState<boolean | null>(null);
-  const [isCheckingAdmin, setIsCheckingAdmin] = React.useState(true);
-
-  React.useEffect(() => {
-    const checkAdminStatus = async () => {
-      if (!context?.user?.address) {
-        setIsAdmin(false);
-        setIsCheckingAdmin(false);
-        return;
-      }
-
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('is_admin')
-          .eq('wallet_address', context.user.address.toLowerCase())
-          .single();
-
-        if (error) {
-          console.error('Error checking admin status:', error);
-          setIsAdmin(false);
-        } else {
-          setIsAdmin(data?.is_admin === true);
-        }
-      } catch (err) {
-        console.error('Error checking admin status:', err);
-        setIsAdmin(false);
-      } finally {
-        setIsCheckingAdmin(false);
-      }
-    };
-
-    checkAdminStatus();
-  }, [context?.user?.address]);
+  // Check if user is admin from context (Single Source of Truth)
+  const isAdmin = context?.user?.isAdmin === true;
+  const isCheckingAdmin = false; // Context is already loaded if we are here (protected route)
 
   // Log dashboard access when admin is confirmed
   React.useEffect(() => {
