@@ -257,26 +257,36 @@ const Blackjack: React.FC = () => {
     return (
       <div
         key={index}
-        className={`w-16 h-24 md:w-20 md:h-30 lg:w-24 lg:h-36 bg-white/5 border-2 rounded-lg md:rounded-xl backdrop-blur-md flex flex-col justify-between p-2 md:p-3 shadow-lg transition-all duration-300 ${isHidden ? 'border-red-500/40 shadow-red-500/10' : 'border-quantum-gold/40 shadow-gold-glow'
-          }`}
+        className={`card-3d relative w-14 h-20 md:w-18 md:h-26 lg:w-22 lg:h-32 rounded-lg md:rounded-xl overflow-hidden transition-all duration-500`}
         style={{
-          transform: `translateX(${index * 8}px) rotate(${index * 2}deg)`,
-          animation: `popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) ${index * 0.1}s both`
+          transform: `translateX(${index * -20}px) rotateY(${isHidden ? 180 : 0}deg)`,
+          transformStyle: 'preserve-3d',
+          animation: `popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) ${index * 0.15}s both`
         }}
       >
-        {isHidden ? (
-          <>
-            <span className="font-mono font-bold text-sm md:text-lg lg:text-xl text-red-500">?</span>
-            <span className="material-symbols-outlined text-red-500 text-xl md:text-2xl lg:text-3xl self-center">fingerprint</span>
-          </>
-        ) : (
-          <>
-            <span className={`font-mono font-bold text-sm md:text-lg lg:text-xl ${cardColors[card!.suit]}`}>{card!.rank}</span>
-            <span className={`material-symbols-outlined ${cardColors[card!.suit]} text-xl md:text-2xl lg:text-3xl self-center`}>
-              {suitIcons[card!.suit]}
-            </span>
-          </>
-        )}
+        {/* Card Front */}
+        <div className={`absolute inset-0 backface-hidden bg-gradient-to-br from-white via-gray-100 to-gray-200 border-2 rounded-lg md:rounded-xl flex flex-col justify-between p-1.5 md:p-2 shadow-lg ${isHidden ? 'invisible' : ''
+          } ${card && (card.suit === 'hearts' || card.suit === 'diamonds') ? 'border-red-400/50' : 'border-gray-400/50'}`}>
+          <span className={`font-mono font-black text-sm md:text-lg lg:text-xl ${cardColors[card?.suit || 'spades']}`}>
+            {card?.rank}
+          </span>
+          <span className={`material-symbols-outlined ${cardColors[card?.suit || 'spades']} text-2xl md:text-3xl lg:text-4xl self-center`}>
+            {suitIcons[card?.suit || 'spades']}
+          </span>
+          <span className={`font-mono font-black text-sm md:text-lg lg:text-xl self-end rotate-180 ${cardColors[card?.suit || 'spades']}`}>
+            {card?.rank}
+          </span>
+        </div>
+
+        {/* Card Back */}
+        <div className={`absolute inset-0 backface-hidden bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 border-2 border-purple-500/50 rounded-lg md:rounded-xl flex items-center justify-center ${isHidden ? '' : 'invisible'
+          }`} style={{ transform: 'rotateY(180deg)' }}>
+          <div className="w-full h-full p-2 flex items-center justify-center">
+            <div className="w-full h-full border border-quantum-gold/30 rounded flex items-center justify-center bg-gradient-to-br from-black/20 to-black/40">
+              <span className="material-symbols-outlined text-quantum-gold/50 text-3xl md:text-4xl">casino</span>
+            </div>
+          </div>
+        </div>
       </div>
     );
   };

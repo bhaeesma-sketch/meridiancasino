@@ -261,7 +261,7 @@ const Plinko: React.FC = () => {
                     return (
                       <div
                         key={pIndex}
-                        className="absolute size-2 bg-plasma-purple/30 rounded-full border border-plasma-purple/50"
+                        className="plinko-peg absolute"
                         style={{
                           left: `50%`,
                           transform: `translateX(calc(-50% + ${xPos}px))`,
@@ -282,28 +282,28 @@ const Plinko: React.FC = () => {
               return (
                 <div
                   key={ball.id}
-                  className="absolute size-4 bg-white rounded-full shadow-[0_0_15px_rgba(255,255,255,0.8)] z-30 transition-all duration-75"
+                  className="plinko-ball"
                   style={{
                     left: `${actualX}%`,
                     top: `${ball.y * 0.9}px`,
                     transform: 'translate(-50%, -50%)',
                   }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-br from-white via-plasma-purple to-quantum-gold rounded-full opacity-80"></div>
-                </div>
+                />
               );
             })}
           </div>
 
-          {/* Multipliers - Compressed */}
+          {/* Multipliers - Holographic */}
           <div className="flex gap-1 w-full justify-center mt-32 px-4">
             {multipliers.map((m, i) => (
               <div
                 key={i}
-                className={`h-8 w-8 rounded flex items-center justify-center text-[8px] font-black text-white border transition-all ${m > 10 ? 'bg-red-900/40 border-red-500/30' : m > 2 ? 'bg-orange-600/40 border-orange-500/30' : 'bg-green-600/40 border-green-500/30'
+                className={`plinko-slot h-10 w-10 rounded-lg flex items-center justify-center text-[9px] font-black text-white transition-all hover:scale-105 ${m > 10 ? 'bg-gradient-to-b from-red-600/40 to-red-900/60 border-red-500/40' :
+                    m > 2 ? 'bg-gradient-to-b from-orange-500/40 to-orange-800/60 border-orange-500/40' :
+                      'bg-gradient-to-b from-green-500/40 to-green-800/60 border-green-500/40'
                   }`}
               >
-                {m.toFixed(1)}
+                {m.toFixed(1)}x
               </div>
             ))}
           </div>

@@ -195,24 +195,52 @@ const Limbo: React.FC = () => {
 
       {/* Main Multiplier Stage */}
       <div className="flex-1 min-h-0 w-full flex flex-col items-center justify-center relative py-4">
+        {/* Quantum Orb Background */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className={`w-[250px] h-[250px] bg-gradient-radial rounded-full blur-3xl transition-all duration-700 ${isRunning ? 'from-cyan-500/10' : 'from-white/5'} to-transparent`}></div>
+          <div className={`quantum-orb w-40 h-40 md:w-56 md:h-56 transition-all duration-300 ${isRunning ? 'scale-110 opacity-100' :
+              isWin === true ? 'scale-125 opacity-100 !bg-gradient-radial from-green-500/40 !shadow-[0_0_80px_rgba(74,222,128,0.6)]' :
+                isWin === false ? 'scale-90 opacity-80 !bg-gradient-radial from-red-500/40 !shadow-[0_0_60px_rgba(248,113,113,0.5)]' :
+                  'scale-100 opacity-60'
+            }`} style={{
+              background: isWin === true
+                ? 'radial-gradient(circle at 30% 30%, #22c55e, #15803d, #052e16)'
+                : isWin === false
+                  ? 'radial-gradient(circle at 30% 30%, #ef4444, #991b1b, #450a0a)'
+                  : 'radial-gradient(circle at 30% 30%, #9333EA, #581c87, #1a1a2e)'
+            }}></div>
+        </div>
+
+        {/* Energy Rings */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className={`w-48 h-48 md:w-64 md:h-64 rounded-full border border-purple-500/20 transition-all duration-500 ${isRunning ? 'animate-spin-slow scale-110' : ''}`}></div>
+          <div className={`absolute w-56 h-56 md:w-72 md:h-72 rounded-full border border-cyan-500/10 transition-all duration-700 ${isRunning ? 'animate-spin-slow scale-105' : ''}`} style={{ animationDirection: 'reverse' }}></div>
         </div>
 
         <div className="relative z-10 text-center">
-          <div className={`text-7xl md:text-9xl lg:text-[140px] font-mono font-black leading-none transition-all duration-100 ${isWin === true ? 'text-green-400 drop-shadow-[0_0_30px_rgba(74,222,128,0.6)]' :
-            isWin === false ? 'text-red-400 drop-shadow-[0_0_30px_rgba(248,113,113,0.6)]' :
-              isRunning ? 'text-cyan-400 drop-shadow-[0_0_30px_rgba(34,211,238,0.6)]' : 'text-white/80'
-            }`}>
+          <div className={`limbo-multiplier text-6xl md:text-8xl lg:text-[120px] font-mono font-black leading-none transition-all duration-100 ${isWin === true ? 'text-green-400' :
+              isWin === false ? 'text-red-400 limbo-crashed' :
+                isRunning ? 'text-cyan-400' : 'text-white/80'
+            }`} style={{
+              textShadow: isWin === true
+                ? '0 0 60px rgba(74,222,128,0.8)'
+                : isWin === false
+                  ? '0 0 60px rgba(248,113,113,0.8)'
+                  : isRunning
+                    ? '0 0 40px rgba(34,211,238,0.6)'
+                    : 'none'
+            }}>
             {crashedAt !== null ? crashedAt.toFixed(2) : currentMultiplier.toFixed(2)}x
           </div>
 
           <div className="mt-4 flex flex-col items-center gap-1">
-            <span className="text-[10px] uppercase font-black tracking-[0.4em] text-cyan-400/60 font-heading">
-              {isRunning ? 'QUANTUM ASCENT' : isWin === true ? 'VICTORY SECURED' : isWin === false ? 'CORE CRASHED' : 'READY TO LAUNCH'}
+            <span className={`text-[10px] uppercase font-black tracking-[0.3em] font-heading ${isRunning ? 'text-cyan-400/80 animate-pulse' :
+                isWin === true ? 'text-green-400' :
+                  isWin === false ? 'text-red-400' : 'text-white/40'
+              }`}>
+              {isRunning ? '⚡ QUANTUM ASCENT ⚡' : isWin === true ? '🎉 VICTORY SECURED 🎉' : isWin === false ? '💥 CORE CRASHED 💥' : 'READY TO LAUNCH'}
             </span>
             {crashedAt !== null && (
-              <div className={`text-lg font-bold font-mono ${isWin ? 'text-green-400' : 'text-red-400'}`}>
+              <div className={`text-xl md:text-2xl font-black font-mono mt-2 ${isWin ? 'text-green-400 win-indicator' : 'text-red-400 loss-indicator'}`}>
                 {isWin ? `+$${maxPayout.toFixed(2)}` : `-$${bet.toFixed(2)}`}
               </div>
             )}

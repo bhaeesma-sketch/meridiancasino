@@ -1,6 +1,8 @@
+import React, { useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../App';
 import { supabase } from '../services/supabase';
+import { logAdminAction, AdminActions } from '../services/auditLog';
 
 interface Withdrawal {
   id: string;
@@ -102,7 +104,7 @@ const Admin: React.FC = () => {
   // Fetch data from Supabase
   useEffect(() => {
     const fetchData = async () => {
-      // Fetch users (profiles)
+      // 1. Fetch users (profiles)
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('*')
@@ -114,7 +116,7 @@ const Admin: React.FC = () => {
           username: p.username || (p.wallet_address.slice(0, 8) + '...' + p.wallet_address.slice(-4)),
           walletAddress: p.wallet_address,
           balance: Number(p.balance),
-          totalDeposited: 0, // Need transactions table for this
+          totalDeposited: 0,
           totalWithdrawn: 0,
           totalWagered: 0,
           totalWon: 0,
@@ -123,34 +125,83 @@ const Admin: React.FC = () => {
           referralCode: p.referral_code,
           referredBy: p.referred_by,
           createdAt: new Date(p.created_at),
-          lastLogin: new Date(p.joined_date)
+          lastLogin: new Date(p.joined_date || p.created_at)
         })));
       }
 
-      // Fetch game history
+      // 2. Fetch game history
       const { data: history, error: historyError } = await supabase
         .from('game_history')
         .select('*')
-        .order('timestamp', { ascending: false });
+        .order('created_at', { ascending: false });
 
-      if (history && !historyError) {
-        setTransactions(history.map(h => ({
-          id: h.id.toString(),
-          userId: h.user_id,
-          username: h.username || 'Anonymous',
-          type: h.payout > 0 ? 'win' : 'bet',
-          amount: Math.abs(Number(h.payout)),
-          token: 'USD',
-          status: 'completed',
-          timestamp: new Date(h.timestamp)
-        })));
+      // 3. Fetch transactions (deposits/withdrawals)
+      const { data: txs, error: txError } = await supabase
+        .from('transactions')
+        .select(`
+          *,
+          profiles:user_id (username, wallet_address)
+        `)
+        .order('created_at', { ascending: false });
 
-        // Calculate Game Stats
+      if (txs && !txError) {
+        // Calculate user stats from history for risk analysis
+        const userStats = new Map<string, { wagered: number; won: number }>();
+        if (history) {
+          history.forEach(h => {
+            const current = userStats.get(h.user_id) || { wagered: 0, won: 0 };
+            current.wagered += Number(h.bet_amount || 0);
+            current.won += Number(h.payout || 0);
+            userStats.set(h.user_id, current);
+          });
+        }
+
+        // Filter pending withdrawals
+        const pendingWithdrawals = txs
+          .filter(t => t.type === 'withdrawal' && t.status === 'pending')
+          .map(t => {
+            const stats = userStats.get(t.user_id) || { wagered: 0, won: 0 };
+            const profitRatio = stats.wagered > 0 ? stats.won / stats.wagered : 0;
+            const isSuspicious = profitRatio > 1.5 && stats.wagered > 100;
+
+            return {
+              id: t.id,
+              userId: t.user_id,
+              username: t.profiles?.username || t.wallet_address.slice(0, 8),
+              walletAddress: t.wallet_address,
+              amount: Number(t.amount),
+              token: 'USDT', // Default until multi-token support
+              chain: 'TRON',
+              destinationAddress: t.wallet_address,
+              status: 'pending_approval' as const,
+              riskLevel: (Number(t.amount) > 1000 || isSuspicious) ? 'high' : Number(t.amount) > 100 ? 'medium' : 'low',
+              requestedAt: new Date(t.created_at)
+            };
+          });
+
+        setWithdrawals(pendingWithdrawals as any);
+
+        // Map transactions for the table
+        const financialTxs = txs.map(t => ({
+          id: t.id,
+          userId: t.user_id,
+          username: t.profiles?.username || t.wallet_address.slice(0, 8),
+          type: t.type as 'deposit' | 'withdrawal' | 'bonus',
+          amount: Number(t.amount),
+          token: 'USDT',
+          status: t.status,
+          timestamp: new Date(t.created_at)
+        }));
+
+        setTransactions(financialTxs as any);
+
+        // 4. Calculate Stats & Cross-Check for Security
+        // Game stats
         const games = ['Dice', 'Roulette', 'Blackjack', 'Plinko', 'Limbo'];
         const statsByGame = games.map(gameName => {
-          const gameRuns = history.filter(h => h.game_name === gameName);
-          const wagered = gameRuns.length * 100; // Mocking wager as it's not in DB yet
-          const won = gameRuns.reduce((sum, h) => sum + (Number(h.payout) * 45000), 0); // Reverse mock payout
+          const gameRuns = history ? history.filter(h => h.game_name === gameName) : [];
+          const wagered = gameRuns.reduce((sum, h) => sum + Number(h.bet_amount || 0), 0);
+          const won = gameRuns.reduce((sum, h) => sum + Number(h.payout || 0), 0);
           return {
             game: gameName,
             totalPlays: gameRuns.length,
@@ -158,8 +209,8 @@ const Admin: React.FC = () => {
             totalWon: won,
             netRevenue: wagered - won,
             rtp: wagered > 0 ? won / wagered : 0,
-            averageBet: 100,
-            biggestWin: Math.max(...gameRuns.map(h => Number(h.payout) * 45000), 0)
+            averageBet: gameRuns.length > 0 ? wagered / gameRuns.length : 0,
+            biggestWin: Math.max(...gameRuns.map(h => Number(h.payout || 0)), 0)
           };
         });
         setGameStats(statsByGame);
@@ -167,54 +218,171 @@ const Admin: React.FC = () => {
         // System Stats
         const totalWagered = statsByGame.reduce((sum, g) => sum + g.totalWagered, 0);
         const totalWon = statsByGame.reduce((sum, g) => sum + g.totalWon, 0);
+
+        const deposits = txs.filter(t => t.type === 'deposit').reduce((sum, t) => sum + Number(t.amount), 0);
+        const completedWithdrawals = txs.filter(t => t.type === 'withdrawal' && t.status === 'completed').reduce((sum, t) => sum + Number(t.amount), 0);
+
         setStats({
           totalUsers: profiles?.length || 0,
-          activeUsers: users.length, // Rough estimate
-          totalDeposits: 0,
-          totalWithdrawals: 0,
-          pendingWithdrawals: 0,
-          hotWalletBalance: 0,
-          systemBalance: profiles?.reduce((sum, p) => sum + Number(p.balance), 0) || 0,
+          activeUsers: users.length,
+          totalDeposits: deposits,
+          totalWithdrawals: completedWithdrawals,
+          pendingWithdrawals: pendingWithdrawals.length,
+          hotWalletBalance: 0, // Mock for now
+          systemBalance: deposits - completedWithdrawals,
           totalWagered: totalWagered,
           totalPaidOut: totalWon,
           houseEdge: totalWagered > 0 ? ((totalWagered - totalWon) / totalWagered) * 100 : 0,
-          averageBet: 100,
+          averageBet: totalWagered > 0 && history && history.length > 0 ? totalWagered / history.length : 0,
           topGame: statsByGame.sort((a, b) => b.totalPlays - a.totalPlays)[0]?.game || 'N/A'
         });
       }
     };
 
     fetchData();
-  }, [users.length]);
+  }, [context?.user?.address]); // Refresh when user changes
 
   const handleApproveWithdrawal = async (withdrawalId: string) => {
     setIsApproving(true);
-    // TODO: API call to approve withdrawal
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setWithdrawals(prev => prev.map(w =>
-      w.id === withdrawalId ? { ...w, status: 'approved' as const } : w
-    ));
-    setIsApproving(false);
-    setSelectedWithdrawal(null);
+
+    try {
+      // 1. Log action
+      await logAdminAction(AdminActions.APPROVE_WITHDRAWAL, { withdrawalId });
+
+      // 2. Update status in DB
+      const { error } = await supabase
+        .from('transactions')
+        .update({ status: 'completed' })
+        .eq('id', withdrawalId);
+
+      if (error) throw error;
+
+      // 3. Update UI
+      setWithdrawals(prev => prev.filter(w => w.id !== withdrawalId));
+
+      // 4. Update stats state safely
+      setStats(prev => ({
+        ...prev,
+        pendingWithdrawals: Math.max(0, prev.pendingWithdrawals - 1),
+        totalWithdrawals: prev.totalWithdrawals + (withdrawals.find(w => w.id === withdrawalId)?.amount || 0)
+      }));
+
+    } catch (err) {
+      console.error('Error approving withdrawal:', err);
+      alert('Failed to approve withdrawal. Check console.');
+    } finally {
+      setIsApproving(false);
+      setSelectedWithdrawal(null);
+    }
   };
 
   const handleRejectWithdrawal = async (withdrawalId: string, reason: string) => {
-    // TODO: API call to reject withdrawal
-    setWithdrawals(prev => prev.map(w =>
-      w.id === withdrawalId ? { ...w, status: 'rejected' as const } : w
-    ));
-    setSelectedWithdrawal(null);
+    try {
+      // 1. Log action
+      await logAdminAction(AdminActions.REJECT_WITHDRAWAL, { withdrawalId, reason });
+
+      const tx = withdrawals.find(w => w.id === withdrawalId);
+      if (!tx) return;
+
+      // 2. Refund balance using secure RPC
+      const { error: refundError } = await supabase.rpc('update_user_balance', {
+        p_user_id: tx.userId,
+        p_amount: tx.amount,
+        p_balance_type: 'real'
+      });
+
+      if (refundError) throw refundError;
+
+      // 3. Mark transaction as failed in DB
+      const { error: updateError } = await supabase
+        .from('transactions')
+        .update({ status: 'failed' })
+        .eq('id', withdrawalId);
+
+      if (updateError) throw updateError;
+
+      // 4. Update UI
+      setWithdrawals(prev => prev.filter(w => w.id !== withdrawalId));
+      setStats(prev => ({
+        ...prev,
+        pendingWithdrawals: Math.max(0, prev.pendingWithdrawals - 1)
+      }));
+
+    } catch (err) {
+      console.error('Error rejecting withdrawal:', err);
+      alert('Failed to reject withdrawal. Balance might not have been refunded.');
+    } finally {
+      setSelectedWithdrawal(null);
+    }
   };
 
   const handleFreezeUser = async (userId: string) => {
-    // TODO: API call to freeze user
-    setUsers(prev => prev.map(u =>
-      u.id === userId ? { ...u, status: 'frozen' as const } : u
-    ));
+    try {
+      await logAdminAction(AdminActions.FREEZE_USER, { userId });
+      // TODO: Implement backend freeze logic
+      setUsers(prev => prev.map(u =>
+        u.id === userId ? { ...u, status: 'frozen' as const } : u
+      ));
+    } catch (err) {
+      console.error('Error freezing user:', err);
+    }
   };
 
-  // Check if user is admin (mock - replace with actual auth)
-  const isAdmin = true; // TODO: Check from context/auth
+  // Check if user is admin from database
+  const [isAdmin, setIsAdmin] = React.useState<boolean | null>(null);
+  const [isCheckingAdmin, setIsCheckingAdmin] = React.useState(true);
+
+  React.useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (!context?.user?.address) {
+        setIsAdmin(false);
+        setIsCheckingAdmin(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('wallet_address', context.user.address.toLowerCase())
+          .single();
+
+        if (error) {
+          console.error('Error checking admin status:', error);
+          setIsAdmin(false);
+        } else {
+          setIsAdmin(data?.is_admin === true);
+        }
+      } catch (err) {
+        console.error('Error checking admin status:', err);
+        setIsAdmin(false);
+      } finally {
+        setIsCheckingAdmin(false);
+      }
+    };
+
+    checkAdminStatus();
+  }, [context?.user?.address]);
+
+  // Log dashboard access when admin is confirmed
+  React.useEffect(() => {
+    if (isAdmin) {
+      logAdminAction(AdminActions.VIEW_ADMIN_DASHBOARD, {
+        timestamp: new Date().toISOString()
+      });
+    }
+  }, [isAdmin]);
+
+  if (isCheckingAdmin) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-quantum-gold mx-auto mb-4"></div>
+          <p className="text-white/70">Verifying admin access...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!isAdmin) {
     return (
@@ -277,8 +445,8 @@ const Admin: React.FC = () => {
             key={tab.id}
             onClick={() => setActiveTab(tab.id as any)}
             className={`px-4 md:px-6 py-2 md:py-3 rounded-lg font-bold text-sm md:text-base transition-all whitespace-nowrap flex items-center gap-2 ${activeTab === tab.id
-                ? 'bg-quantum-gold text-black shadow-gold-glow'
-                : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'
+              ? 'bg-quantum-gold text-black shadow-gold-glow'
+              : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'
               }`}
           >
             <span className="material-symbols-outlined text-lg">{tab.icon}</span>
@@ -456,16 +624,16 @@ const Admin: React.FC = () => {
                       <td className="py-3 px-4 text-white/70 text-right">{formatCurrency(user.totalWagered)}</td>
                       <td className="py-3 px-4 text-center">
                         <span className={`px-2 py-1 rounded text-xs font-bold ${user.status === 'active' ? 'bg-green-500/20 text-green-400' :
-                            user.status === 'suspended' ? 'bg-yellow-500/20 text-yellow-400' :
-                              'bg-red-500/20 text-red-400'
+                          user.status === 'suspended' ? 'bg-yellow-500/20 text-yellow-400' :
+                            'bg-red-500/20 text-red-400'
                           }`}>
                           {user.status}
                         </span>
                       </td>
                       <td className="py-3 px-4 text-center">
                         <span className={`px-2 py-1 rounded text-xs font-bold ${user.kycStatus === 'level2' ? 'bg-green-500/20 text-green-400' :
-                            user.kycStatus === 'level1' ? 'bg-blue-500/20 text-blue-400' :
-                              'bg-gray-500/20 text-gray-400'
+                          user.kycStatus === 'level1' ? 'bg-blue-500/20 text-blue-400' :
+                            'bg-gray-500/20 text-gray-400'
                           }`}>
                           {user.kycStatus}
                         </span>
@@ -534,10 +702,10 @@ const Admin: React.FC = () => {
                       <td className="py-3 px-4 text-white font-bold">{tx.username}</td>
                       <td className="py-3 px-4">
                         <span className={`px-2 py-1 rounded text-xs font-bold ${tx.type === 'deposit' ? 'bg-green-500/20 text-green-400' :
-                            tx.type === 'withdrawal' ? 'bg-red-500/20 text-red-400' :
-                              tx.type === 'bet' ? 'bg-blue-500/20 text-blue-400' :
-                                tx.type === 'win' ? 'bg-yellow-500/20 text-yellow-400' :
-                                  'bg-purple-500/20 text-purple-400'
+                          tx.type === 'withdrawal' ? 'bg-red-500/20 text-red-400' :
+                            tx.type === 'bet' ? 'bg-blue-500/20 text-blue-400' :
+                              tx.type === 'win' ? 'bg-yellow-500/20 text-yellow-400' :
+                                'bg-purple-500/20 text-purple-400'
                           }`}>
                           {tx.type}
                         </span>
@@ -596,18 +764,18 @@ const Admin: React.FC = () => {
                       <td className="py-3 px-4 text-white/70 uppercase">{w.chain}</td>
                       <td className="py-3 px-4">
                         <span className={`px-2 py-1 rounded text-xs font-bold ${w.status === 'pending_approval' ? 'bg-orange-500/20 text-orange-400' :
-                            w.status === 'pending_auto' ? 'bg-blue-500/20 text-blue-400' :
-                              w.status === 'approved' ? 'bg-green-500/20 text-green-400' :
-                                w.status === 'rejected' ? 'bg-red-500/20 text-red-400' :
-                                  'bg-gray-500/20 text-gray-400'
+                          w.status === 'pending_auto' ? 'bg-blue-500/20 text-blue-400' :
+                            w.status === 'approved' ? 'bg-green-500/20 text-green-400' :
+                              w.status === 'rejected' ? 'bg-red-500/20 text-red-400' :
+                                'bg-gray-500/20 text-gray-400'
                           }`}>
                           {w.status.replace('_', ' ')}
                         </span>
                       </td>
                       <td className="py-3 px-4">
                         <span className={`px-2 py-1 rounded text-xs font-bold ${w.riskLevel === 'high' ? 'bg-red-500/20 text-red-400' :
-                            w.riskLevel === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
-                              'bg-green-500/20 text-green-400'
+                          w.riskLevel === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                            'bg-green-500/20 text-green-400'
                           }`}>
                           {w.riskLevel}
                         </span>

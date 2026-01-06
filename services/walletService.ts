@@ -10,20 +10,26 @@ export interface WalletInfo {
 
 // Detect available wallet providers
 export const detectWallet = (): WalletType => {
-  if (typeof window === 'undefined') return null;
-  
+  const wallets = getAvailableWallets();
+  return wallets.length > 0 ? wallets[0] : null;
+};
+
+// Get all available wallets
+export const getAvailableWallets = (): WalletType[] => {
+  if (typeof window === 'undefined') return [];
+  const wallets: WalletType[] = [];
+
   // Check for MetaMask (Ethereum)
   if (window.ethereum && window.ethereum.isMetaMask) {
-    return 'metamask';
+    wallets.push('metamask');
   }
-  
+
   // Check for TronLink (TRON)
   if (window.tronWeb || (window as any).tronLink) {
-    return 'tronlink';
+    wallets.push('tronlink');
   }
-  
-  // WalletConnect would be handled differently (requires initialization)
-  return null;
+
+  return wallets;
 };
 
 // Request wallet connection
@@ -35,10 +41,10 @@ export const connectWallet = async (walletType: WalletType): Promise<WalletInfo 
   try {
     if (walletType === 'metamask') {
       // Request account access
-      const accounts = await window.ethereum.request({ 
-        method: 'eth_requestAccounts' 
+      const accounts = await window.ethereum.request({
+        method: 'eth_requestAccounts'
       });
-      
+
       if (accounts && accounts.length > 0) {
         return {
           address: accounts[0],
@@ -66,7 +72,7 @@ export const connectWallet = async (walletType: WalletType): Promise<WalletInfo 
         }
       }
     }
-    
+
     return null;
   } catch (error) {
     console.error('Wallet connection error:', error);
@@ -98,7 +104,7 @@ export const signMessage = async (
         return signature;
       }
     }
-    
+
     return null;
   } catch (error) {
     console.error('Signature error:', error);

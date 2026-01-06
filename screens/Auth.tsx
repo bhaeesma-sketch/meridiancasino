@@ -1,7 +1,8 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AppContext } from '../App';
-import { detectWallet, connectWallet, WalletType, WalletInfo } from '../services/walletService';
+import { detectWallet, connectWallet, getAvailableWallets, WalletType, WalletInfo } from '../services/walletService';
+import { WalletImportModal } from '../components/WalletImportModal';
 import { generateReferralCode, validateReferralCode, NEW_USER_BONUS } from '../services/referralService';
 import { supabase, isSupabaseConfigured } from '../services/supabase';
 
@@ -10,6 +11,9 @@ const Auth: React.FC = () => {
   const context = useContext(AppContext);
   const [searchParams] = useSearchParams();
   const [availableWallet, setAvailableWallet] = useState<WalletType>(null);
+  const [detectedWallets, setDetectedWallets] = useState<WalletType[]>([]);
+  const [showWalletSelection, setShowWalletSelection] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [referralCode, setReferralCode] = useState<string>('');
@@ -24,11 +28,12 @@ const Auth: React.FC = () => {
     }
   }, [searchParams]);
 
-  // Detect available wallet on mount
+  // Detect available wallets on mount
   useEffect(() => {
     const checkWallet = () => {
-      const wallet = detectWallet();
-      setAvailableWallet(wallet);
+      const wallets = getAvailableWallets();
+      setDetectedWallets(wallets);
+      setAvailableWallet(wallets.length > 0 ? wallets[0] : null);
     };
 
     checkWallet();
@@ -38,22 +43,36 @@ const Auth: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleConnect = async () => {
+  const handleConnect = async (preferredWallet?: WalletType) => {
     if (!context) return;
+
+    // If no specific wallet passed, check if we need to select
+    if (!preferredWallet) {
+      if (detectedWallets.length > 1) {
+        setShowWalletSelection(true);
+        return;
+      }
+      if (detectedWallets.length === 1) {
+        preferredWallet = detectedWallets[0];
+      }
+    }
 
     setIsConnecting(true);
     setError(null);
+    setShowWalletSelection(false);
 
     try {
       // If no wallet detected, show error
-      if (!availableWallet) {
+      if (!preferredWallet && !availableWallet) {
         setError('No wallet detected. Please install MetaMask or TronLink.');
         setIsConnecting(false);
         return;
       }
 
+      const walletToConnect = preferredWallet || availableWallet;
+
       // Connect to wallet
-      const walletInfo = await connectWallet(availableWallet);
+      const walletInfo = await connectWallet(walletToConnect);
 
       if (!walletInfo || !walletInfo.address) {
         setError('Failed to connect wallet. Please try again.');
@@ -93,29 +112,37 @@ const Auth: React.FC = () => {
         }
 
         // Generate referral code for new user
-        const newUserRefCode = generateReferralCode(walletInfo.address.slice(0, 8));
+        // Generate referral code for new user
+        const safeAddress = String(walletInfo.address || '');
+        if (!safeAddress) {
+          throw new Error("Wallet address is invalid/empty");
+        }
+
+        const newUserRefCode = generateReferralCode(safeAddress.slice(0, 8));
 
         // Bonus amount: $25 if referred, $10 otherwise
         const bonusAmount = referredBy ? NEW_USER_BONUS.withReferral : NEW_USER_BONUS.withoutReferral;
 
+        const profileData = {
+          wallet_address: safeAddress,
+          username: `User_${safeAddress.slice(-4)}`,
+          referral_code: newUserRefCode,
+          referred_by: referredBy,
+          balance: bonusAmount,
+          is_new_user: true,
+          bonus_claimed: true
+        };
+
         // Create new profile in Supabase
         const { data: newProfile, error: insertError } = await supabase
           .from('profiles')
-          .insert({
-            wallet_address: walletInfo.address,
-            username: `User_${walletInfo.address.slice(-4)}`,
-            referral_code: newUserRefCode,
-            referred_by: referredBy,
-            balance: bonusAmount, // Set initial bonus balance
-            is_new_user: true,
-            bonus_claimed: true, // Auto-claim on first connect for simplicity in this flow
-          })
+          .insert([profileData])
           .select()
           .single();
 
         if (insertError) {
           console.error('Error creating profile:', insertError);
-          setError('Failed to create user profile. Please try again.');
+          setError(`Failed to create user profile: ${insertError.message} (${insertError.details || ''})`);
           setIsConnecting(false);
           return;
         }
@@ -149,7 +176,7 @@ const Auth: React.FC = () => {
 
     } catch (err: any) {
       console.error('Wallet connection error:', err);
-      setError(err.message || 'Failed to connect wallet. Please try again.');
+      setError(`Connection failed: ${err.message || JSON.stringify(err)}`);
       setIsConnecting(false);
     }
   };
@@ -310,7 +337,7 @@ const Auth: React.FC = () => {
           {/* Action Buttons */}
           <div className="w-full flex flex-col gap-3">
             <button
-              onClick={handleConnect}
+              onClick={() => handleConnect()}
               disabled={!availableWallet || isConnecting}
               className="group relative w-full h-16 bg-gradient-to-r from-yellow-400 via-quantum-gold to-yellow-600 rounded-2xl flex items-center justify-center gap-3 text-black font-black text-lg uppercase shadow-gold-glow hover:shadow-[0_0_40px_rgba(255,215,0,0.5)] active:scale-95 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -326,6 +353,15 @@ const Auth: React.FC = () => {
                 </>
               )}
               <div className="absolute inset-0 rounded-2xl bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            </button>
+
+            {/* Import Wallet Button */}
+            <button
+              onClick={() => setShowImportModal(true)}
+              className="w-full py-4 bg-white/5 border-2 border-white/10 rounded-xl text-white font-bold uppercase hover:bg-white/10 hover:border-quantum-gold/30 transition-all flex items-center justify-center gap-2"
+            >
+              <span className="material-symbols-outlined">vpn_key</span>
+              <span>Import Wallet</span>
             </button>
 
           </div>
@@ -405,6 +441,128 @@ const Auth: React.FC = () => {
           <div className="h-px w-8 bg-white/20"></div>
         </div>
       </div>
+
+      {/* Wallet Selection Modal */}
+      {showWalletSelection && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="relative w-full max-w-sm bg-space-black border border-quantum-gold/30 rounded-2xl shadow-gold-glow overflow-hidden">
+            <div className="p-6">
+              <h3 className="text-xl font-heading font-bold text-white mb-6 text-center uppercase tracking-wider">
+                Select Wallet
+              </h3>
+
+              <div className="space-y-3">
+                {/* MetaMask Option */}
+                {detectedWallets.includes('metamask') && (
+                  <button
+                    onClick={() => handleConnect('metamask')}
+                    className="w-full flex items-center gap-4 p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-quantum-gold/50 transition-all group"
+                  >
+                    <div className="size-10 rounded-full bg-[#F6851B]/10 flex items-center justify-center border border-[#F6851B]/20 group-hover:bg-[#F6851B]/20 transition-colors">
+                      <span className="material-symbols-outlined text-[#F6851B] text-2xl">account_balance_wallet</span>
+                    </div>
+                    <div className="text-left flex-1">
+                      <div className="font-bold text-white text-lg">MetaMask</div>
+                      <div className="text-xs text-white/50">Ethereum / BNB Chain</div>
+                    </div>
+                    <span className="material-symbols-outlined text-white/20 group-hover:text-quantum-gold transition-colors">arrow_forward_ios</span>
+                  </button>
+                )}
+
+                {/* TronLink Option */}
+                {detectedWallets.includes('tronlink') && (
+                  <button
+                    onClick={() => handleConnect('tronlink')}
+                    className="w-full flex items-center gap-4 p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-quantum-gold/50 transition-all group"
+                  >
+                    <div className="size-10 rounded-full bg-[#EB0029]/10 flex items-center justify-center border border-[#EB0029]/20 group-hover:bg-[#EB0029]/20 transition-colors">
+                      <span className="material-symbols-outlined text-[#EB0029] text-2xl">bolt</span>
+                    </div>
+                    <div className="text-left flex-1">
+                      <div className="font-bold text-white text-lg">TronLink</div>
+                      <div className="text-xs text-white/50">TRON Network</div>
+                    </div>
+                    <span className="material-symbols-outlined text-white/20 group-hover:text-quantum-gold transition-colors">arrow_forward_ios</span>
+                  </button>
+                )}
+              </div>
+
+              <button
+                onClick={() => setShowWalletSelection(false)}
+                className="mt-6 w-full py-3 text-xs text-white/40 hover:text-white transition-colors uppercase tracking-widest font-bold border-t border-white/5"
+              >
+                Cancel Selection
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Wallet Import Modal */}
+      <WalletImportModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onSuccess={async (address) => {
+          // Handle imported wallet
+          if (!context) return;
+
+          setIsConnecting(true);
+          setShowImportModal(false);
+
+          try {
+            // Check if user exists
+            const { data: existingProfile } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('wallet_address', address.toLowerCase())
+              .single();
+
+            let userProfile = existingProfile;
+
+            if (!userProfile) {
+              // Create new profile
+              const bonusAmount = referralCode ? NEW_USER_BONUS.withReferral : NEW_USER_BONUS.withoutReferral;
+              const newProfile = {
+                id: crypto.randomUUID(),
+                wallet_address: address.toLowerCase(),
+                username: `User_${address.slice(0, 6)}`,
+                referral_code: generateReferralCode(`User_${address.slice(0, 6)}`),
+                referred_by: referralCode || null,
+                balance: bonusAmount,
+                is_new_user: true,
+                bonus_claimed: false
+              };
+
+              const { data, error } = await supabase
+                .from('profiles')
+                .insert([newProfile])
+                .select()
+                .single();
+
+              if (error) throw error;
+              userProfile = data;
+            }
+
+            // Set user in context
+            context.setUser({
+              address: address,
+              balance: Number(userProfile.balance),
+              referralCode: userProfile.referral_code,
+              referredBy: userProfile.referred_by || undefined,
+              isNewUser: userProfile.is_new_user,
+              newUserBonusClaimed: userProfile.bonus_claimed,
+              joinedDate: new Date(userProfile.joined_date).getTime()
+            });
+
+            context.setIsConnected(true);
+            navigate('/lobby');
+          } catch (err: any) {
+            setError(err.message || 'Failed to import wallet');
+          } finally {
+            setIsConnecting(false);
+          }
+        }}
+      />
     </div>
   );
 };
