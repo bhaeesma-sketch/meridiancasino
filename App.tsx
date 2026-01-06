@@ -126,7 +126,8 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               activeReferrals: (profile as any).active_referrals || 0,
               isNewUser: profile.is_new_user,
               newUserBonusClaimed: profile.bonus_claimed,
-              joinedDate: new Date(profile.joined_date).getTime()
+              joinedDate: new Date(profile.joined_date).getTime(),
+              isAdmin: profile.is_admin
             });
           }
         }
