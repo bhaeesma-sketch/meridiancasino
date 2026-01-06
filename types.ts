@@ -17,6 +17,7 @@ export interface User {
   newUserBonusClaimed?: boolean;
   joinedDate?: number;
   isAdmin?: boolean;
+  address?: string;
 }
 
 export interface ReferralStats {

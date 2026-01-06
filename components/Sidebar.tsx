@@ -23,6 +23,8 @@ export const LeftSidebar: React.FC = () => {
         { name: 'Limbo', path: 'limbo', icon: 'trending_up' },
     ];
 
+    const is3D = context.is3DMode;
+
     return (
         <aside className="hidden lg:flex w-20 xl:w-64 flex-col h-full transition-all">
             <div className="bg-glass-panel border border-white/10 rounded-2xl xl:rounded-3xl p-2 xl:p-5 flex flex-col h-full shadow-2xl relative overflow-hidden group">
@@ -83,8 +85,26 @@ export const LeftSidebar: React.FC = () => {
                     </button>
                 </div>
 
-                {/* Settings Button */}
-                <div className="pt-4 border-t border-white/5 relative z-10">
+                {/* 3D / 2D Toggle */}
+                <div className="pt-4 border-t border-white/5 relative z-10 flex flex-col gap-2">
+                    <div className="flex items-center justify-between px-3 text-[10px] font-bold text-white/30 uppercase tracking-widest">
+                        <span>Mode</span>
+                        <span className={is3D ? 'text-quantum-gold' : 'text-blue-400'}>{is3D ? '3D' : '2D'}</span>
+                    </div>
+                    <button
+                        onClick={() => {
+                            sounds.playClick();
+                            context.setIs3DMode(!is3D);
+                        }}
+                        className={`w-full flex items-center justify-center p-2 rounded-lg border transition-all ${is3D
+                            ? 'bg-quantum-gold/10 border-quantum-gold/30 text-quantum-gold'
+                            : 'bg-blue-400/10 border-blue-400/30 text-blue-400'}`}
+                    >
+                        <span className="material-symbols-outlined text-lg">
+                            {is3D ? '3d_rotation' : 'view_quilt'}
+                        </span>
+                    </button>
+
                     <button
                         onClick={() => {
                             sounds.playClick();
@@ -128,7 +148,7 @@ export const RightSidebar: React.FC = () => {
                                     <div className="flex justify-between items-baseline">
                                         <span className="text-[10px] md:text-[11px] font-bold text-white truncate group-hover/item:text-quantum-gold transition-colors">{item.username}</span>
                                         <span className="text-[8px] md:text-[9px] font-mono font-bold text-green-400 group-hover/item:drop-shadow-[0_0_5px_rgba(74,222,128,0.5)] transition-all">
-                                            +{item.payout.toFixed(3)} BTC
+                                            +${(item.payout * 45000).toFixed(2)} USD
                                         </span>
                                     </div>
                                     <div className="text-[8px] md:text-[9px] text-white/50 uppercase mt-0.5 flex items-center gap-1">

@@ -218,33 +218,48 @@ const Dice: React.FC = () => {
           <div className="absolute bottom-0 w-[600px] h-[600px] bg-mesh opacity-20 transform rotateX(60deg) translateY(300px)"></div>
         </div>
 
-        <div className="scene transform-gpu relative z-10 scale-[0.8] md:scale-[1] lg:scale-125">
-          <div
-            className="cube"
-            style={{
-              transform: `rotateX(${cubeRotation.x}deg) rotateY(${cubeRotation.y}deg) rotateZ(${cubeRotation.z}deg)`,
-              willChange: isRolling ? 'transform' : 'auto'
-            }}
-          >
-            {[1, 6, 3, 4, 5, 2].map((num, i) => (
-              <div
-                key={i}
-                className={`cube__face cube__face--${['front', 'back', 'right', 'left', 'top', 'bottom'][i]} rounded-xl overflow-hidden`}
-              >
-                <div className="absolute inset-0 bg-mesh opacity-30"></div>
-                <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent"></div>
+        {context?.is3DMode ? (
+          <div className="scene transform-gpu relative z-10 scale-[0.8] md:scale-[1] lg:scale-125">
+            <div
+              className="cube"
+              style={{
+                transform: `rotateX(${cubeRotation.x}deg) rotateY(${cubeRotation.y}deg) rotateZ(${cubeRotation.z}deg)`,
+                willChange: isRolling ? 'transform' : 'auto'
+              }}
+            >
+              {[1, 6, 3, 4, 5, 2].map((num, i) => (
+                <div
+                  key={i}
+                  className={`cube__face cube__face--${['front', 'back', 'right', 'left', 'top', 'bottom'][i]} rounded-xl overflow-hidden`}
+                >
+                  <div className="absolute inset-0 bg-mesh opacity-30"></div>
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent"></div>
 
-                <span className="relative text-7xl font-black font-heading text-transparent bg-clip-text bg-gradient-to-br from-white via-quantum-gold to-white drop-shadow-[0_0_20px_rgba(255,215,0,0.5)] animate-shimmer-text">
-                  {num}
-                </span>
+                  <span className="relative text-7xl font-black font-heading text-transparent bg-clip-text bg-gradient-to-br from-white via-quantum-gold to-white drop-shadow-[0_0_20px_rgba(255,215,0,0.5)] animate-shimmer-text">
+                    {num}
+                  </span>
 
-                {/* Corner Accents */}
-                <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-quantum-gold/40"></div>
-                <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-quantum-gold/40"></div>
-              </div>
-            ))}
+                  {/* Corner Accents */}
+                  <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-quantum-gold/40"></div>
+                  <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-quantum-gold/40"></div>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        ) : (
+          /* 2D Mode Visual */
+          <div className="relative z-10 flex flex-col items-center">
+            <div className={`w-32 h-32 md:w-48 md:h-48 rounded-3xl bg-black/60 backdrop-blur-3xl border-2 border-quantum-gold/40 flex items-center justify-center relative overflow-hidden shadow-gold-glow-sm ${isRolling ? 'animate-bounce' : 'animate-float'}`}>
+              <div className="data-stream opacity-10"></div>
+              <span className="text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-br from-white via-quantum-gold to-white drop-shadow-[0_0_20px_rgba(255,215,0,0.5)]">
+                {displayRoll !== null ? Math.round(displayRoll % 6) + 1 : lastRoll ? Math.round(lastRoll % 6) + 1 : '?'}
+              </span>
+              <div className="absolute top-4 left-4 w-4 h-4 border-t-2 border-l-2 border-quantum-gold/40"></div>
+              <div className="absolute bottom-4 right-4 w-4 h-4 border-b-2 border-r-2 border-quantum-gold/40"></div>
+            </div>
+            <p className="mt-4 text-[10px] uppercase tracking-[0.3em] text-quantum-gold/60 font-mono">2D HUD Mode Active</p>
+          </div>
+        )}
 
         {/* Floating Hud Result - Digital Glitch Style */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none">

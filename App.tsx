@@ -35,6 +35,8 @@ interface AppContextType {
   setIsConnected: (val: boolean) => void;
   isSettingsOpen: boolean;
   setIsSettingsOpen: (val: boolean) => void;
+  is3DMode: boolean;
+  setIs3DMode: (val: boolean) => void;
 }
 
 export const AppContext = createContext<AppContextType | null>(null);
@@ -261,6 +263,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const [activeMode, setActiveMode] = useState<GameMode>('Lobby');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [is3DMode, setIs3DMode] = useState(true);
 
   const addHistory = async (item: GameHistoryItem) => {
     setHistory(prev => [item, ...prev].slice(0, 20));
@@ -295,7 +298,8 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       history, addHistory,
       activeMode,
       isConnected, setIsConnected,
-      isSettingsOpen, setIsSettingsOpen
+      isSettingsOpen, setIsSettingsOpen,
+      is3DMode, setIs3DMode
     }}>
       {children}
     </AppContext.Provider>
@@ -352,7 +356,7 @@ const GlobalTicker = () => {
               {item.multiplier > 10 ? 'HUGE WIN:' : 'RECENT:'}
             </span>
             <span className="text-xs text-white font-bold">{item.username}</span>
-            <span className="text-xs font-mono font-bold text-green-400">+{item.payout.toFixed(3)} BTC</span>
+            <span className="text-xs font-mono font-bold text-green-400">+${(item.payout * 45000).toFixed(2)} USD</span>
             <span className="text-[10px] text-white/30">via {item.game}</span>
           </div>
         ))}
