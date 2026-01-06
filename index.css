@@ -448,6 +448,7 @@ body {
 .limbo-crashed {
   background: linear-gradient(135deg, #e53e3e, #c53030);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: crashShake 0.5s ease-in-out;
 }
