@@ -37,6 +37,7 @@ interface AppContextType {
   setIsSettingsOpen: (val: boolean) => void;
   is3DMode: boolean;
   setIs3DMode: (val: boolean) => void;
+  isSyncing: boolean;
 }
 
 export const AppContext = createContext<AppContextType | null>(null);
@@ -264,6 +265,16 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [activeMode, setActiveMode] = useState<GameMode>('Lobby');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [is3DMode, setIs3DMode] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  // Handle Mode Toggle with Glitch Effect
+  const toggleMode = (val: boolean) => {
+    setIsSyncing(true);
+    setTimeout(() => {
+      setIs3DMode(val);
+      setTimeout(() => setIsSyncing(false), 400);
+    }, 400);
+  };
 
   const addHistory = async (item: GameHistoryItem) => {
     setHistory(prev => [item, ...prev].slice(0, 20));
@@ -299,7 +310,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       activeMode,
       isConnected, setIsConnected,
       isSettingsOpen, setIsSettingsOpen,
-      is3DMode, setIs3DMode
+      is3DMode, setIs3DMode: toggleMode
     }}>
       {children}
     </AppContext.Provider>
@@ -371,16 +382,23 @@ const AppContent = () => {
 
   return (
     <div className="h-screen flex flex-col bg-space-black text-white font-display overflow-hidden relative selection:bg-quantum-gold selection:text-black">
+      <div className={`sync-overlay ${context.isSyncing ? 'sync-active' : ''}`}>
+        <div className="sync-text">SYNCHRONIZING QUANTUM GEOMETRY...</div>
+        <div className="w-48 h-1 bg-quantum-gold/20 mt-4 relative overflow-hidden">
+          <div className="absolute inset-0 bg-quantum-gold animate-scanline"></div>
+        </div>
+      </div>
+
       <div className="fixed inset-0 z-[-1] full-bleed-background transform scale-105 opacity-30"></div>
       <Navbar />
       <SettingsModal />
 
       <div className="flex-grow flex items-stretch px-4 md:px-6 lg:px-10 pt-20 pb-12 overflow-hidden gap-4 lg:gap-8 h-[calc(100vh-theme(spacing.20)-theme(spacing.10))]">
-        {/* Unified Navigation (Left) */}
+        {/* Dynamic Navigation (Left) */}
         <LeftSidebar />
 
         {/* Dynamic Game/Content Stage (Center) */}
-        <main className="flex-1 flex flex-col overflow-hidden relative bg-black/20 rounded-[2rem] border border-white/5 backdrop-blur-sm">
+        <main className={`flex-1 flex flex-col overflow-hidden relative bg-black/20 rounded-[2rem] border border-white/5 backdrop-blur-sm stage-container ${context.is3DMode ? 'stage-3d' : ''}`}>
           <Routes>
             <Route path="/" element={<Auth />} />
             <Route path="/lobby" element={<ProtectedRoute><Lobby /></ProtectedRoute>} />

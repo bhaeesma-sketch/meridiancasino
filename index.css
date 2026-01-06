@@ -907,6 +907,24 @@ body {
   }
 }
 
+.is-3d .photon-field {
+  animation: warDrive 2s linear infinite;
+  background-size: 80px 80px;
+  background-image: radial-gradient(circle at 1px 1px, rgba(255, 215, 0, 0.3) 1px, transparent 1px);
+}
+
+@keyframes warDrive {
+  from {
+    transform: translateZ(0) scale(1);
+    opacity: 0.3;
+  }
+
+  to {
+    transform: translateZ(1000px) scale(2);
+    opacity: 0;
+  }
+}
+
 .holo-glimmer {
   background: linear-gradient(135deg,
       transparent 0%,
@@ -1002,4 +1020,82 @@ body {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
   border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
+}
+
+/* Extreme Premium Global Stage */
+.stage-container {
+  transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), perspective 0.8s ease;
+  perspective: 2000px;
+}
+
+.stage-3d {
+  transform: rotateX(2deg) rotateY(-1deg) scale(0.98);
+  perspective: 1200px;
+  box-shadow:
+    0 50px 100px -20px rgba(0, 0, 0, 0.5),
+    0 0 40px rgba(255, 215, 0, 0.05);
+}
+
+/* Syncing Glitch Overlay */
+.sync-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(20px);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.sync-active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.sync-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  color: #FFD700;
+  text-transform: uppercase;
+  letter-spacing: 0.5em;
+  animation: syncPulse 0.1s infinite steps(2);
+}
+
+@keyframes syncPulse {
+  0% {
+    opacity: 1;
+    transform: skewX(0);
+  }
+
+  50% {
+    opacity: 0.8;
+    transform: skewX(10deg);
+  }
+
+  100% {
+    opacity: 0.9;
+    transform: skewX(-5deg);
+  }
+}
+
+/* Interactive Card Tilt */
+.premium-card {
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+  transform-style: preserve-3d;
+}
+
+.premium-card:hover {
+  transform: translateY(-10px) rotateX(5deg) rotateY(2deg);
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.4),
+    0 0 30px rgba(255, 215, 0, 0.15);
+}
+
+.premium-card .card-content {
+  transform: translateZ(20px);
 }

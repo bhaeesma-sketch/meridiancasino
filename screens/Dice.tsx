@@ -153,12 +153,12 @@ const Dice: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col items-center justify-between p-4 md:p-6 w-full overflow-hidden relative">
+    <div className={`flex-1 min-h-0 flex flex-col items-center justify-between p-4 md:p-6 w-full overflow-hidden relative transition-all duration-700 ${context.is3DMode ? 'is-3d' : ''}`}>
       <div className="scanline-overlay"></div>
       <div className="photon-field"></div>
 
       {/* Bet Terminal Header - Compact */}
-      <div className="w-full flex flex-col gap-2 z-20">
+      <div className={`w-full flex flex-col gap-2 z-20 transition-transform duration-700 ${context.is3DMode ? 'translate-y-[-10px] scale-[0.98]' : ''}`}>
         <div className="flex items-center justify-between">
           <h3 className="text-quantum-gold font-heading font-black text-sm uppercase tracking-widest italic">3D Cubix Pro</h3>
           <div className="flex items-center gap-2">
@@ -281,7 +281,7 @@ const Dice: React.FC = () => {
       </div>
 
       {/* Tactical Probability Slider - Compact */}
-      <div className="w-full flex flex-col items-center gap-3 pb-2 z-20">
+      <div className={`w-full flex flex-col items-center gap-3 pb-2 z-20 transition-transform duration-700 ${context.is3DMode ? 'translate-y-[10px] scale-[0.98]' : ''}`}>
         <div className="w-full relative px-4 max-w-2xl mx-auto">
           <div className="h-2 bg-black/60 rounded-full relative border border-white/10 overflow-hidden">
             <div className="absolute h-full left-0 bg-red-500/30 border-r border-red-500/50" style={{ width: `${target}%` }} />
