@@ -27,7 +27,7 @@ const TermsOfService: React.FC = () => {
                 <section className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
                     <h2 className="text-2xl font-heading font-black text-quantum-gold mb-4">1. Acceptance of Terms</h2>
                     <p className="mb-4">
-                        Welcome to Casino Clash: Quantum Legacy. By accessing or using our platform, you agree to be bound by these Terms of Service and all applicable laws and regulations. If you do not agree with any of these terms, you are prohibited from using or accessing this site.
+                        Welcome to Meridian Casino Clash: Quantum Legacy. By accessing or using our platform, you agree to be bound by these Terms of Service and all applicable laws and regulations. If you do not agree with any of these terms, you are prohibited from using or accessing this site.
                     </p>
                 </section>
 
@@ -37,10 +37,10 @@ const TermsOfService: React.FC = () => {
                         <strong className="text-white">2.1 Registration:</strong> You must connect a valid cryptocurrency wallet (MetaMask or TronLink) to access real-money gaming features.
                     </p>
                     <p className="mb-4">
-                        <strong className="text-white">2.2 Age Requirement:</strong> You must be at least 18 years old (or the legal gambling age in your jurisdiction) to use Casino Clash.
+                        <strong className="text-white">2.2 Age Requirement:</strong> You must be at least 18 years old (or the legal gambling age in your jurisdiction) to use Meridian Casino Clash.
                     </p>
                     <p className="mb-4">
-                        <strong className="text-white">2.3 Account Security:</strong> You are responsible for maintaining the confidentiality of your wallet and private keys. Casino Clash will never ask for your private keys.
+                        <strong className="text-white">2.3 Account Security:</strong> You are responsible for maintaining the confidentiality of your wallet and private keys. Meridian Casino Clash will never ask for your private keys.
                     </p>
                     <p>
                         <strong className="text-white">2.4 One Account:</strong> Each user is permitted only one account. Multiple accounts may result in suspension of all accounts.
@@ -79,7 +79,7 @@ const TermsOfService: React.FC = () => {
                 <section className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
                     <h2 className="text-2xl font-heading font-black text-quantum-gold mb-4">5. Deposits and Withdrawals</h2>
                     <p className="mb-4">
-                        <strong className="text-white">5.1 Cryptocurrency Only:</strong> Casino Clash accepts deposits in USDT (TRC20), TRX, and BTC.
+                        <strong className="text-white">5.1 Cryptocurrency Only:</strong> Meridian Casino Clash accepts deposits in USDT (TRC20), TRX, and BTC.
                     </p>
                     <p className="mb-4">
                         <strong className="text-white">5.2 Minimum Amounts:</strong> Minimum deposit is $10 USDT equivalent. Minimum withdrawal is $20 USDT equivalent.
@@ -95,7 +95,7 @@ const TermsOfService: React.FC = () => {
                 <section className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
                     <h2 className="text-2xl font-heading font-black text-quantum-gold mb-4">6. Responsible Gaming</h2>
                     <p className="mb-4">
-                        Casino Clash is committed to responsible gaming. We provide tools for self-exclusion, deposit limits, and access to problem gambling resources.
+                        Meridian Casino Clash is committed to responsible gaming. We provide tools for self-exclusion, deposit limits, and access to problem gambling resources.
                     </p>
                     <p>
                         If you feel you have a gambling problem, please visit our <span className="text-quantum-gold cursor-pointer hover:underline" onClick={() => navigate('/responsible-gaming')}>Responsible Gaming</span> page.
@@ -105,7 +105,7 @@ const TermsOfService: React.FC = () => {
                 <section className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
                     <h2 className="text-2xl font-heading font-black text-quantum-gold mb-4">7. Limitation of Liability</h2>
                     <p className="mb-4">
-                        Casino Clash shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use or inability to use the service.
+                        Meridian Casino Clash shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use or inability to use the service.
                     </p>
                     <p>
                         <strong className="text-white">7.1 Maximum Liability:</strong> Our total liability shall not exceed the amount you deposited in the last 90 days.
@@ -131,7 +131,7 @@ const TermsOfService: React.FC = () => {
                 </section>
 
                 <div className="text-center py-8 text-white/40 text-sm">
-                    <p>© 2026 Casino Clash: Quantum Legacy. All rights reserved.</p>
+                    <p>© 2026 Meridian Casino Clash: Quantum Legacy. All rights reserved.</p>
                 </div>
             </div>
         </div>

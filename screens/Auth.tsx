@@ -248,8 +248,8 @@ const Auth: React.FC = () => {
         <div className="w-full bg-black/60 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] shadow-[0_30px_100px_rgba(0,0,0,0.8)] p-10 flex flex-col items-center text-center">
 
           {/* Logo Icon Box */}
-          <div className="w-16 h-16 mb-8 flex items-center justify-center rounded-2xl bg-black/40 border border-quantum-gold/40 shadow-gold-glow-sm">
-            <span className="material-symbols-outlined text-quantum-gold text-4xl font-bold">casino</span>
+          <div className="w-20 h-20 mb-8 flex items-center justify-center rounded-2xl bg-gradient-to-br from-quantum-gold/20 to-black border border-quantum-gold/40 shadow-gold-glow-sm p-2">
+            <img src="/assets/meridian-logo.png" alt="Meridian" className="w-full h-full object-contain" />
           </div>
 
           {/* Branding Section */}

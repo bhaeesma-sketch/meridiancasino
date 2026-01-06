@@ -27,7 +27,7 @@ const PrivacyPolicy: React.FC = () => {
                 <section className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
                     <h2 className="text-2xl font-heading font-black text-quantum-gold mb-4">1. Information We Collect</h2>
                     <p className="mb-4">
-                        <strong className="text-white">1.1 Wallet Information:</strong> We collect your cryptocurrency wallet address when you connect to Casino Clash. We do not have access to your private keys.
+                        <strong className="text-white">1.1 Wallet Information:</strong> We collect your cryptocurrency wallet address when you connect to Meridian Casino Clash. We do not have access to your private keys.
                     </p>
                     <p className="mb-4">
                         <strong className="text-white">1.2 Transaction Data:</strong> We record all deposits, withdrawals, bets, and game outcomes associated with your account.
@@ -71,7 +71,7 @@ const PrivacyPolicy: React.FC = () => {
                 <section className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
                     <h2 className="text-2xl font-heading font-black text-quantum-gold mb-4">4. Cookies and Tracking</h2>
                     <p className="mb-4">
-                        Casino Clash uses cookies and similar tracking technologies to:
+                        Meridian Casino Clash uses cookies and similar tracking technologies to:
                     </p>
                     <ul className="list-disc list-inside space-y-2 ml-4">
                         <li>Remember your preferences and settings</li>
@@ -118,7 +118,7 @@ const PrivacyPolicy: React.FC = () => {
                 <section className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
                     <h2 className="text-2xl font-heading font-black text-quantum-gold mb-4">7. Children's Privacy</h2>
                     <p>
-                        Casino Clash is not intended for individuals under 18 years of age. We do not knowingly collect personal information from children. If you believe we have collected information from a child, please contact us immediately.
+                        Meridian Casino Clash is not intended for individuals under 18 years of age. We do not knowingly collect personal information from children. If you believe we have collected information from a child, please contact us immediately.
                     </p>
                 </section>
 
@@ -141,7 +141,7 @@ const PrivacyPolicy: React.FC = () => {
                 </section>
 
                 <div className="text-center py-8 text-white/40 text-sm">
-                    <p>© 2026 Casino Clash: Quantum Legacy. All rights reserved.</p>
+                    <p>© 2026 Meridian Casino Clash: Quantum Legacy. All rights reserved.</p>
                 </div>
             </div>
         </div>

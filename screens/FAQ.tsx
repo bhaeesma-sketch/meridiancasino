@@ -25,13 +25,13 @@ const FAQ: React.FC = () => {
     const faqs: FAQItem[] = [
         {
             category: 'getting-started',
-            question: 'How do I get started on Casino Clash?',
+            question: 'How do I get started on Meridian Casino Clash?',
             answer: 'Simply connect your MetaMask or TronLink wallet on the Auth page. You\'ll receive a $10 welcome bonus instantly (or $25 if you use a referral code). You can also play as a guest in demo mode to try out the games first.'
         },
         {
             category: 'getting-started',
             question: 'Do I need cryptocurrency to play?',
-            answer: 'For real money gaming, yes. Casino Clash accepts USDT (TRC20), TRX, and BTC. However, you can play in demo mode as a guest without any cryptocurrency.'
+            answer: 'For real money gaming, yes. Meridian Casino Clash accepts USDT (TRC20), TRX, and BTC. However, you can play in demo mode as a guest without any cryptocurrency.'
         },
         {
             category: 'getting-started',
@@ -51,7 +51,7 @@ const FAQ: React.FC = () => {
         {
             category: 'deposits',
             question: 'Are there any fees?',
-            answer: 'Casino Clash does not charge deposit or withdrawal fees. However, you will need to pay standard blockchain network fees (gas fees) when making transactions.'
+            answer: 'Meridian Casino Clash does not charge deposit or withdrawal fees. However, you will need to pay standard blockchain network fees (gas fees) when making transactions.'
         },
         {
             category: 'bonuses',
@@ -76,17 +76,17 @@ const FAQ: React.FC = () => {
         {
             category: 'games',
             question: 'Are the games fair?',
-            answer: 'Absolutely! All Casino Clash games use quantum-verified random number generation to ensure complete fairness. Every game outcome is provably fair and can be verified independently.'
+            answer: 'Absolutely! All Meridian Casino Clash games use quantum-verified random number generation to ensure complete fairness. Every game outcome is provably fair and can be verified independently.'
         },
         {
             category: 'games',
             question: 'Which games are available?',
-            answer: 'Casino Clash offers Dice, Plinko, Blackjack, Roulette, and Limbo. Each game has its own unique quantum-themed design and provably fair mechanics. More games are being added regularly!'
+            answer: 'Meridian Casino Clash offers Dice, Plinko, Blackjack, Roulette, and Limbo. Each game has its own unique quantum-themed design and provably fair mechanics. More games are being added regularly!'
         },
         {
             category: 'games',
             question: 'Can I play on mobile?',
-            answer: 'Yes! Casino Clash is fully responsive and works perfectly on mobile devices. Simply visit the site on your mobile browser. We recommend using MetaMask Mobile or TronLink Mobile app for the best experience.'
+            answer: 'Yes! Meridian Casino Clash is fully responsive and works perfectly on mobile devices. Simply visit the site on your mobile browser. We recommend using MetaMask Mobile or TronLink Mobile app for the best experience.'
         },
         {
             category: 'games',
@@ -106,7 +106,7 @@ const FAQ: React.FC = () => {
         {
             category: 'technical',
             question: 'Can I use a VPN?',
-            answer: 'VPN usage is allowed, but please ensure you\'re accessing Casino Clash from a jurisdiction where online gambling is legal. We reserve the right to ask for verification if suspicious activity is detected.'
+            answer: 'VPN usage is allowed, but please ensure you\'re accessing Meridian Casino Clash from a jurisdiction where online gambling is legal. We reserve the right to ask for verification if suspicious activity is detected.'
         },
         {
             category: 'security',
@@ -116,7 +116,7 @@ const FAQ: React.FC = () => {
         {
             category: 'security',
             question: 'Do you store my private keys?',
-            answer: 'Absolutely not! Casino Clash never has access to your private keys. You maintain full control of your wallet at all times. We only interact with your wallet through secure Web3 connections.'
+            answer: 'Absolutely not! Meridian Casino Clash never has access to your private keys. You maintain full control of your wallet at all times. We only interact with your wallet through secure Web3 connections.'
         },
         {
             category: 'security',
@@ -126,7 +126,7 @@ const FAQ: React.FC = () => {
         {
             category: 'security',
             question: 'What if I lose access to my wallet?',
-            answer: 'Since Casino Clash is non-custodial, you are responsible for your wallet security. We cannot recover lost private keys or seed phrases. Always backup your wallet recovery phrase in a secure location.'
+            answer: 'Since Meridian Casino Clash is non-custodial, you are responsible for your wallet security. We cannot recover lost private keys or seed phrases. Always backup your wallet recovery phrase in a secure location.'
         },
     ];
 
@@ -149,7 +149,7 @@ const FAQ: React.FC = () => {
                     Frequently Asked Questions
                 </h1>
                 <p className="text-white/60 text-sm">
-                    Find answers to common questions about Casino Clash
+                    Find answers to common questions about Meridian Casino Clash
                 </p>
             </div>
 
@@ -230,7 +230,7 @@ const FAQ: React.FC = () => {
             </div>
 
             <div className="text-center py-8 text-white/40 text-sm">
-                <p>© 2026 Casino Clash: Quantum Legacy. All rights reserved.</p>
+                <p>© 2026 Meridian Casino Clash: Quantum Legacy. All rights reserved.</p>
             </div>
         </div>
     );

@@ -398,12 +398,15 @@ const Navbar = () => {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 h-16 md:h-20 px-4 md:px-6 lg:px-10 flex items-center justify-between bg-gradient-to-b from-black/90 to-transparent backdrop-blur-[4px]">
-      <div className="flex items-center gap-2 md:gap-4 cursor-pointer" onClick={() => navigate('/lobby')}>
-        <div className="size-8 md:size-10 bg-glass-bg border border-quantum-gold/30 rounded-lg md:rounded-xl flex items-center justify-center text-quantum-gold shadow-gold-glow backdrop-blur-md">
-          <span className="material-symbols-outlined text-xl md:text-2xl">casino</span>
+      <div className="flex items-center gap-3">
+        <div className="size-10 md:size-12 rounded-xl bg-gradient-to-br from-quantum-gold/20 to-black border border-quantum-gold/30 p-1.5 shadow-gold-glow-sm">
+          <img src="/assets/meridian-logo.png" alt="Meridian" className="w-full h-full object-contain" />
         </div>
-        <h1 className="text-white text-lg md:text-2xl lg:text-3xl font-heading font-extrabold tracking-tighter uppercase">
-          Casino <span className="text-quantum-gold">Clash</span>
+        <h1 className="flex flex-col leading-none">
+          <span className="text-[10px] md:text-xs font-heading font-black text-quantum-gold tracking-[0.3em] uppercase">Meridian</span>
+          <span className="text-xl md:text-3xl font-heading font-black text-white tracking-tighter uppercase italic">
+            Casino<span className="text-quantum-gold">Clash</span>
+          </span>
         </h1>
       </div>
 

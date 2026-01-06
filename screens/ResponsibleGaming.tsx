@@ -33,7 +33,7 @@ const ResponsibleGaming: React.FC = () => {
                         </div>
                     </div>
                     <p>
-                        At Casino Clash, we are committed to providing a safe and responsible gaming environment. While gambling can be entertaining, we recognize that for some players, it can become a problem. We provide tools and resources to help you stay in control.
+                        At Meridian Casino Clash, we are committed to providing a safe and responsible gaming environment. While gambling can be entertaining, we recognize that for some players, it can become a problem. We provide tools and resources to help you stay in control.
                     </p>
                 </section>
 
@@ -83,7 +83,7 @@ const ResponsibleGaming: React.FC = () => {
                                 Self-Exclusion
                             </h3>
                             <p className="text-sm text-white/70">
-                                Temporarily or permanently exclude yourself from Casino Clash. Options available for 24 hours, 7 days, 30 days, or permanently.
+                                Temporarily or permanently exclude yourself from Meridian Casino Clash. Options available for 24 hours, 7 days, 30 days, or permanently.
                             </p>
                         </div>
 
@@ -108,7 +108,7 @@ const ResponsibleGaming: React.FC = () => {
                 <section className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
                     <h2 className="text-2xl font-heading font-black text-quantum-gold mb-4">3. Underage Gambling Prevention</h2>
                     <p className="mb-4">
-                        Casino Clash strictly prohibits underage gambling. You must be at least 18 years old (or the legal age in your jurisdiction) to use our platform.
+                        Meridian Casino Clash strictly prohibits underage gambling. You must be at least 18 years old (or the legal age in your jurisdiction) to use our platform.
                     </p>
                     <p className="mb-4">
                         <strong className="text-white">Parents and Guardians:</strong> We recommend using parental control software to prevent minors from accessing gambling sites.
@@ -229,7 +229,7 @@ const ResponsibleGaming: React.FC = () => {
                 </section>
 
                 <div className="text-center py-8 text-white/40 text-sm">
-                    <p>© 2026 Casino Clash: Quantum Legacy. All rights reserved.</p>
+                    <p>© 2026 Meridian Casino Clash: Quantum Legacy. All rights reserved.</p>
                     <p className="mt-2">When the fun stops, stop.</p>
                 </div>
             </div>
