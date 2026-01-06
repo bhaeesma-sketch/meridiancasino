@@ -195,7 +195,11 @@ const Plinko: React.FC = () => {
           <h3 className="text-quantum-gold font-heading font-black text-sm uppercase italic">Plinko Terminal</h3>
 
           <div className="space-y-4">
-            <div className="bg-black/60 border border-white/10 rounded-xl p-3">
+            <div className="bg-black/60 backdrop-blur-xl border border-white/10 rounded-xl p-3 relative group">
+              {/* Terminal Corner Accents */}
+              <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/20 rounded-tl-sm group-hover:border-quantum-gold/50 transition-colors"></div>
+              <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/20 rounded-br-sm group-hover:border-quantum-gold/50 transition-colors"></div>
+
               <label className="text-[8px] text-gray-400 uppercase font-bold tracking-widest mb-1 block">Bet ($)</label>
               <div className="flex items-center gap-3">
                 <input
@@ -261,11 +265,12 @@ const Plinko: React.FC = () => {
                     return (
                       <div
                         key={pIndex}
-                        className="plinko-peg absolute"
+                        className="plinko-peg absolute transition-all duration-300"
                         style={{
                           left: `50%`,
                           transform: `translateX(calc(-50% + ${xPos}px))`,
-                          top: `${rIndex * 28}px`
+                          top: `${rIndex * 28}px`,
+                          boxShadow: `0 0 ${Math.random() > 0.9 ? '15px' : '5px'} rgba(255, 215, 0, 0.4)` // Twinkle effect
                         }}
                       />
                     );
@@ -274,21 +279,47 @@ const Plinko: React.FC = () => {
               );
             })}
 
-            {/* Balls */}
+            {/* Balls with Trails */}
             {balls.map(ball => {
               const centerX = 50;
               const xOffset = (ball.x / rows) * 32;
               const actualX = centerX + xOffset;
+              const yPos = ball.y * 0.9;
+
+              // Calculate Ghost Trail (simple history effect based on velocity vector approx)
+              // Since we don't store history, we simulate it by lagging Y slightly
               return (
-                <div
-                  key={ball.id}
-                  className="plinko-ball"
-                  style={{
-                    left: `${actualX}%`,
-                    top: `${ball.y * 0.9}px`,
-                    transform: 'translate(-50%, -50%)',
-                  }}
-                />
+                <React.Fragment key={ball.id}>
+                  {/* Main Ball */}
+                  <div
+                    className="plinko-ball z-20"
+                    style={{
+                      left: `${actualX}%`,
+                      top: `${yPos}px`,
+                      transform: 'translate(-50%, -50%)',
+                    }}
+                  />
+                  {/* Ghost 1 */}
+                  <div
+                    className="plinko-ball z-10 opacity-60 scale-90 blur-[1px]"
+                    style={{
+                      left: `${actualX}%`,
+                      top: `${yPos - 8}px`,
+                      transform: 'translate(-50%, -50%)',
+                      background: 'radial-gradient(circle at 30% 30%, #9333EA, transparent)'
+                    }}
+                  />
+                  {/* Ghost 2 */}
+                  <div
+                    className="plinko-ball z-0 opacity-30 scale-75 blur-[2px]"
+                    style={{
+                      left: `${actualX}%`,
+                      top: `${yPos - 16}px`,
+                      transform: 'translate(-50%, -50%)',
+                      background: 'radial-gradient(circle at 30% 30%, #9333EA, transparent)'
+                    }}
+                  />
+                </React.Fragment>
               );
             })}
           </div>
@@ -299,8 +330,8 @@ const Plinko: React.FC = () => {
               <div
                 key={i}
                 className={`plinko-slot h-10 w-10 rounded-lg flex items-center justify-center text-[9px] font-black text-white transition-all hover:scale-105 ${m > 10 ? 'bg-gradient-to-b from-red-600/40 to-red-900/60 border-red-500/40' :
-                    m > 2 ? 'bg-gradient-to-b from-orange-500/40 to-orange-800/60 border-orange-500/40' :
-                      'bg-gradient-to-b from-green-500/40 to-green-800/60 border-green-500/40'
+                  m > 2 ? 'bg-gradient-to-b from-orange-500/40 to-orange-800/60 border-orange-500/40' :
+                    'bg-gradient-to-b from-green-500/40 to-green-800/60 border-green-500/40'
                   }`}
               >
                 {m.toFixed(1)}x

@@ -213,6 +213,8 @@ const Dice: React.FC = () => {
       <div className="flex-1 min-h-0 w-full flex flex-col items-center justify-center relative perspective-1000 py-2 group">
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="w-[300px] h-[300px] bg-gradient-radial from-quantum-gold/10 to-transparent rounded-full blur-3xl animate-holo-pulse"></div>
+          {/* Holographic Grid Floor */}
+          <div className="absolute bottom-0 w-[600px] h-[600px] bg-mesh opacity-20 transform rotateX(60deg) translateY(300px)"></div>
         </div>
 
         <div className="scene transform-gpu relative z-10 scale-[0.7] md:scale-[0.85] lg:scale-100">
@@ -227,27 +229,34 @@ const Dice: React.FC = () => {
             {[1, 6, 3, 4, 5, 2].map((num, i) => (
               <div
                 key={i}
-                className={`cube__face cube__face--${['front', 'back', 'right', 'left', 'top', 'bottom'][i]} rounded-xl flex items-center justify-center overflow-hidden relative`}
+                className={`cube__face cube__face--${['front', 'back', 'right', 'left', 'top', 'bottom'][i]} rounded-xl flex items-center justify-center overflow-hidden relative border border-quantum-gold/30 bg-black/80 backdrop-blur-md shadow-[inset_0_0_20px_rgba(255,215,0,0.1)]`}
               >
                 <span className="relative text-6xl font-black font-heading text-transparent bg-clip-text bg-gradient-to-br from-white via-quantum-gold to-white drop-shadow-[0_0_15px_rgba(255,215,0,0.6)] animate-shimmer-text">
                   {num}
                 </span>
-                <div className="absolute inset-0 bg-mesh opacity-10"></div>
+                <div className="absolute inset-0 bg-mesh opacity-20"></div>
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/10 to-transparent h-1/4 animate-scanline"></div>
+                {/* Corner Accents */}
+                <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-quantum-gold/50 rounded-tl-sm"></div>
+                <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-quantum-gold/50 rounded-br-sm"></div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Floating Hud Result - Compact */}
+        {/* Floating Hud Result - Digital Glitch Style */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none">
           {!isRolling && lastRoll !== null && (
-            <div className={`text-6xl md:text-8xl font-mono font-black animate-pop-in ${isWin ? 'text-green-400 drop-shadow-[0_0_30px_rgba(74,222,128,0.6)]' : 'text-red-400 drop-shadow-[0_0_30px_rgba(248,113,113,0.6)]'}`}>
-              {lastRoll.toFixed(2)}
+            <div className={`text-6xl md:text-8xl font-mono font-black animate-pop-in flex flex-col items-center ${isWin ? 'text-green-400 drop-shadow-[0_0_30px_rgba(74,222,128,0.6)]' : 'text-red-400 drop-shadow-[0_0_30px_rgba(248,113,113,0.6)]'}`}>
+              <div className="flex items-baseline gap-2">
+                <span>{lastRoll.toFixed(2)}</span>
+                <span className="text-lg opacity-50 uppercase tracking-widest">{isWin ? 'WIN' : 'MISS'}</span>
+              </div>
+              <div className="w-full h-1 bg-current opacity-50 mt-2 rounded-full shadow-[0_0_10px_currentColor]"></div>
             </div>
           )}
           {isRolling && displayRoll !== null && (
-            <div className="text-4xl md:text-6xl text-white/40 font-mono font-black animate-pulse">
+            <div className="text-4xl md:text-6xl text-white/40 font-mono font-black animate-pulse glitch-effect">
               {displayRoll.toFixed(2)}
             </div>
           )}
