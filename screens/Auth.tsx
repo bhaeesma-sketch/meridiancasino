@@ -6,6 +6,7 @@ import { WalletImportModal } from '../components/WalletImportModal';
 import { generateReferralCode, validateReferralCode, NEW_USER_BONUS } from '../services/referralService';
 import { supabase, isSupabaseConfigured } from '../services/supabase';
 import { AnimatedLogo } from '../components/AnimatedLogo';
+import { MeridianButton } from '../components/MeridianButton';
 
 const Auth: React.FC = () => {
   const navigate = useNavigate();
@@ -134,20 +135,21 @@ const Auth: React.FC = () => {
       'Wallet';
 
   return (
-    <div className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden bg-black">
-      {/* Background Image Layer */}
-      <div className="absolute inset-0 z-0 bg-[#050505]">
-        <div className="absolute inset-0 bg-gradient-to-br from-quantum-gold/5 via-transparent to-plasma-purple/5"></div>
-        <div className="absolute inset-0 opacity-30 bg-mesh"></div>
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-quantum-gold/10 rounded-full blur-[120px] animate-holo-pulse"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-plasma-purple/10 rounded-full blur-[120px] animate-holo-pulse" style={{ animationDelay: '2s' }}></div>
+    <div className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden bg-meridian-navy">
+      {/* Epic Fantasy Background */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-gradient-to-br from-fire-bright/10 via-meridian-midnight to-ice-electric/10"></div>
+        <div className="absolute inset-0 opacity-20 bg-mesh"></div>
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-fire-bright/15 rounded-full blur-[150px] animate-dragon-breath"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-ice-electric/15 rounded-full blur-[150px] animate-dragon-breath" style={{ animationDelay: '1.5s' }}></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[50%] h-[50%] bg-mystical-magenta/10 rounded-full blur-[200px] animate-mystical-pulse"></div>
       </div>
 
-      {/* Animated Promotional Banner */}
+      {/* Epic Promotional Banner */}
       <div className="relative z-20 w-full max-w-2xl px-6 mb-8 animate-deep-fade-up">
         <div className="relative group">
-          {/* Pulsing Glow Effect */}
-          <div className="absolute -inset-1 bg-gradient-to-r from-quantum-gold via-yellow-400 to-quantum-gold rounded-3xl opacity-75 group-hover:opacity-100 blur-xl animate-pulse"></div>
+          {/* Mystical Glow Effect */}
+          <div className="absolute -inset-1 bg-gradient-to-r from-gold-primary via-mystical-magenta to-ice-electric rounded-3xl opacity-75 group-hover:opacity-100 blur-xl animate-mystical-pulse"></div>
 
           {/* Banner Container */}
           <div className="relative bg-black/60 backdrop-blur-xl border-2 border-quantum-gold/30 rounded-2xl overflow-hidden shadow-[0_20px_80px_rgba(255,215,0,0.3)] animate-float">
@@ -271,34 +273,29 @@ const Auth: React.FC = () => {
 
           {/* Action Buttons */}
           <div className="w-full flex flex-col gap-3">
-            <button
+            <MeridianButton
               onClick={() => handleConnect()}
               disabled={!availableWallet || isConnecting}
-              className="group relative w-full h-16 bg-gradient-to-r from-yellow-400 via-quantum-gold to-yellow-600 rounded-2xl flex items-center justify-center gap-3 text-black font-black text-lg uppercase shadow-gold-glow hover:shadow-[0_0_40px_rgba(255,215,0,0.5)] active:scale-95 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              variant="primary"
+              size="lg"
+              loading={isConnecting && !!availableWallet}
+              icon={!isConnecting ? <span className="material-symbols-outlined text-3xl">account_balance_wallet</span> : undefined}
+              className="w-full h-16 text-lg uppercase"
             >
-              {isConnecting && availableWallet ? (
-                <>
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-black"></div>
-                  <span>Connecting...</span>
-                </>
-              ) : (
-                <>
-                  <span className="material-symbols-outlined text-3xl font-bold group-hover:rotate-12 transition-transform">account_balance_wallet</span>
-                  <span>Connect {walletName}</span>
-                </>
-              )}
-              <div className="absolute inset-0 rounded-2xl bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            </button>
+              {isConnecting && availableWallet ? 'Connecting...' : `Connect ${walletName}`}
+            </MeridianButton>
 
             {/* Quick Play Button */}
-            <button
+            <MeridianButton
               onClick={() => handleQuickPlay()}
               disabled={isConnecting}
-              className="w-full h-16 bg-white/5 border-2 border-white/10 rounded-2xl flex items-center justify-center gap-3 text-white font-black text-lg uppercase hover:bg-white/10 hover:border-quantum-gold/40 transition-all duration-300 group"
+              variant="secondary"
+              size="lg"
+              icon={<span className="material-symbols-outlined text-2xl">bolt</span>}
+              className="w-full h-16 text-lg uppercase"
             >
-              <span className="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">bolt</span>
-              <span>Quick Play (Guest)</span>
-            </button>
+              Quick Play (Guest)
+            </MeridianButton>
 
             {/* Import Wallet Button */}
             <button

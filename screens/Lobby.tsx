@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../App';
 import { sounds } from '../services/soundService';
 import { NEW_USER_BONUS } from '../services/referralService';
+import { MeridianButton } from '../components/MeridianButton';
 
 const BonusModal: React.FC<{ onClaim: () => void }> = ({ onClaim }) => {
   const [isExploding, setIsExploding] = useState(false);
@@ -103,89 +104,102 @@ const Lobby: React.FC = () => {
   };
 
   const games = [
-    { name: 'Dice', desc: 'Roll for the stars.', img: '/assets/dice-profile.png', path: '/dice', icon: 'casino', color: 'text-quantum-gold' },
-    { name: 'Plinko', desc: 'Quantum gravity drops.', img: '/assets/plinko-profile.png', path: '/plinko', icon: 'grid_view', color: 'text-plasma-purple' },
-    { name: 'Blackjack', desc: 'Live Dealer experience.', img: '/assets/blackjack-profile.png', path: '/blackjack', icon: 'playing_cards', color: 'text-red-400' },
-    { name: 'Roulette', desc: 'Spin & Win legacy.', img: '/assets/roulette-profile.png', path: '/roulette', icon: 'incomplete_circle', color: 'text-quantum-gold' },
-    { name: 'Limbo', desc: 'Crash to the stars.', img: '/assets/limbo-profile.png', path: '/limbo', icon: 'trending_up', color: 'text-cyan-400' },
+    { name: 'Dice', desc: 'Roll for the stars.', img: '/assets/dice-profile.png', path: '/dice', icon: 'casino', color: 'text-fire-bright', theme: 'fire' },
+    { name: 'Plinko', desc: 'Quantum gravity drops.', img: '/assets/plinko-profile.png', path: '/plinko', icon: 'grid_view', color: 'text-mystical-purple', theme: 'mystical' },
+    { name: 'Blackjack', desc: 'Live Dealer experience.', img: '/assets/blackjack-profile.png', path: '/blackjack', icon: 'playing_cards', color: 'text-gold-primary', theme: 'gold' },
+    { name: 'Roulette', desc: 'Spin & Win legacy.', img: '/assets/roulette-profile.png', path: '/roulette', icon: 'incomplete_circle', color: 'text-ice-electric', theme: 'ice' },
+    { name: 'Limbo', desc: 'Crash to the stars.', img: '/assets/limbo-profile.png', path: '/limbo', icon: 'trending_up', color: 'text-fire-amber', theme: 'fire' },
   ];
 
   return (
     <div className="flex-1 min-h-0 flex flex-col justify-center py-4 px-6 max-w-6xl mx-auto w-full overflow-hidden">
       <div className="space-y-2 animate-deep-fade-up text-center mb-6">
-        <h2 className="text-3xl md:text-5xl lg:text-5xl font-heading font-extrabold text-white leading-[0.9] uppercase drop-shadow-2xl">
-          The Future <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-quantum-gold via-yellow-200 to-quantum-gold">Of Gaming</span>
+        <h2 className="text-3xl md:text-5xl lg:text-5xl font-display font-black text-white leading-[0.9] uppercase drop-shadow-2xl">
+          Epic Fantasy <br />
+          <span className="meridian-title text-4xl md:text-6xl">CASINO GAMES</span>
         </h2>
-        <p className="text-white/80 text-xs font-medium mx-auto max-w-lg">
-          High-stakes quantum simulations. Pro-dealer experience. Zero latency.
+        <p className="text-ice-electric text-xs font-medium mx-auto max-w-lg tracking-wider">
+          ⚔️ High-stakes adventures • 🐉 Dragon-tier rewards • ⚡ Instant payouts
         </p>
       </div>
 
       <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar-hidden">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mt-2 w-full max-w-5xl mx-auto pb-4">
-          {games.map((game, idx) => (
-            <div
-              key={game.name}
-              onMouseEnter={() => sounds.playHover()}
-              onClick={() => {
-                sounds.playClick();
-                navigate(game.path);
-              }}
-              className="group relative flex flex-col rounded-[2.5rem] overflow-hidden border border-white/10 bg-black/40 backdrop-blur-3xl cursor-pointer transition-all duration-700 premium-card animate-deep-fade-up shadow-[0_40px_100px_-20px_rgba(0,0,0,0.8)] hover:shadow-gold-glow-sm hover:scale-[1.02] active:scale-95"
-              style={{
-                animationDelay: `${idx * 0.1}s`,
-                minHeight: '280px'
-              }}
-            >
-              <div className="card-content h-full relative z-10">
-                <div
-                  className="absolute inset-0 bg-cover bg-center opacity-80 group-hover:opacity-100 transition-all duration-700 ease-out group-hover:scale-110"
-                  style={{ backgroundImage: `url(${game.img})` }}
-                ></div>
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
-                <div className="absolute inset-0 holographic-card-gradient opacity-20 group-hover:opacity-100 group-hover:animate-holo-shimmer pointer-events-none transition-opacity duration-500"></div>
+          {games.map((game, idx) => {
+            const themeClass = game.theme === 'fire' ? 'fire-theme' :
+              game.theme === 'ice' ? 'ice-theme' : '';
 
-                <div className="relative z-20 h-full p-4 flex flex-col justify-between">
-                  <div className="flex justify-between items-start">
-                    <div className="p-3 rounded-2xl bg-black/60 border border-white/10 backdrop-blur-md group-hover:border-quantum-gold/50 group-hover:bg-quantum-gold/10 group-hover:text-quantum-gold transition-all duration-500">
-                      <span className={`material-symbols-outlined text-2xl ${game.color} group-hover:text-inherit`}>{game.icon}</span>
-                    </div>
-                    <div className="flex flex-col items-end gap-1">
-                      <div className="px-2 py-0.5 rounded bg-black/60 border border-white/5 text-[8px] font-mono text-white/40 uppercase tracking-widest group-hover:text-quantum-gold/80 transition-colors">
-                        Quantum Ready
-                      </div>
-                      <div className="text-[7px] font-mono text-green-400 opacity-0 group-hover:opacity-100 transition-opacity animate-pulse">
-                        LIVE DROPS ACTIVE
-                      </div>
-                    </div>
+            return (
+              <div
+                key={game.name}
+                onMouseEnter={() => sounds.playHover()}
+                onClick={() => {
+                  sounds.playClick();
+                  navigate(game.path);
+                }}
+                className={`epic-card group cursor-pointer ${themeClass}`}
+                style={{
+                  animationDelay: `${idx * 0.1}s`,
+                  minHeight: '320px'
+                }}
+              >
+                <div className="card-content h-full relative z-10">
+                  <div
+                    className="absolute inset-0 bg-cover bg-center opacity-70 group-hover:opacity-90 transition-all duration-700 ease-out group-hover:scale-110"
+                    style={{ backgroundImage: `url(${game.img})` }}
+                  ></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-meridian-navy via-meridian-midnight/60 to-transparent"></div>
+
+                  {/* Mystical Particle Effects */}
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+                    <div className="particle particle-gold" style={{ top: '20%', left: '30%' }}></div>
+                    <div className="particle particle-cyan" style={{ top: '40%', left: '70%' }}></div>
+                    <div className="particle particle-magenta" style={{ top: '60%', left: '50%' }}></div>
                   </div>
 
-                  <div className="flex flex-col gap-3">
-                    <div className="px-1">
-                      <h4 className="text-2xl md:text-3xl font-heading font-black text-white uppercase group-hover:text-quantum-gold transition-all duration-500 tracking-tighter">
-                        {game.name}
-                      </h4>
-                      <p className="text-[9px] text-white/40 uppercase font-bold tracking-[0.2em] mt-1">
-                        {game.desc}
-                      </p>
+                  <div className="relative z-20 h-full p-5 flex flex-col justify-between">
+                    <div className="flex justify-between items-start">
+                      <div className="p-3 rounded-2xl bg-meridian-charcoal/80 border-2 border-gold-antique/30 backdrop-blur-md group-hover:border-gold-primary group-hover:shadow-gold-glow transition-all duration-500">
+                        <span className={`material-symbols-outlined text-3xl ${game.color} group-hover:scale-110 transition-transform`}>{game.icon}</span>
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                        <div className="px-3 py-1 rounded-lg bg-meridian-charcoal/80 border border-gold-antique/30 text-[9px] font-mono text-gold-primary uppercase tracking-widest font-bold">
+                          ✦ Epic Tier
+                        </div>
+                        <div className="text-[8px] font-mono text-ice-electric opacity-0 group-hover:opacity-100 transition-opacity animate-pulse">
+                          🔥 LIVE NOW
+                        </div>
+                      </div>
                     </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        sounds.playClick();
-                        navigate(game.path);
-                      }}
-                      className="w-full py-4 bg-gradient-to-r from-yellow-400 via-quantum-gold to-yellow-600 text-black font-black uppercase text-sm rounded-2xl shadow-gold-glow hover:shadow-[0_0_40px_rgba(255,215,0,0.5)] transition-all duration-500 flex items-center justify-center gap-3 active:scale-95 group-hover:translate-y-[-2px]"
-                    >
-                      <span className="material-symbols-outlined text-xl font-black">play_arrow</span>
-                      Launch Game
-                    </button>
+
+                    <div className="flex flex-col gap-4">
+                      <div className="px-1">
+                        <h4 className="text-3xl md:text-4xl font-display font-black text-white uppercase group-hover:text-gold-primary transition-all duration-500 tracking-tight mb-2">
+                          {game.name}
+                        </h4>
+                        <p className="text-[10px] text-ice-light uppercase font-bold tracking-[0.2em]">
+                          {game.desc}
+                        </p>
+                      </div>
+                      <MeridianButton
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          sounds.playClick();
+                          navigate(game.path);
+                        }}
+                        variant="primary"
+                        size="md"
+                        icon={<span className="material-symbols-outlined text-xl">play_arrow</span>}
+                        className="w-full group-hover:translate-y-[-2px] transition-transform"
+                      >
+                        Launch Game
+                      </MeridianButton>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
