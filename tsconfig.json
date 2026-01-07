@@ -25,5 +25,13 @@
     },
     "allowImportingTsExtensions": true,
     "noEmit": true
-  }
+  },
+  "include": [
+    "src",
+    "components",
+    "screens",
+    "*.tsx",
+    "*.ts",
+    "*.d.ts"
+  ]
 }

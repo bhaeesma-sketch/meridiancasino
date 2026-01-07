@@ -179,11 +179,25 @@ const Deposit: React.FC = () => {
                         {/* Instructions */}
                         <div className="mt-6 bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
                             <p className="text-blue-400 text-sm font-bold mb-2">⏳ Awaiting Payment</p>
-                            <ul className="text-white/70 text-xs space-y-1 text-left">
-                                <li>• Send exactly {depositInfo.payAmount} {depositInfo.payCurrency}</li>
-                                <li>• Use {chain} network only</li>
-                                <li>• Funds will appear after 19 confirmations (~1-3 minutes)</li>
-                                <li>• Do not send from an exchange (use your personal wallet)</li>
+                            <ul className="text-white/70 text-xs space-y-2 text-left">
+                                <li className="flex gap-2">
+                                    <span className="text-blue-400 font-bold">•</span>
+                                    <span>Send exactly <b className="text-white">{depositInfo.payAmount} {depositInfo.payCurrency}</b></span>
+                                </li>
+                                <li className="flex gap-2">
+                                    <span className="text-blue-400 font-bold">•</span>
+                                    <span>Network: <b className="text-white">{chain}</b> (Required)</span>
+                                </li>
+                                <li className="flex gap-2">
+                                    <span className="text-blue-400 font-bold">•</span>
+                                    <span>Funds credit after <b className="text-white">19 confirmations</b> (~1-5 mins)</span>
+                                </li>
+                                <li className="flex gap-2 bg-quantum-gold/10 p-2 rounded border border-quantum-gold/20">
+                                    <span className="material-symbols-outlined text-quantum-gold text-lg">info</span>
+                                    <span className="text-quantum-gold font-bold">
+                                        Binance/Exchange Users: You can send directly from your exchange. Use the unique address above.
+                                    </span>
+                                </li>
                             </ul>
                         </div>
                     </div>

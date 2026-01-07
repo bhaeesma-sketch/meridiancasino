@@ -6,9 +6,10 @@ import { getReferralMultiplier, getPremiumReferralBonus, NEW_USER_BONUS } from '
 const Profile: React.FC = () => {
   const navigate = useNavigate();
   const context = useContext(AppContext);
-  const [copied, setCopied] = useState(false);
   if (!context) return null;
   const { user } = context;
+  const [copied, setCopied] = useState(false);
+  const [addressCopied, setAddressCopied] = useState(false);
 
   const referralCode = user.referralCode || 'GENERATING...';
   const referralEarnings = user.referralEarnings || 0;
@@ -52,6 +53,25 @@ const Profile: React.FC = () => {
             )}
           </div>
           <div className="flex flex-wrap justify-center md:justify-start gap-4 md:gap-6 text-gray-400 text-sm">
+            <div className="flex items-center gap-2 font-mono text-xs bg-black/40 px-3 py-1.5 rounded-lg border border-white/10 group relative">
+              <span className="material-symbols-outlined text-primary text-base">account_balance_wallet</span>
+              <span className="max-w-[120px] md:max-w-none truncate">{user.address}</span>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(user.address || '');
+                  setAddressCopied(true);
+                  setTimeout(() => setAddressCopied(false), 2000);
+                }}
+                className="ml-1 hover:text-white transition-colors p-1"
+              >
+                <span className="material-symbols-outlined text-sm">{addressCopied ? 'check' : 'content_copy'}</span>
+              </button>
+              {addressCopied && (
+                <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-quantum-gold text-black text-[10px] font-black px-2 py-1 rounded shadow-lg animate-bounce">
+                  COPIED!
+                </div>
+              )}
+            </div>
             <div className="flex items-center gap-2"><span className="material-symbols-outlined text-primary text-lg">military_tech</span> {user.tier}</div>
             <div className="flex items-center gap-2"><span className="material-symbols-outlined text-lg">calendar_month</span> Joined {user.joinedDate ? new Date(user.joinedDate).toLocaleDateString() : '2023'}</div>
             {user.isNewUser && (
@@ -220,7 +240,7 @@ const Profile: React.FC = () => {
                 </p>
                 <div className="flex justify-center gap-3">
                   <a
-                    href={`https://twitter.com/intent/tweet?text=Join%20me%20on%20Casino%20Clash%20and%20get%20%2425%20bonus!%20Use%20my%20code%3A%20${referralCode}%0A${encodeURIComponent(referralUrl)}`}
+                    href={`https://twitter.com/intent/tweet?text=Join%20me%20on%20Meridian%20Casino%20Clash%20and%20get%20%2425%20bonus!%20Use%20my%20code%3A%20${referralCode}%0A${encodeURIComponent(referralUrl)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 px-4 py-2 bg-[#1DA1F2] hover:bg-[#1a8cd8] text-white font-bold rounded-lg transition-all"
@@ -244,7 +264,7 @@ const Profile: React.FC = () => {
                   </a>
 
                   <a
-                    href={`https://api.whatsapp.com/send?text=Join%20me%20on%20Casino%20Clash%20and%20get%20%2425%20bonus!%20Use%20code%3A%20${referralCode}%20${referralUrl}`}
+                    href={`https://api.whatsapp.com/send?text=Join%20me%20on%20Meridian%20Casino%20Clash%20and%20get%20%2425%20bonus!%20Use%20code%3A%20${referralCode}%20${referralUrl}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 px-4 py-2 bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold rounded-lg transition-all"
@@ -256,7 +276,7 @@ const Profile: React.FC = () => {
                   </a>
 
                   <a
-                    href={`https://t.me/share/url?url=${encodeURIComponent(referralUrl)}&text=Join%20me%20on%20Casino%20Clash%20and%20get%20%2425%20bonus!%20Use%20code%3A%20${referralCode}`}
+                    href={`https://t.me/share/url?url=${encodeURIComponent(referralUrl)}&text=Join%20me%20on%20Meridian%20Casino%20Clash%20and%20get%20%2425%20bonus!%20Use%20code%3A%20${referralCode}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 px-4 py-2 bg-[#0088cc] hover:bg-[#0077b5] text-white font-bold rounded-lg transition-all"

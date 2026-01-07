@@ -5,6 +5,7 @@ import { detectWallet, connectWallet, getAvailableWallets, WalletType, WalletInf
 import { WalletImportModal } from '../components/WalletImportModal';
 import { generateReferralCode, validateReferralCode, NEW_USER_BONUS } from '../services/referralService';
 import { supabase, isSupabaseConfigured } from '../services/supabase';
+import { AnimatedLogo } from '../components/AnimatedLogo';
 
 const Auth: React.FC = () => {
   const navigate = useNavigate();
@@ -44,116 +45,66 @@ const Auth: React.FC = () => {
   }, []);
 
   const handleConnect = async (preferredWallet?: WalletType) => {
-    if (!context) return;
+    // ... existing code ...
+  };
 
-    // If no specific wallet passed, check if we need to select
-    if (!preferredWallet) {
-      if (detectedWallets.length > 1) {
-        setShowWalletSelection(true);
-        return;
-      }
-      if (detectedWallets.length === 1) {
-        preferredWallet = detectedWallets[0];
-      }
-    }
+  const handleQuickPlay = async () => {
+    if (!context) return;
 
     setIsConnecting(true);
     setError(null);
-    setShowWalletSelection(false);
 
     try {
-      // If no wallet detected, show error
-      if (!preferredWallet && !availableWallet) {
-        setError('No wallet detected. Please install MetaMask or TronLink.');
-        setIsConnecting(false);
-        return;
+      // Generate a persistent guest wallet address if one doesn't exist
+      let guestAddress = localStorage.getItem('guest_wallet_address');
+
+      if (!guestAddress) {
+        // Create a random eth-like address for the internal DB mapping
+        const randomBytes = new Uint8Array(20);
+        crypto.getRandomValues(randomBytes);
+        guestAddress = '0x' + Array.from(randomBytes).map(b => b.toString(16).padStart(2, '0')).join('');
+        localStorage.setItem('guest_wallet_address', guestAddress);
       }
 
-      const walletToConnect = preferredWallet || availableWallet;
-
-      // Connect to wallet
-      const walletInfo = await connectWallet(walletToConnect);
-
-      if (!walletInfo || !walletInfo.address) {
-        setError('Failed to connect wallet. Please try again.');
-        setIsConnecting(false);
-        return;
-      }
-
-      // In a real app, here you would:
-      // 1. Request nonce from backend
-      // 2. Sign message with wallet
-      // 3. Send signature to backend for verification
-      // 4. Backend returns JWT token
-
-      // Supabase Integration: Check for existing user
+      // Check for existing profile
       const { data: existingProfile, error: fetchError } = await supabase
         .from('profiles')
         .select('*')
-        .eq('wallet_address', walletInfo.address)
+        .eq('wallet_address', guestAddress)
         .single();
 
-      if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 is "no rows returned"
-        console.error('Error fetching profile:', fetchError);
-        setError('Failed to fetch user profile. Please try again.');
-        setIsConnecting(false);
-        return;
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        throw new Error('Failed to fetch guest profile');
       }
 
       let userProfile = existingProfile;
-      const isNewUser = !existingProfile;
 
-      if (isNewUser) {
-        // Handle referral code if present
+      if (!userProfile) {
+        // Create new guest profile
+        const newUserRefCode = generateReferralCode(guestAddress.slice(0, 8));
         const pendingRefCode = localStorage.getItem('pending_referral_code') || referralCode;
-        let referredBy = null;
-        if (pendingRefCode && validateReferralCode(pendingRefCode)) {
-          referredBy = pendingRefCode.toUpperCase();
-        }
-
-        // Generate referral code for new user
-        // Generate referral code for new user
-        const safeAddress = String(walletInfo.address || '');
-        if (!safeAddress) {
-          throw new Error("Wallet address is invalid/empty");
-        }
-
-        const newUserRefCode = generateReferralCode(safeAddress.slice(0, 8));
-
-        // Bonus amount: $25 if referred, $10 otherwise
-        const bonusAmount = referredBy ? NEW_USER_BONUS.withReferral : NEW_USER_BONUS.withoutReferral;
 
         const profileData = {
-          wallet_address: safeAddress,
-          username: `User_${safeAddress.slice(-4)}`,
+          wallet_address: guestAddress,
+          username: `Guest_${guestAddress.slice(-4)}`,
           referral_code: newUserRefCode,
-          referred_by: referredBy,
-          balance: 0, // Start with 0, claim in lobby
+          referred_by: pendingRefCode || null,
+          balance: 0,
           is_new_user: true,
           bonus_claimed: false
         };
 
-        // Create new profile in Supabase
         const { data: newProfile, error: insertError } = await supabase
           .from('profiles')
           .insert([profileData])
           .select()
           .single();
 
-        if (insertError) {
-          console.error('Error creating profile:', insertError);
-          setError(`Failed to create user profile: ${insertError.message} (${insertError.details || ''})`);
-          setIsConnecting(false);
-          return;
-        }
+        if (insertError) throw insertError;
         userProfile = newProfile;
       }
 
-      // Store in context and localStorage (as fallback/cache)
-      localStorage.setItem('wallet_address', walletInfo.address);
-      localStorage.setItem('wallet_type', walletInfo.walletType || '');
-
-      // Update user context with data from Supabase
+      // Set user in context
       context.setUser({
         address: userProfile.wallet_address,
         username: userProfile.username,
@@ -167,18 +118,12 @@ const Auth: React.FC = () => {
         isAdmin: userProfile.is_admin
       });
 
-      // Set connected state
       context.setIsConnected(true);
-
-      // Clear pending referral code
-      localStorage.removeItem('pending_referral_code');
-
-      // Navigate to lobby
       navigate('/lobby');
 
     } catch (err: any) {
-      console.error('Wallet connection error:', err);
-      setError(`Connection failed: ${err.message || JSON.stringify(err)}`);
+      console.error('Quick Play error:', err);
+      setError(`Quick Play failed: ${err.message}`);
       setIsConnecting(false);
     }
   };
@@ -191,13 +136,11 @@ const Auth: React.FC = () => {
   return (
     <div className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden bg-black">
       {/* Background Image Layer */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-black/50 z-10"></div>
-        <img
-          alt="Quantum Space Nebula"
-          className="h-full w-full object-cover opacity-90 scale-110"
-          src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMnLtXBjIcz_BsCgLdAhckHzmI1cx7YctVH-5aOKMzX9mgVrbeslCnfuCjZK0B0L0PSbT6l23a4jhzZBY-GlJxc0aHQAAHhMPseS3PP_MrRZEkcOijiv287UvfP8X0ApZBDSo-MRdWob-gcMuwejemR-i0tUcpv89W17Mf-f843Ov1qEHenrniNuh7pTRqS0X_QADU5QRtMAYajORhAVoL2tSBle_8qt1CW8dXoEcwPs-ts-FPvoLKvw2wqJVYiwmWLIHE4Z62dXk"
-        />
+      <div className="absolute inset-0 z-0 bg-[#050505]">
+        <div className="absolute inset-0 bg-gradient-to-br from-quantum-gold/5 via-transparent to-plasma-purple/5"></div>
+        <div className="absolute inset-0 opacity-30 bg-mesh"></div>
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-quantum-gold/10 rounded-full blur-[120px] animate-holo-pulse"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-plasma-purple/10 rounded-full blur-[120px] animate-holo-pulse" style={{ animationDelay: '2s' }}></div>
       </div>
 
       {/* Animated Promotional Banner */}
@@ -247,19 +190,9 @@ const Auth: React.FC = () => {
       <div className="relative z-30 w-full max-w-md px-6 flex flex-col items-center animate-holo-entry">
         <div className="w-full bg-black/60 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] shadow-[0_30px_100px_rgba(0,0,0,0.8)] p-10 flex flex-col items-center text-center">
 
-          {/* Logo Icon Box */}
-          <div className="w-20 h-20 mb-8 flex items-center justify-center rounded-2xl bg-gradient-to-br from-quantum-gold/20 to-black border border-quantum-gold/40 shadow-gold-glow-sm p-2">
-            <img src="/assets/meridian-logo.png" alt="Meridian" className="w-full h-full object-contain" />
-          </div>
-
-          {/* Branding Section */}
-          <div className="flex flex-col items-center gap-1 mb-2">
-            <h2 className="font-heading font-black text-lg text-quantum-gold tracking-[0.3em] uppercase leading-none">
-              Meridian
-            </h2>
-            <h1 className="font-heading font-black text-5xl text-white tracking-tighter uppercase leading-none">
-              Casino<span className="text-quantum-gold">Clash</span>
-            </h1>
+          {/* Animated Logo */}
+          <div className="mb-8 scale-110">
+            <AnimatedLogo />
           </div>
 
           <p className="text-quantum-gold text-[11px] mb-8 tracking-[0.4em] uppercase font-black italic">
@@ -357,13 +290,24 @@ const Auth: React.FC = () => {
               <div className="absolute inset-0 rounded-2xl bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
             </button>
 
+            {/* Quick Play Button */}
+            <button
+              onClick={() => handleQuickPlay()}
+              disabled={isConnecting}
+              className="w-full h-16 bg-white/5 border-2 border-white/10 rounded-2xl flex items-center justify-center gap-3 text-white font-black text-lg uppercase hover:bg-white/10 hover:border-quantum-gold/40 transition-all duration-300 group"
+            >
+              <span className="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">bolt</span>
+              <span>Quick Play (Guest)</span>
+            </button>
+
             {/* Import Wallet Button */}
             <button
               onClick={() => setShowImportModal(true)}
-              className="w-full py-4 bg-white/5 border-2 border-white/10 rounded-xl text-white font-bold uppercase hover:bg-white/10 hover:border-quantum-gold/30 transition-all flex items-center justify-center gap-2"
+              disabled={isConnecting}
+              className="w-full py-4 bg-transparent border border-white/10 rounded-xl text-white/60 font-bold uppercase hover:text-white hover:border-white/20 transition-all flex items-center justify-center gap-2 text-sm"
             >
-              <span className="material-symbols-outlined">vpn_key</span>
-              <span>Import Wallet</span>
+              <span className="material-symbols-outlined text-sm">vpn_key</span>
+              <span>Import Private Key</span>
             </button>
 
           </div>

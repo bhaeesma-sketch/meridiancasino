@@ -103,11 +103,11 @@ const Lobby: React.FC = () => {
   };
 
   const games = [
-    { name: 'Dice', desc: 'Roll for the stars.', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBM6cQQ6kFadFp1_-BNFkfInrsKXUox-MhuLAoQMS2qQVNqhEIf4brak0i8gzWF9ZKSCFAgbNOdyMNDF8deV997I1PtRl6kmNQaQb8SvllWZNJUjoztHzY9pxw-HDyk4Yx2vMLEltAcJP_6LmECIoYY6Lj-coktblFRu3lJryNWoezObRIu2t7w5lp2Ju3bcSLNJj1zigoOE0UXv2qlBgOHcYqR5E471G1CkpUDPVVVnZ1W4D0ohGSyGa-c5QsD093Yh1VED3FO5xs', path: '/dice', icon: 'casino', color: 'text-quantum-gold' },
-    { name: 'Plinko', desc: 'Quantum gravity drops.', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBUj1pxJAMRLAn1QVWSCZqMj2tSvKmR4I28YxCatcJhFNcy7RRC66ufbLLuv35pNldRy4jau2MEBePdvElAsvxbyek_lAsuAKbUz4nKrLZSGBl7uJZvpv8XjB7Mp-UHYxoBLyIwNRPSenTY3EdxCl8pHbAniEkP85RkJtnb36ZF9jzwWOzfQPR5tp-Wqg_z2qaY_jn6w7_PVxYhUkuHddI5bgq4sx7IHylvWYerNZFJ4eB3VrHcaEmcEfk_Xn6WthA_1OpNKJo85To', path: '/plinko', icon: 'grid_view', color: 'text-plasma-purple' },
-    { name: 'Blackjack', desc: 'Live Dealer experience.', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAzCqpdKdjN6WPe_WwDynKutadSJbk-zid-dY3x0aRTr9K6tckAxxjj67sZONfz_F7hTw8sKt6MuX_pi0cb-esbHiRJ0Yg8gddiGhK5l_HEj5TI4N6fHqBzt-Sf_H6D6c64i87BHjZ-8EFhnDW6M2K2kmNTpbh3rVFVBiqr1tCh6lKGlLB_-KvcNMmnMyGFscFkdcnEbqb5IK65WcBwAgSQlRlSrTIcb4sZNY34Bpky2hphJqXOdGORmymFdQHgtrw8GEH7opuFtbI', path: '/blackjack', icon: 'playing_cards', color: 'text-red-400' },
-    { name: 'Roulette', desc: 'Spin & Win legacy.', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBYObtHI8DhYEpYkR-JAzhodSlHBaruhD0lz4rIBUZjdP8LXv7BJ-zxTQGhCQagDxNAtLopbXrtYlzluhDbmDfjKU8qokipBkKXiURiRQUPfR3TIdXYGLdlHdBNJ-8Tjni1q9ol8xfi6IwCGOSUMe7Izz1q8iCVpwYZHWBZppjV11NDys8Si8cH1BP1OCBDo7Uynk02yMOnbBelkgfgjOFSOBjCZSKVvq6IT7bVWQyD80diklnIX20q41sN9MLmfB4APqlMkhNtJ54', path: '/roulette', icon: 'incomplete_circle', color: 'text-quantum-gold' },
-    { name: 'Limbo', desc: 'Crash to the stars.', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBYObtHI8DhYEpYkR-JAzhodSlHBaruhD0lz4rIBUZjdP8LXv7BJ-zxTQGhCQagDxNAtLopbXrtYlzluhDbmDfjKU8qokipBkKXiURiRQUPfR3TIdXYGLdlHdBNJ-8Tjni1q9ol8xfi6IwCGOSUMe7Izz1q8iCVpwYZHWBZppjV11NDys8Si8cH1BP1OCBDo7Uynk02yMOnbBelkgfgjOFSOBjCZSKVvq6IT7bVWQyD80diklnIX20q41sN9MLmfB4APqlMkhNtJ54', path: '/limbo', icon: 'trending_up', color: 'text-cyan-400' },
+    { name: 'Dice', desc: 'Roll for the stars.', img: '/assets/dice-profile.png', path: '/dice', icon: 'casino', color: 'text-quantum-gold' },
+    { name: 'Plinko', desc: 'Quantum gravity drops.', img: '/assets/plinko-profile.png', path: '/plinko', icon: 'grid_view', color: 'text-plasma-purple' },
+    { name: 'Blackjack', desc: 'Live Dealer experience.', img: '/assets/blackjack-profile.png', path: '/blackjack', icon: 'playing_cards', color: 'text-red-400' },
+    { name: 'Roulette', desc: 'Spin & Win legacy.', img: '/assets/roulette-profile.png', path: '/roulette', icon: 'incomplete_circle', color: 'text-quantum-gold' },
+    { name: 'Limbo', desc: 'Crash to the stars.', img: '/assets/limbo-profile.png', path: '/limbo', icon: 'trending_up', color: 'text-cyan-400' },
   ];
 
   return (
@@ -140,11 +140,11 @@ const Lobby: React.FC = () => {
             >
               <div className="card-content h-full relative z-10">
                 <div
-                  className="absolute inset-0 bg-cover bg-center opacity-40 group-hover:opacity-60 transition-all duration-700 ease-out group-hover:scale-105"
+                  className="absolute inset-0 bg-cover bg-center opacity-80 group-hover:opacity-100 transition-all duration-700 ease-out group-hover:scale-110"
                   style={{ backgroundImage: `url(${game.img})` }}
                 ></div>
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
-                <div className="absolute inset-0 holographic-card-gradient opacity-0 group-hover:opacity-100 group-hover:animate-holo-shimmer pointer-events-none transition-opacity duration-500"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
+                <div className="absolute inset-0 holographic-card-gradient opacity-20 group-hover:opacity-100 group-hover:animate-holo-shimmer pointer-events-none transition-opacity duration-500"></div>
 
                 <div className="relative z-20 h-full p-4 flex flex-col justify-between">
                   <div className="flex justify-between items-start">
@@ -170,7 +170,14 @@ const Lobby: React.FC = () => {
                         {game.desc}
                       </p>
                     </div>
-                    <button className="w-full py-4 bg-gradient-to-r from-yellow-400 via-quantum-gold to-yellow-600 text-black font-black uppercase text-sm rounded-2xl shadow-gold-glow hover:shadow-[0_0_40px_rgba(255,215,0,0.5)] transition-all duration-500 flex items-center justify-center gap-3 active:scale-95 group-hover:translate-y-[-2px]">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        sounds.playClick();
+                        navigate(game.path);
+                      }}
+                      className="w-full py-4 bg-gradient-to-r from-yellow-400 via-quantum-gold to-yellow-600 text-black font-black uppercase text-sm rounded-2xl shadow-gold-glow hover:shadow-[0_0_40px_rgba(255,215,0,0.5)] transition-all duration-500 flex items-center justify-center gap-3 active:scale-95 group-hover:translate-y-[-2px]"
+                    >
                       <span className="material-symbols-outlined text-xl font-black">play_arrow</span>
                       Launch Game
                     </button>
