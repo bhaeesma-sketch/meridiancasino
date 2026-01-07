@@ -1,6 +1,8 @@
 import React, { useState, useContext, useRef, useEffect } from 'react';
 import { AppContext } from '../App';
 import { sounds } from '../services/soundService';
+import { useSecurity } from '../contexts/SecurityContext'; // New
+import { supabase } from '../services/supabase'; // New
 
 // Calculate multipliers based on row count
 const getMultipliers = (rows: number): number[] => {
@@ -139,67 +141,107 @@ const Plinko: React.FC = () => {
     };
   }, [balls, rows, bet, context, lastResult, multipliers]);
 
-  const dropBall = () => {
-    if (!context || context.user.balance < bet || bet <= 0) {
-      sounds.playLose();
-      return;
-    }
+  // Security Hooks
+  const { checkDepositRequirement, handleError } = useSecurity();
 
-    if (balls.length > 2) return; // Limit concurrent balls
+  const dropBall = async () => {
+    if (!context || balls.length > 4) return;
+
+    // 1. Security Check
+    if (!checkDepositRequirement(context.user.total_deposited || 0)) return;
 
     sounds.playClick();
-    context.updateBalance(-bet);
 
-    const newId = ballCounter.current++;
-    const path: number[] = [0]; // Start at center
-    let currentPos = 0;
+    // 2. Optimistic Update (will correct if error)
+    // Actually, for Plinko we might want to wait for server before dropping to ensure path is correct.
+    // Or we show a loading state?
+    // Let's invoke RPC.
 
-    // Generate random path
-    for (let i = 0; i < rows; i++) {
-      const move = Math.random() > 0.5 ? 1 : -1;
-      currentPos += move;
-      path.push(currentPos);
+    try {
+      const { data, error } = await supabase.rpc('play_plinko', {
+        p_bet_amount: bet,
+        p_rows: rows,
+        p_risk: 'high',
+        p_use_bonus: useBonus
+      });
+
+      if (error) throw error;
+
+      // 3. Process Server Result
+      const serverPath: number[] = data.path; // [0, 1, 0...]
+      const serverMult = data.multiplier;
+      const serverBalance = data.balance;
+
+      // Convert 0/1 path to Visual Layout Path (offsets)
+      const visualPath = [0];
+      let currentPos = 0;
+      serverPath.forEach(dir => {
+        // 0 = Left (-1), 1 = Right (+1) in our visual grid
+        // Wait, existing logic: move = Math.random() > 0.5 ? 1 : -1
+        // So 1 is Right, -1 is Left.
+        const move = dir === 1 ? 1 : -1;
+        currentPos += move;
+        visualPath.push(currentPos);
+      });
+
+      const newId = ballCounter.current++;
+
+      // Add Ball with Server-Determined Path
+      setBalls(prev => [...prev, {
+        id: newId,
+        x: 0,
+        y: 0,
+        path: visualPath,
+        step: 0,
+        finalIndex: data.slot, // Server provided slot
+        multiplier: serverMult // Authoritative multiplier
+      }]);
+
+    } catch (err) {
+      handleError(err);
     }
-
-    const finalIndex = Math.floor((currentPos + rows) / 2);
-    const clampedIndex = Math.max(0, Math.min(finalIndex, multipliers.length - 1));
-    const mult = multipliers[clampedIndex] || 1;
-
-    setBalls(prev => [...prev, {
-      id: newId,
-      x: 0,
-      y: 0,
-      path,
-      step: 0,
-      finalIndex: clampedIndex,
-      multiplier: mult
-    }]);
   };
+
+  // Bonus Wallet Integration
+  const [useBonus, setUseBonus] = useState(false);
 
   // Quick bet buttons
   const quickBets = [50, 100, 250, 500, 1000];
   const handleQuickBet = (amount: number) => {
     if (!context || balls.length > 0) return;
-    const maxBet = Math.min(amount, context.user.balance);
+    const balance = useBonus ? context.user.bonus_balance : context.user.real_balance;
+    const maxBet = Math.min(amount, balance);
     setBet(maxBet);
     sounds.playHover();
   };
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col lg:flex-row h-full overflow-hidden p-4 md:p-6 gap-4 relative">
+    <div className="flex-1 min-h-0 flex flex-col lg:flex-row h-full overflow-hidden p-2 md:p-4 gap-4 relative">
       <div className="scanline-overlay"></div>
 
       {/* Sidebar Terminal - Compact */}
-      <aside className="w-full lg:w-72 flex flex-col gap-3 z-20">
+      <aside className="w-full lg:w-72 flex flex-col gap-3 z-20 shrink-0">
         <div className="glass-panel p-4 rounded-xl border-quantum-gold/20 flex flex-col gap-4">
           <h3 className="text-quantum-gold font-heading font-black text-sm uppercase italic">Plinko Terminal</h3>
-
+          {/* ... Control Inputs (Bet, Rows) ... */}
           <div className="space-y-4">
-            <div className="bg-black/60 backdrop-blur-xl border border-white/10 rounded-xl p-3 relative group">
-              {/* Terminal Corner Accents */}
-              <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/20 rounded-tl-sm group-hover:border-quantum-gold/50 transition-colors"></div>
-              <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/20 rounded-br-sm group-hover:border-quantum-gold/50 transition-colors"></div>
+            {/* Wallet Toggle */}
+            <div className="flex bg-black/40 rounded-lg p-1 border border-white/10">
+              <button
+                onClick={() => setUseBonus(false)}
+                className={`flex-1 py-2 text-[10px] font-black uppercase rounded transition-all ${!useBonus ? 'bg-quantum-gold text-black shadow-glow' : 'text-gray-500 hover:text-white'}`}
+              >
+                Real
+              </button>
+              <button
+                onClick={() => setUseBonus(true)}
+                className={`flex-1 py-2 text-[10px] font-black uppercase rounded transition-all ${useBonus ? 'bg-plasma-purple text-white shadow-plasma-glow' : 'text-gray-500 hover:text-white'}`}
+              >
+                Bonus
+              </button>
+            </div>
 
+            <div className="bg-black/60 backdrop-blur-xl border border-white/10 rounded-xl p-3 relative group">
               <label className="text-[8px] text-gray-400 uppercase font-bold tracking-widest mb-1 block">Bet ($)</label>
               <div className="flex items-center gap-3">
                 <input
@@ -238,7 +280,7 @@ const Plinko: React.FC = () => {
               PROJECT BALL
             </button>
           </div>
-
+          {/* ... Last Result ... */}
           {lastResult && (
             <div className={`px-3 py-2 rounded-lg border flex flex-col items-center transition-all ${lastResult.isWin ? 'bg-green-500/10 border-green-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
               <div className="text-[8px] font-black uppercase text-white/50">{lastResult.isWin ? 'Win' : 'Loss'}</div>
@@ -249,107 +291,109 @@ const Plinko: React.FC = () => {
       </aside>
 
       {/* 3D Projection Area - Scaled for Viewport */}
-      <section className="flex-1 relative flex flex-col items-center justify-center min-h-0 overflow-hidden">
+      <section className="flex-1 relative flex flex-col items-center justify-start pt-8 min-h-0 overflow-hidden">
         <div className="absolute inset-0 bg-mesh opacity-5 pointer-events-none"></div>
 
-        <div className="relative w-full max-w-xl aspect-[1/1] flex flex-col items-center justify-center transform scale-75 md:scale-90 lg:scale-[1.1] origin-center -translate-y-8">
-          {/* Peg Board */}
-          <div className="relative flex flex-col gap-2 items-center" style={{ width: '100%', height: `${rows * 25}px` }}>
-            {Array.from({ length: rows }).map((_, rIndex) => {
-              const pinCount = rIndex + 2;
-              const totalWidth = pinCount * 24;
-              return (
-                <div key={rIndex} className="flex gap-4 items-center justify-center relative" style={{ width: `${totalWidth}px` }}>
-                  {Array.from({ length: pinCount }).map((_, pIndex) => {
-                    const xPos = (pIndex - (pinCount - 1) / 2) * 24;
-                    return (
-                      <div
-                        key={pIndex}
-                        className="plinko-peg absolute transition-all duration-300"
-                        style={{
-                          left: `50%`,
-                          transform: `translateX(calc(-50% + ${xPos}px))`,
-                          top: `${rIndex * 28}px`,
-                          boxShadow: `0 0 ${Math.random() > 0.9 ? '15px' : '5px'} rgba(255, 215, 0, 0.4)` // Twinkle effect
-                        }}
-                      />
-                    );
-                  })}
+        {/* Scaled Container to fit 16 rows */}
+        <div className="relative w-full h-full flex items-start justify-center overflow-y-auto lg:overflow-visible">
+          <div className="relative transform scale-50 md:scale-75 lg:scale-90 origin-top flex flex-col items-center">
+            {/* Peg Board */}
+            <div className="relative flex flex-col gap-2 items-center" style={{ width: '100%', height: `${rows * 25}px` }}>
+              {Array.from({ length: rows }).map((_, rIndex) => {
+                const pinCount = rIndex + 2;
+                const totalWidth = pinCount * 24;
+                return (
+                  <div key={rIndex} className="flex gap-4 items-center justify-center relative" style={{ width: `${totalWidth}px` }}>
+                    {Array.from({ length: pinCount }).map((_, pIndex) => {
+                      const xPos = (pIndex - (pinCount - 1) / 2) * 24;
+                      return (
+                        <div
+                          key={pIndex}
+                          className="plinko-peg absolute transition-all duration-300"
+                          style={{
+                            left: `50%`,
+                            transform: `translateX(calc(-50% + ${xPos}px))`,
+                            top: `${rIndex * 28}px`,
+                            boxShadow: `0 0 ${Math.random() > 0.9 ? '15px' : '5px'} rgba(255, 215, 0, 0.4)` // Twinkle effect
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+                );
+              })}
+
+              {/* Balls with Trails */}
+              {balls.map(ball => {
+                const centerX = 50;
+                const xOffset = (ball.x / rows) * 32;
+                const actualX = centerX + xOffset;
+                const yPos = ball.y * 0.9;
+
+                // Calculate Ghost Trail (simple history effect based on velocity vector approx)
+                // Since we don't store history, we simulate it by lagging Y slightly
+                return (
+                  <React.Fragment key={ball.id}>
+                    {/* Main Ball */}
+                    <div
+                      className="plinko-ball z-20"
+                      style={{
+                        left: `${actualX}%`,
+                        top: `${yPos}px`,
+                        transform: 'translate(-50%, -50%)',
+                      }}
+                    />
+                    {/* Ghost 1 */}
+                    <div
+                      className="plinko-ball z-10 opacity-60 scale-90 blur-[1px]"
+                      style={{
+                        left: `${actualX}%`,
+                        top: `${yPos - 8}px`,
+                        transform: 'translate(-50%, -50%)',
+                        background: 'radial-gradient(circle at 30% 30%, #9333EA, transparent)'
+                      }}
+                    />
+                    {/* Ghost 2 */}
+                    <div
+                      className="plinko-ball z-0 opacity-30 scale-75 blur-[2px]"
+                      style={{
+                        left: `${actualX}%`,
+                        top: `${yPos - 16}px`,
+                        transform: 'translate(-50%, -50%)',
+                        background: 'radial-gradient(circle at 30% 30%, #9333EA, transparent)'
+                      }}
+                    />
+                  </React.Fragment>
+                );
+              })}
+            </div>
+
+            {/* Multipliers - Holographic */}
+            <div className="flex gap-1 w-full justify-center mt-32 px-4">
+              {multipliers.map((m, i) => (
+                <div
+                  key={i}
+                  className={`plinko-slot h-10 w-10 rounded-lg flex items-center justify-center text-[9px] font-black text-white transition-all hover:scale-105 ${m > 10 ? 'bg-gradient-to-b from-red-600/40 to-red-900/60 border-red-500/40' :
+                    m > 2 ? 'bg-gradient-to-b from-orange-500/40 to-orange-800/60 border-orange-500/40' :
+                      'bg-gradient-to-b from-green-500/40 to-green-800/60 border-green-500/40'
+                    }`}
+                >
+                  {m.toFixed(1)}x
                 </div>
-              );
-            })}
-
-            {/* Balls with Trails */}
-            {balls.map(ball => {
-              const centerX = 50;
-              const xOffset = (ball.x / rows) * 32;
-              const actualX = centerX + xOffset;
-              const yPos = ball.y * 0.9;
-
-              // Calculate Ghost Trail (simple history effect based on velocity vector approx)
-              // Since we don't store history, we simulate it by lagging Y slightly
-              return (
-                <React.Fragment key={ball.id}>
-                  {/* Main Ball */}
-                  <div
-                    className="plinko-ball z-20"
-                    style={{
-                      left: `${actualX}%`,
-                      top: `${yPos}px`,
-                      transform: 'translate(-50%, -50%)',
-                    }}
-                  />
-                  {/* Ghost 1 */}
-                  <div
-                    className="plinko-ball z-10 opacity-60 scale-90 blur-[1px]"
-                    style={{
-                      left: `${actualX}%`,
-                      top: `${yPos - 8}px`,
-                      transform: 'translate(-50%, -50%)',
-                      background: 'radial-gradient(circle at 30% 30%, #9333EA, transparent)'
-                    }}
-                  />
-                  {/* Ghost 2 */}
-                  <div
-                    className="plinko-ball z-0 opacity-30 scale-75 blur-[2px]"
-                    style={{
-                      left: `${actualX}%`,
-                      top: `${yPos - 16}px`,
-                      transform: 'translate(-50%, -50%)',
-                      background: 'radial-gradient(circle at 30% 30%, #9333EA, transparent)'
-                    }}
-                  />
-                </React.Fragment>
-              );
-            })}
+              ))}
+            </div>
           </div>
 
-          {/* Multipliers - Holographic */}
-          <div className="flex gap-1 w-full justify-center mt-32 px-4">
-            {multipliers.map((m, i) => (
-              <div
-                key={i}
-                className={`plinko-slot h-10 w-10 rounded-lg flex items-center justify-center text-[9px] font-black text-white transition-all hover:scale-105 ${m > 10 ? 'bg-gradient-to-b from-red-600/40 to-red-900/60 border-red-500/40' :
-                  m > 2 ? 'bg-gradient-to-b from-orange-500/40 to-orange-800/60 border-orange-500/40' :
-                    'bg-gradient-to-b from-green-500/40 to-green-800/60 border-green-500/40'
-                  }`}
-              >
-                {m.toFixed(1)}x
-              </div>
-            ))}
+          {/* Status HUD - Ultra Compact */}
+          <div className="absolute bottom-4 right-4 flex items-center gap-4 bg-black/40 backdrop-blur-md rounded-lg px-3 py-1.5 border border-white/5">
+            <div className="flex items-center gap-1.5">
+              <span className="size-1.5 rounded-full bg-plasma-purple animate-pulse"></span>
+              <span className="text-[8px] font-black uppercase text-plasma-purple/80">Quantum Sync</span>
+            </div>
+            {balls.length > 0 && (
+              <div className="text-[10px] font-mono text-quantum-gold font-bold">{balls.length} Active</div>
+            )}
           </div>
-        </div>
-
-        {/* Status HUD - Ultra Compact */}
-        <div className="absolute bottom-4 right-4 flex items-center gap-4 bg-black/40 backdrop-blur-md rounded-lg px-3 py-1.5 border border-white/5">
-          <div className="flex items-center gap-1.5">
-            <span className="size-1.5 rounded-full bg-plasma-purple animate-pulse"></span>
-            <span className="text-[8px] font-black uppercase text-plasma-purple/80">Quantum Sync</span>
-          </div>
-          {balls.length > 0 && (
-            <div className="text-[10px] font-mono text-quantum-gold font-bold">{balls.length} Active</div>
-          )}
-        </div>
       </section>
     </div>
   );

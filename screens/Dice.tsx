@@ -9,6 +9,7 @@ const Dice: React.FC = () => {
   const [bet, setBet] = useState(50);
   const [target, setTarget] = useState(50);
   const [isRolling, setIsRolling] = useState(false);
+  const [useBonus, setUseBonus] = useState(false); // New
   const [lastRoll, setLastRoll] = useState<number | null>(null);
   const [cubeRotation, setCubeRotation] = useState({ x: -30, y: -45, z: 0 });
   const [displayRoll, setDisplayRoll] = useState<number | null>(null);
@@ -74,7 +75,8 @@ const Dice: React.FC = () => {
       const { data, error } = await supabase.rpc('play_dice', {
         p_bet_amount: bet,
         p_target_number: target,
-        p_client_seed: context.user.username // Simple seed
+        p_client_seed: context.user.username,
+        p_use_bonus: useBonus
       });
 
       if (error) throw error;
@@ -180,27 +182,44 @@ const Dice: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3 items-end">
-          <div className="bg-black/60 backdrop-blur-xl border border-white/10 rounded-xl p-3 flex flex-col">
+          <div className="bg-black/60 backdrop-blur-xl border border-white/10 rounded-xl p-3 flex flex-col gap-2">
+            {/* Wallet Toggle */}
+            <div className="flex bg-white/5 rounded-lg p-1 border border-white/10 w-full mb-1">
+              <button
+                onClick={() => setUseBonus(false)}
+                className={`flex-1 py-1 text-[9px] font-black uppercase rounded transition-all ${!useBonus ? 'bg-quantum-gold text-black shadow-glow' : 'text-gray-500 hover:text-white'}`}
+              >
+                Real
+              </button>
+              <button
+                onClick={() => setUseBonus(true)}
+                className={`flex-1 py-1 text-[9px] font-black uppercase rounded transition-all ${useBonus ? 'bg-plasma-purple text-white shadow-plasma-glow' : 'text-gray-500 hover:text-white'}`}
+              >
+                Bonus
+              </button>
+            </div>
+
             <label className="text-[8px] text-gray-500 uppercase font-bold tracking-widest mb-1 block">Wager ($)</label>
             <div className="flex items-center gap-4">
               <input
                 type="number"
-                min="1"
-                max={context?.user.balance || 10000}
+                min="0.1"
+                max={useBonus ? context?.user.bonus_balance : context?.user.real_balance}
                 value={bet}
                 onChange={e => {
-                  const val = Math.max(1, Math.min(Number(e.target.value) || 1, context?.user.balance || 10000));
+                  const bal = useBonus ? context?.user.bonus_balance : context?.user.real_balance;
+                  const val = Math.max(0.1, Math.min(Number(e.target.value) || 0.1, bal || 10000));
                   setBet(val);
                 }}
                 disabled={isRolling}
-                className="bg-transparent border-none p-0 text-white font-mono text-2xl font-bold focus:ring-0 w-24 disabled:opacity-50"
+                className="bg-transparent border-none p-0 text-white font-mono text-xl font-bold focus:ring-0 w-24 disabled:opacity-50"
               />
               <div className="flex gap-1 flex-wrap">
                 {quickBets.map(amount => (
                   <button
                     key={amount}
                     onClick={() => handleQuickBet(amount)}
-                    disabled={isRolling || !context || context.user.balance < amount}
+                    disabled={isRolling || !context}
                     className="px-2 py-0.5 text-[9px] font-mono font-bold rounded bg-white/5 border border-white/10 hover:border-quantum-gold/50 transition-all"
                   >
                     ${amount}

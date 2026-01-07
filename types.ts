@@ -16,6 +16,8 @@ export interface User {
   address?: string;
   real_balance: number;
   bonus_balance: number;
+  bonus_winnings?: number;
+  is_bonus_converted?: boolean;
   valid_referral_count: number;
   is_first_deposit: boolean;
   total_deposited?: number;

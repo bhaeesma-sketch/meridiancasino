@@ -39,17 +39,23 @@ export const Navbar: React.FC = () => {
             <div className="flex items-center gap-3 md:gap-6">
 
                 {/* Wallet Display */}
-                <div className="hidden md:flex flex-col items-end mr-2">
-                    <div className="flex items-baseline gap-1 text-quantum-gold drop-shadow-sm font-mono">
-                        <span className="text-xs opacity-70">$</span>
-                        <span className="text-xl font-bold tracking-tight">{formatCurrency(user.real_balance).replace('$', '')}</span>
+                <div className="hidden md:flex items-center gap-3">
+                    {/* Real Balance */}
+                    <div className="flex flex-col items-end">
+                        <div className="flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-lg border border-white/5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-neon-green/80 shadow-[0_0_8px_rgba(74,222,128,0.5)] animate-pulse"></span>
+                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mr-1">Real</span>
+                            <span className="text-sm font-mono font-bold text-quantum-gold tracking-tight">{formatCurrency(user.real_balance)}</span>
+                        </div>
                     </div>
-                    <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider font-bold text-white/40">
-                        <span className="w-1.5 h-1.5 rounded-full bg-neon-green/50 animate-pulse"></span>
-                        <span>Real Balance</span>
-                        <span className="text-quantum-accent/70 ml-2">
-                            + {formatCurrency(user.bonus_balance).replace('$', '')} Bonus
-                        </span>
+
+                    {/* Bonus Balance */}
+                    <div className="flex flex-col items-end">
+                        <div className="flex items-center gap-2 bg-plasma-purple/10 px-3 py-1.5 rounded-lg border border-plasma-purple/30">
+                            <span className="w-1.5 h-1.5 rounded-full bg-plasma-purple shadow-[0_0_8px_rgba(147,51,234,0.5)]"></span>
+                            <span className="text-[10px] text-plasma-purple/80 font-bold uppercase tracking-wider mr-1">Bonus</span>
+                            <span className="text-sm font-mono font-bold text-white tracking-tight">{formatCurrency(user.bonus_balance)}</span>
+                        </div>
                     </div>
                 </div>
 
