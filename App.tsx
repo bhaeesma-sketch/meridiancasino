@@ -23,8 +23,10 @@ import FAQ from './screens/FAQ';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import SettingsModal from './components/SettingsModal';
 import { sounds } from './services/soundService';
+import { Navbar } from './components/Navbar';
+import { LeftSidebar, RightSidebar } from './components/Sidebar';
 
-interface AppContextType {
+export interface AppContextType {
   user: User;
   setUser: React.Dispatch<React.SetStateAction<User>>;
   updateBalance: (delta: number) => Promise<void>;
@@ -391,54 +393,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   );
 };
 
-import { AnimatedLogo } from './components/AnimatedLogo';
-import { LeftSidebar, RightSidebar } from './components/Sidebar';
 
-const Navbar = () => {
-  const navigate = useNavigate();
-  const context = useContext(AppContext);
-  if (!context || !context.isConnected) return null;
-  const { user } = context;
-
-  return (
-    <header className="fixed top-0 left-0 right-0 z-50 h-16 md:h-20 px-4 md:px-6 lg:px-10 flex items-center justify-between bg-gradient-to-b from-black/90 to-transparent backdrop-blur-[4px]">
-      <div
-        className="flex items-center gap-3 cursor-pointer group/logo"
-        onClick={() => {
-          sounds.playClick();
-          navigate('/lobby');
-        }}
-      >
-        <AnimatedLogo className="scale-75 md:scale-100 origin-left" />
-      </div>
-
-      <div className="flex items-center gap-3 md:gap-6">
-        <div className="hidden sm:flex flex-col items-end px-4 py-2 rounded-2xl bg-black/60 border border-white/10 relative overflow-hidden group hover:border-quantum-gold/30 transition-all duration-500 shadow-gold-glow-sm">
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-          <div className="flex items-center gap-2 text-quantum-gold">
-            <span className="material-symbols-outlined text-sm md:text-base font-bold">account_balance_wallet</span>
-            <span className="font-heading text-lg md:text-xl font-black tracking-tighter">${(user.real_balance + user.bonus_balance).toLocaleString()}</span>
-          </div>
-          <div className="flex items-center gap-3 mt-0.5">
-            <div className="flex items-center gap-1">
-              <span className="size-1 rounded-full bg-green-500"></span>
-              <span className="text-[8px] text-white/60 uppercase tracking-[0.2em] font-black">Real: ${user.real_balance.toLocaleString()}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <span className="size-1 rounded-full bg-quantum-gold animate-pulse"></span>
-              <span className="text-[8px] text-quantum-gold uppercase tracking-[0.2em] font-black">Bonus: ${user.bonus_balance.toLocaleString()}</span>
-            </div>
-          </div>
-        </div>
-        <div
-          onClick={() => navigate('/profile')}
-          className="size-8 md:size-10 rounded-lg bg-cover bg-center border border-white/20 cursor-pointer hover:ring-2 ring-quantum-gold/50 transition-all shadow-holo-glow"
-          style={{ backgroundImage: `url(${user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || 'User')}&background=FFD700&color=000&size=128`})` }}
-        />
-      </div>
-    </header>
-  );
-};
 
 const GlobalTicker = () => {
   const context = useContext(AppContext);
