@@ -26,6 +26,7 @@ import { sounds } from './services/soundService';
 import { Navbar } from './components/Navbar';
 import { HorizontalNav } from './components/HorizontalNav';
 import { RightSidebar } from './components/Sidebar';
+import { SecurityProvider } from './contexts/SecurityContext';
 
 export interface AppContextType {
   user: User;
@@ -436,35 +437,39 @@ const AppContent = () => {
       <Navbar />
       <SettingsModal />
 
-      {/* Horizontal Navigation */}
-      <HorizontalNav />
+      {/* Main Layout Container with Top Padding for Fixed Navbar */}
+      <div className="flex-1 flex flex-col pt-16 md:pt-20 overflow-hidden">
+        {/* Horizontal Navigation */}
+        <HorizontalNav />
 
-      <div className="flex-grow flex items-stretch px-4 md:px-6 lg:px-10 pt-2 pb-12 overflow-hidden gap-4 lg:gap-6">
-        {/* Dynamic Game/Content Stage (Full Width) */}
-        <main className={`flex-1 flex flex-col overflow-hidden relative bg-black/20 rounded-[2rem] border border-white/5 backdrop-blur-sm stage-container ${context.is3DMode ? 'stage-3d' : ''}`}>
-          <Routes>
-            <Route path="/" element={<Auth />} />
-            <Route path="/lobby" element={<ProtectedRoute><Lobby /></ProtectedRoute>} />
-            <Route path="/plinko" element={<ProtectedRoute><Plinko /></ProtectedRoute>} />
-            <Route path="/roulette" element={<ProtectedRoute><Roulette /></ProtectedRoute>} />
-            <Route path="/dice" element={<ProtectedRoute><Dice /></ProtectedRoute>} />
-            <Route path="/blackjack" element={<ProtectedRoute><Blackjack /></ProtectedRoute>} />
-            <Route path="/limbo" element={<ProtectedRoute><Limbo /></ProtectedRoute>} />
-            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-            <Route path="/rewards" element={<ProtectedRoute><Rewards /></ProtectedRoute>} />
-            <Route path="/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />
-            <Route path="/withdraw" element={<ProtectedRoute><Withdraw /></ProtectedRoute>} />
-            <Route path={`/${import.meta.env.VITE_ADMIN_SECRET_PATH || 'admin'}`} element={<ProtectedRoute><Admin /></ProtectedRoute>} />
-            <Route path="/terms" element={<TermsOfService />} />
-            <Route path="/privacy" element={<PrivacyPolicy />} />
-            <Route path="/responsible-gaming" element={<ResponsibleGaming />} />
-            <Route path="/faq" element={<FAQ />} />
-            <Route path="*" element={<Navigate to="/lobby" replace />} />
-          </Routes>
-        </main>
+        <div className="flex-grow flex items-stretch px-4 md:px-6 lg:px-10 py-4 overflow-hidden gap-4 lg:gap-6">
+          {/* Dynamic Game/Content Stage (Full Width) */}
+          <main className={`flex-1 flex flex-col overflow-y-auto custom-scrollbar relative bg-black/20 rounded-[2rem] border border-white/5 backdrop-blur-sm stage-container ${context.is3DMode ? 'stage-3d' : ''}`}>
+            <Routes>
+              <Route path="/" element={<Auth />} />
+              <Route path="/lobby" element={<ProtectedRoute><Lobby /></ProtectedRoute>} />
+              <Route path="/plinko" element={<ProtectedRoute><Plinko /></ProtectedRoute>} />
+              <Route path="/roulette" element={<ProtectedRoute><Roulette /></ProtectedRoute>} />
+              <Route path="/dice" element={<ProtectedRoute><Dice /></ProtectedRoute>} />
+              <Route path="/blackjack" element={<ProtectedRoute><Blackjack /></ProtectedRoute>} />
+              <Route path="/limbo" element={<ProtectedRoute><Limbo /></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+              <Route path="/rewards" element={<ProtectedRoute><Rewards /></ProtectedRoute>} />
+              <Route path="/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />
+              <Route path="/withdraw" element={<ProtectedRoute><Withdraw /></ProtectedRoute>} />
+              <Route path={`/${import.meta.env.VITE_ADMIN_SECRET_PATH || 'admin'}`} element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+              <Route path="/terms" element={<TermsOfService />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/responsible-gaming" element={<ResponsibleGaming />} />
+              <Route path="/faq" element={<FAQ />} />
+              <Route path="*" element={<Navigate to="/lobby" replace />} />
+            </Routes>
+          </main>
 
-        {/* Live Metrics/Action (Right) - Optional */}
-        <RightSidebar />
+          {/* Live Metrics/Action (Right) - Optional */}
+          <RightSidebar />
+        </div>
+
       </div>
 
       <GlobalTicker />
@@ -475,7 +480,9 @@ const AppContent = () => {
 const App = () => (
   <HashRouter>
     <AppProvider>
-      <AppContent />
+      <SecurityProvider>
+        <AppContent />
+      </SecurityProvider>
     </AppProvider>
   </HashRouter>
 );

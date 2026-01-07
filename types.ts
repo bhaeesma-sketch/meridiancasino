@@ -18,6 +18,7 @@ export interface User {
   bonus_balance: number;
   valid_referral_count: number;
   is_first_deposit: boolean;
+  total_deposited?: number;
 }
 
 export interface ReferralStats {

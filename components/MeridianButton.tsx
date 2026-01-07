@@ -5,6 +5,7 @@ export interface MeridianButtonProps extends React.ButtonHTMLAttributes<HTMLButt
     size?: 'sm' | 'md' | 'lg' | 'xl';
     icon?: React.ReactNode;
     loading?: boolean;
+    fullWidth?: boolean;
     children: React.ReactNode;
 }
 
@@ -13,6 +14,7 @@ export const MeridianButton: React.FC<MeridianButtonProps> = ({
     size = 'md',
     icon,
     loading = false,
+    fullWidth = false,
     children,
     className = '',
     disabled,
@@ -38,6 +40,7 @@ export const MeridianButton: React.FC<MeridianButtonProps> = ({
         baseClass,
         variantClasses[variant],
         sizeClasses[size],
+        fullWidth ? 'w-full flex items-center justify-center' : '',
         className,
     ].filter(Boolean).join(' ');
 

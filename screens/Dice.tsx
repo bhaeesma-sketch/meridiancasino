@@ -1,6 +1,8 @@
 import React, { useState, useContext, useRef, useEffect } from 'react';
 import { AppContext } from '../App';
 import { sounds } from '../services/soundService';
+import { useSecurity } from '../contexts/SecurityContext'; // New
+import { supabase } from '../services/supabase'; // New
 
 const Dice: React.FC = () => {
   const context = useContext(AppContext);
@@ -28,119 +30,129 @@ const Dice: React.FC = () => {
     };
   }, []);
 
-  const rollDice = () => {
-    if (!context || context.user.balance < bet || isRolling || bet <= 0) {
-      sounds.playLose();
+  // Security & Backend Integration
+  const { handleError, checkDepositRequirement } = useSecurity();
+
+  // Helper to sync balance
+  const updateLocalBalance = (newRefBalance: number) => {
+    // We assume the RPC returns the definitive 'real_balance'.
+    // We need to update the context user object manually or fetch profile.
+    // For smoothness, we update context directly if 'updateUser' exists, else using 'updateBalance' is tricky 
+    // because it takes a delta.
+    // We will calculate delta.
+    if (context) {
+      const current = context.user.real_balance;
+      const delta = newRefBalance - current;
+      if (delta !== 0) context.updateBalance(delta);
+    }
+  };
+
+  const rollDice = async () => {
+    if (!context || isRolling || bet <= 0) return;
+
+    // 1. Client-Side Pre-Checks
+    if (!checkDepositRequirement(context.user.total_deposited || 0)) {  // Assuming total_deposited exists or 0
       return;
+      // Note: If total_deposited is missing from User type, we might need to cast or fetch it.
+      // For now, we'll let the backend catch it if client check passes (e.g. if field is missing).
     }
 
     setIsRolling(true);
     setIsWin(null);
     setLastRoll(null);
     setDisplayRoll(null);
+
+    // Play Click Sound
     sounds.playRoll();
 
-    // Deduct bet immediately
-    context.updateBalance(-bet);
+    try {
+      // 2. Server-Side Execution
+      // We delay animation start slightly until we have the result or parallelize it?
+      // Parallel: Start animation (indefinite state), then when result comes, trigger settle.
+      // For simple Dice, fetching is fast (<200ms). We can fetch first.
 
-    const duration = 3000; // Longer for dramatic 3D roll
-    const finalRoll = Math.random() * 100;
-    startTimeRef.current = Date.now();
+      const { data, error } = await supabase.rpc('play_dice', {
+        p_bet_amount: bet,
+        p_target_number: target,
+        p_client_seed: context.user.username // Simple seed
+      });
 
-    // Generate random rotation amounts for realistic tumbling
-    const totalRotations = {
-      x: Math.random() * 10 + 5, // 5-15 full rotations
-      y: Math.random() * 10 + 5,
-      z: Math.random() * 8 + 3
-    };
+      if (error) throw error;
 
-    const animate = () => {
-      const elapsed = Date.now() - startTimeRef.current;
-      const progress = Math.min(elapsed / duration, 1);
+      // 3. Process Result
+      const finalRoll = data.roll;
+      const payout = data.payout;
+      const isWinResult = data.is_win;
+      const finalBalance = data.balance;
 
-      if (progress < 1) {
-        // Easing function - starts fast, slows down smoothly
-        const easedProgress = 1 - Math.pow(1 - progress, 4);
+      // Start Animation with DETERMINED result
+      const duration = 3000;
+      startTimeRef.current = Date.now();
 
-        // Calculate rotation with realistic physics
-        const remainingProgress = 1 - easedProgress;
-        const time = elapsed * 0.01;
+      // Immediately show bet deduction visually (optional, or wait for end)
+      // context.updateBalance(-bet); // Don't do this double, wait for final sync or do delta
 
-        // Realistic tumbling motion with multiple axes
-        setCubeRotation({
-          x: -30 + (totalRotations.x * 360 * (1 - easedProgress)) +
-            Math.sin(time * 8) * 180 * remainingProgress +
-            Math.cos(time * 5) * 90 * remainingProgress,
-          y: -45 + (totalRotations.y * 360 * (1 - easedProgress)) +
-            Math.cos(time * 7) * 180 * remainingProgress +
-            Math.sin(time * 6) * 90 * remainingProgress,
-          z: (totalRotations.z * 360 * (1 - easedProgress)) +
-            Math.sin(time * 9) * 120 * remainingProgress
-        });
+      const totalRotations = {
+        x: Math.random() * 10 + 5,
+        y: Math.random() * 10 + 5,
+        z: Math.random() * 8 + 3
+      };
 
-        // Update display roll during animation (smooth number changes)
-        const displayValue = finalRoll + (Math.random() - 0.5) * 20 * remainingProgress;
-        setDisplayRoll(Math.max(0, Math.min(100, displayValue)));
+      const animate = () => {
+        const elapsed = Date.now() - startTimeRef.current;
+        const progress = Math.min(elapsed / duration, 1);
 
-        animationFrameRef.current = requestAnimationFrame(animate);
-      } else {
-        // Final result - smooth settle
-        setLastRoll(finalRoll);
-        setDisplayRoll(finalRoll);
-
-        // Smooth settle to final position
-        let settleProgress = 0;
-        const settleDuration = 500;
-        const settleStart = Date.now();
-
-        const settle = () => {
-          const elapsed = Date.now() - settleStart;
-          settleProgress = Math.min(elapsed / settleDuration, 1);
-          const easeOut = 1 - Math.pow(1 - settleProgress, 3);
+        if (progress < 1) {
+          const easedProgress = 1 - Math.pow(1 - progress, 4);
+          const remainingProgress = 1 - easedProgress;
+          const time = elapsed * 0.01;
 
           setCubeRotation({
-            x: -30 + (totalRotations.x * 360 * (1 - easeOut)),
-            y: -45 + (totalRotations.y * 360 * (1 - easeOut)),
-            z: totalRotations.z * 360 * (1 - easeOut)
+            x: -30 + (totalRotations.x * 360 * (1 - easedProgress)) +
+              Math.sin(time * 8) * 180 * remainingProgress,
+            y: -45 + (totalRotations.y * 360 * (1 - easedProgress)) +
+              Math.cos(time * 7) * 180 * remainingProgress,
+            z: (totalRotations.z * 360 * (1 - easedProgress)) +
+              Math.sin(time * 9) * 120 * remainingProgress
           });
 
-          if (settleProgress < 1) {
-            requestAnimationFrame(settle);
+          // Display Roll Preview
+          const displayValue = finalRoll + (Math.random() - 0.5) * 20 * remainingProgress;
+          setDisplayRoll(Math.max(0, Math.min(100, displayValue)));
+
+          animationFrameRef.current = requestAnimationFrame(animate);
+        } else {
+          // Settle
+          setLastRoll(finalRoll);
+          setDisplayRoll(finalRoll);
+
+          // Final Balance Sync (Authoritative)
+          updateLocalBalance(finalBalance);
+
+          setIsWin(isWinResult); // State update triggers visual win/loss style
+
+          if (isWinResult) {
+            setTimeout(() => sounds.playWin(), 100);
+            // History update handled by server, but we can push local history if needed
           } else {
-            // Final snap to clean position
-            setCubeRotation({ x: -30, y: -45, z: 0 });
-            setIsRolling(false);
-
-            // Determine win/loss - 0.01% RTP (99.99% house edge)
-            const won = finalRoll > target;
-            setIsWin(won);
-
-            if (won) {
-              setTimeout(() => sounds.playWin(), 100);
-              const payout = bet * parseFloat(multiplier);
-              context.updateBalance(payout);
-              context.addHistory({
-                id: Date.now().toString() + Math.random().toString(),
-                game: 'Dice',
-                multiplier: parseFloat(multiplier),
-                payout: payout / 45000,
-                timestamp: Date.now(),
-                username: context.user.username
-              });
-            } else {
-              setTimeout(() => sounds.playLose(), 100);
-            }
-
-            // Reset win state after animation
-            setTimeout(() => setIsWin(null), 3000);
+            setTimeout(() => sounds.playLose(), 100);
           }
-        };
 
-        requestAnimationFrame(settle);
-      }
-    };
+          setIsRolling(false);
+          setTimeout(() => setIsWin(null), 3000);
 
-    animationFrameRef.current = requestAnimationFrame(animate);
+          // Reset rotation
+          setCubeRotation({ x: -30, y: -45, z: 0 });
+        }
+      };
+
+      animationFrameRef.current = requestAnimationFrame(animate);
+
+    } catch (error: any) {
+      console.error("Dice Game Error:", error);
+      setIsRolling(false);
+      handleError(error); // Trigger Security Modal
+    }
   };
 
   // Quick bet buttons
