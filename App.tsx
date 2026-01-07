@@ -24,7 +24,8 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import SettingsModal from './components/SettingsModal';
 import { sounds } from './services/soundService';
 import { Navbar } from './components/Navbar';
-import { LeftSidebar, RightSidebar } from './components/Sidebar';
+import { HorizontalNav } from './components/HorizontalNav';
+import { RightSidebar } from './components/Sidebar';
 
 export interface AppContextType {
   user: User;
@@ -435,11 +436,11 @@ const AppContent = () => {
       <Navbar />
       <SettingsModal />
 
-      <div className="flex-grow flex items-stretch px-4 md:px-6 lg:px-10 pt-20 pb-12 overflow-hidden gap-4 lg:gap-8 h-[calc(100vh-theme(spacing.20)-theme(spacing.10))]">
-        {/* Dynamic Navigation (Left) */}
-        <LeftSidebar />
+      {/* Horizontal Navigation */}
+      <HorizontalNav />
 
-        {/* Dynamic Game/Content Stage (Center) */}
+      <div className="flex-grow flex items-stretch px-4 md:px-6 lg:px-10 pt-2 pb-12 overflow-hidden gap-4 lg:gap-6">
+        {/* Dynamic Game/Content Stage (Full Width) */}
         <main className={`flex-1 flex flex-col overflow-hidden relative bg-black/20 rounded-[2rem] border border-white/5 backdrop-blur-sm stage-container ${context.is3DMode ? 'stage-3d' : ''}`}>
           <Routes>
             <Route path="/" element={<Auth />} />
@@ -462,7 +463,7 @@ const AppContent = () => {
           </Routes>
         </main>
 
-        {/* Live Metrics/Action (Right) */}
+        {/* Live Metrics/Action (Right) - Optional */}
         <RightSidebar />
       </div>
 
