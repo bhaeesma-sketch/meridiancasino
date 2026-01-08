@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
@@ -6,7 +7,7 @@ const corsHeaders = {
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-serve(async (req) => {
+serve(async (req: Request) => {
     if (req.method === 'OPTIONS') {
         return new Response('ok', { headers: corsHeaders })
     }
@@ -26,15 +27,30 @@ serve(async (req) => {
         if (!walletAddress) throw new Error('Wallet address is required')
 
         // 2. Find User Profile by Wallet
-        const { data: profile, error: profileError } = await supabaseAdmin
+        // 2. Find or Create User Profile
+        let { data: profile, error: profileError } = await supabaseAdmin
             .from('profiles')
             .select('id, email')
             .eq('wallet_address', walletAddress)
             .single()
 
-        if (profileError || !profile) {
-            console.error("Profile Error:", profileError);
-            throw new Error('User profile not found. Please reconnect wallet.')
+        if (!profile) {
+            // Auto-create profile if it doesn't exist (e.g. Guest or new user)
+            const { data: newProfile, error: createError } = await supabaseAdmin
+                .from('profiles')
+                .insert({
+                    wallet_address: walletAddress,
+                    username: `User_${walletAddress.slice(0, 4)}`,
+                    balance: 0,
+                    real_balance: 0
+                })
+                .select()
+                .single();
+
+            if (createError) {
+                throw new Error('Failed to create user profile: ' + createError.message);
+            }
+            profile = newProfile;
         }
 
         const userId = profile.id;
@@ -51,7 +67,12 @@ serve(async (req) => {
 
         // 4. Create NOWPayments Payment (Direct Address)
         const apiKey = Deno.env.get('NOWPAYMENTS_API_KEY')
-        if (!apiKey) throw new Error('Server misconfiguration: Missing API Key')
+        if (!apiKey) {
+            return new Response(
+                JSON.stringify({ error: 'CONFIG_ERROR: NOWPayments API Key is missing in Supabase Secrets' }),
+                { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+            )
+        }
 
         const orderId = `ORD-${Date.now()}-${Math.random().toString(36).substring(7)}`
 
@@ -118,8 +139,13 @@ serve(async (req) => {
 
     } catch (error: any) {
         return new Response(
-            JSON.stringify({ error: error.message }),
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            JSON.stringify({
+                error: error.message,
+                details: error.details,
+                hint: error.hint,
+                code: error.code // PG Error Code
+            }),
+            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
     }
 })

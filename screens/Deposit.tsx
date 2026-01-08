@@ -52,8 +52,17 @@ const Deposit: React.FC = () => {
             setServerMode(data.mode);
 
         } catch (err: any) {
-            console.warn("Backend unavailable, using Simulation Mode", err);
-            // FALLBACK: SIMULATION MODE (For Dev/Demo without backend)
+            console.warn("Backend Error:", err);
+
+            // If it's a specific config error from our backend, SHOW IT
+            if (err.message && err.message.includes('CONFIG_ERROR')) {
+                setError(err.message.replace('CONFIG_ERROR: ', ''));
+                setIsLoading(false);
+                return; // Do not fallback to demo
+            }
+
+            // FALLBACK: SIMULATION MODE (Only for network/dev issues)
+            console.warn("Using Simulation Mode due to:", err.message);
             setTimeout(() => {
                 const mockAddress = chain === 'TRC20'
                     ? 'T9yCDQr531f82y5235235... (DEMO)'

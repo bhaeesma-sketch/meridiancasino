@@ -29,6 +29,7 @@ import { HorizontalNav } from './components/HorizontalNav';
 import { MobileNav } from './components/MobileNav';
 import { RightSidebar } from './components/Sidebar';
 import { SecurityProvider } from './contexts/SecurityContext';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 export interface AppContextType {
   user: User;
@@ -430,57 +431,60 @@ const AppContent = () => {
   if (!context) return null;
 
   return (
-    <div className="h-screen flex flex-col bg-luxury-midnight text-white font-display overflow-hidden relative selection:bg-metal-rose selection:text-luxury-midnight">
-      <div className={`sync-overlay ${context.isSyncing ? 'sync-active' : ''}`}>
-        <div className="sync-text">SYNCHRONIZING QUANTUM GEOMETRY...</div>
-        <div className="w-48 h-1 bg-quantum-gold/20 mt-4 relative overflow-hidden">
-          <div className="absolute inset-0 bg-quantum-gold animate-scanline"></div>
-        </div>
-      </div>
-
-      <div className="fixed inset-0 z-[-1] full-bleed-background transform scale-105 opacity-30"></div>
-      <Navbar />
-      <MobileNav />
-      <SettingsModal />
-
-      {/* Main Layout Container with Top Padding for Fixed Navbar */}
-      <div className="flex-1 flex flex-col pt-16 md:pt-20 overflow-hidden">
-        {/* Horizontal Navigation */}
-        <HorizontalNav />
-
-        <div className="flex-grow flex items-stretch px-4 md:px-6 lg:px-10 py-4 overflow-hidden gap-4 lg:gap-6">
-          {/* Dynamic Game/Content Stage (Full Width) */}
-          <main className={`flex-1 flex flex-col ${['/plinko', '/roulette', '/dice', '/blackjack', '/limbo'].includes(location.pathname) ? 'overflow-hidden' : 'overflow-y-auto custom-scrollbar'} relative bg-black/20 rounded-[2rem] border border-white/5 backdrop-blur-sm stage-container ${context.is3DMode ? 'stage-3d' : ''}`}>
-            <Routes>
-              <Route path="/" element={<Auth />} />
-              <Route path="/lobby" element={<ProtectedRoute requireBalance={true}><Lobby /></ProtectedRoute>} />
-              <Route path="/plinko" element={<ProtectedRoute requireBalance={true}><Plinko /></ProtectedRoute>} />
-              <Route path="/roulette" element={<ProtectedRoute requireBalance={true}><Roulette /></ProtectedRoute>} />
-              <Route path="/dice" element={<ProtectedRoute requireBalance={true}><Dice /></ProtectedRoute>} />
-              <Route path="/blackjack" element={<ProtectedRoute requireBalance={true}><Blackjack /></ProtectedRoute>} />
-              <Route path="/limbo" element={<ProtectedRoute requireBalance={true}><Limbo /></ProtectedRoute>} />
-              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-              <Route path="/rewards" element={<ProtectedRoute><Rewards /></ProtectedRoute>} />
-              <Route path="/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />
-              <Route path="/withdraw" element={<ProtectedRoute><Withdraw /></ProtectedRoute>} />
-              <Route path="/deposit" element={<ProtectedRoute><Deposit /></ProtectedRoute>} />
-              <Route path={`/${import.meta.env.VITE_ADMIN_SECRET_PATH || 'admin'}`} element={<ProtectedRoute><Admin /></ProtectedRoute>} />
-              <Route path="/terms" element={<TermsOfService />} />
-              <Route path="/privacy" element={<PrivacyPolicy />} />
-              <Route path="/responsible-gaming" element={<ResponsibleGaming />} />
-              <Route path="/faq" element={<FAQ />} />
-              <Route path="*" element={<Navigate to="/lobby" replace />} />
-            </Routes>
-          </main>
-
-          {/* Live Metrics/Action (Right) - Optional */}
-          <RightSidebar />
+    <ErrorBoundary>
+      <div className="h-screen flex flex-col bg-luxury-midnight text-white font-display overflow-hidden relative selection:bg-metal-rose selection:text-luxury-midnight">
+        {/* ... existing code ... */}
+        <div className={`sync-overlay ${context.isSyncing ? 'sync-active' : ''}`}>
+          <div className="sync-text">SYNCHRONIZING QUANTUM GEOMETRY...</div>
+          <div className="w-48 h-1 bg-quantum-gold/20 mt-4 relative overflow-hidden">
+            <div className="absolute inset-0 bg-quantum-gold animate-scanline"></div>
+          </div>
         </div>
 
-      </div>
+        <div className="fixed inset-0 z-[-1] full-bleed-background transform scale-105 opacity-30"></div>
+        <Navbar />
+        <MobileNav />
+        <SettingsModal />
 
-      <GlobalTicker />
-    </div>
+        {/* Main Layout Container with Top Padding for Fixed Navbar */}
+        <div className="flex-1 flex flex-col pt-16 md:pt-20 overflow-hidden">
+          {/* Horizontal Navigation */}
+          <HorizontalNav />
+
+          <div className="flex-grow flex items-stretch px-4 md:px-6 lg:px-10 py-4 overflow-hidden gap-4 lg:gap-6">
+            {/* Dynamic Game/Content Stage (Full Width) */}
+            <main className={`flex-1 flex flex-col ${['/plinko', '/roulette', '/dice', '/blackjack', '/limbo'].includes(location.pathname) ? 'overflow-hidden' : 'overflow-y-auto custom-scrollbar'} relative bg-black/20 rounded-[2rem] border border-white/5 backdrop-blur-sm stage-container ${context.is3DMode ? 'stage-3d' : ''}`}>
+              <Routes>
+                <Route path="/" element={<Auth />} />
+                <Route path="/lobby" element={<ProtectedRoute requireBalance={true}><Lobby /></ProtectedRoute>} />
+                <Route path="/plinko" element={<ProtectedRoute requireBalance={true}><Plinko /></ProtectedRoute>} />
+                <Route path="/roulette" element={<ProtectedRoute requireBalance={true}><Roulette /></ProtectedRoute>} />
+                <Route path="/dice" element={<ProtectedRoute requireBalance={true}><Dice /></ProtectedRoute>} />
+                <Route path="/blackjack" element={<ProtectedRoute requireBalance={true}><Blackjack /></ProtectedRoute>} />
+                <Route path="/limbo" element={<ProtectedRoute requireBalance={true}><Limbo /></ProtectedRoute>} />
+                <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                <Route path="/rewards" element={<ProtectedRoute><Rewards /></ProtectedRoute>} />
+                <Route path="/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />
+                <Route path="/withdraw" element={<ProtectedRoute><Withdraw /></ProtectedRoute>} />
+                <Route path="/deposit" element={<ProtectedRoute><Deposit /></ProtectedRoute>} />
+                <Route path={`/${import.meta.env.VITE_ADMIN_SECRET_PATH || 'admin'}`} element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+                <Route path="/terms" element={<TermsOfService />} />
+                <Route path="/privacy" element={<PrivacyPolicy />} />
+                <Route path="/responsible-gaming" element={<ResponsibleGaming />} />
+                <Route path="/faq" element={<FAQ />} />
+                <Route path="*" element={<Navigate to="/lobby" replace />} />
+              </Routes>
+            </main>
+
+            {/* Live Metrics/Action (Right) - Optional */}
+            <RightSidebar />
+          </div>
+
+        </div>
+
+        <GlobalTicker />
+      </div>
+    </ErrorBoundary>
   );
 };
 

@@ -1,6 +1,8 @@
 // Withdrawal Service - Handles withdrawal requests and validation
 // This is the FRONTEND service - Backend performs actual security checks
 
+import { supabase } from './supabase';
+
 export interface WithdrawalRequest {
   address: string;
   amount: number;
@@ -35,6 +37,7 @@ export interface WithdrawalLimits {
   velocityLimit: number; // Max withdrawals per day
   velocityUsed: number;
   cooldownMinutes: number; // Cooldown between withdrawals
+  token?: string;
 }
 
 // Validation constants (these match backend limits)
