@@ -25,9 +25,9 @@ const Profile: React.FC = () => {
     }
   }, [location.search]);
 
-  // Mock bonus balance for now if not in user object
+  // Use real stats from user object
   const bonusBalance = user.bonus_balance || 0;
-  const totalDeposited = user.total_deposited || 15000; // Mock or real
+  const totalDeposited = user.total_deposited || 0;
   const totalWagered = user.wagered || 0;
 
   return (

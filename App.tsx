@@ -175,7 +175,8 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               isNewUser: profile.is_new_user,
               newUserBonusClaimed: profile.bonus_claimed,
               joinedDate: new Date(profile.joined_date).getTime(),
-              isAdmin: profile.is_admin
+              isAdmin: profile.is_admin,
+              total_deposited: Number(profile.total_deposited || 0)
             });
           }
         }

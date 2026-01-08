@@ -146,7 +146,7 @@ const Lobby: React.FC = () => {
           </div>
 
           {/* Game Grid (Holographic Cards) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mt-auto w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 mt-auto w-full">
             {games.map((game, idx) => (
               <div
                 key={game.id}

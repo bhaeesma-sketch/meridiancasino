@@ -130,87 +130,134 @@ export const ReferralSection: React.FC<ReferralSectionProps> = ({ user }) => {
                 </div>
             </div>
 
-            {/* Referral Info / History Table placeholder */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Node Activity Log */}
-                <div className="glass-panel rounded-2xl border border-white/5 p-6 bg-white/5 flex flex-col">
-                    <h4 className="text-[10px] font-bold text-white/40 uppercase tracking-[.3em] mb-4">Node Activity Log</h4>
-                    <div className="space-y-3 flex-1">
-                        {user.referralCount > 0 ? (
-                            <div className="flex items-center justify-between p-3 bg-black/40 border border-white/5 rounded-xl">
-                                <div className="flex items-center gap-3">
-                                    <div className="size-8 rounded bg-neon-green/20 flex items-center justify-center text-neon-green text-xs font-mono">ID</div>
-                                    <div>
-                                        <div className="text-xs font-bold text-white">SECURE_NODE_01</div>
-                                        <div className="text-[10px] text-white/40 uppercase font-mono">STATUS: VALIDATED</div>
-                                    </div>
-                                </div>
-                                <div className="text-right">
-                                    <div className="text-xs font-bold text-neon-green">+$25.00</div>
-                                    <div className="text-[10px] text-white/40 uppercase font-mono">CREDITED</div>
+            {/* Network Node Map (Interactive Visual) */}
+            <div className="lg:col-span-1 glass-panel rounded-2xl border border-neon-blue/20 p-4 bg-black/40 relative overflow-hidden flex flex-col items-center justify-center group h-full min-h-[200px]">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,229,255,0.05)_0%,transparent_70%)]"></div>
+
+                {/* Animated SVG Map */}
+                <div className="relative w-full h-full max-w-[150px] aspect-square">
+                    <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">
+                        {/* Central Node */}
+                        <circle cx="50" cy="50" r="4" className="fill-neon-blue shadow-blue-glow animate-pulse" />
+                        <circle cx="50" cy="50" r="8" className="stroke-neon-blue fill-none opacity-20 animate-ping" />
+
+                        {/* Connection Lines & Satellite Nodes */}
+                        {[0, 60, 120, 180, 240, 300].map((angle, i) => {
+                            const rad = (angle * Math.PI) / 180;
+                            const x2 = 50 + Math.cos(rad) * 35;
+                            const y2 = 50 + Math.sin(rad) * 35;
+                            const isActive = i < (user.valid_referral_count || 0);
+
+                            return (
+                                <g key={angle}>
+                                    <line
+                                        x1="50" y1="50" x2={x2} y2={y2}
+                                        className={`${isActive ? 'stroke-neon-green' : 'stroke-white/10'} stroke-[0.5] transition-colors duration-1000`}
+                                        strokeDasharray={isActive ? "none" : "2 2"}
+                                    />
+                                    <circle
+                                        cx={x2} cy={y2} r="2.5"
+                                        className={`${isActive ? 'fill-neon-green shadow-green-glow' : 'fill-white/10'} transition-all duration-1000`}
+                                    />
+                                    {isActive && (
+                                        <circle
+                                            cx={x2} cy={y2} r="5"
+                                            className="stroke-neon-green fill-none opacity-30 animate-ping"
+                                            style={{ animationDelay: `${i * 300}ms` }}
+                                        />
+                                    )}
+                                </g>
+                            );
+                        })}
+                    </svg>
+                </div>
+
+                <div className="mt-4 text-center z-10">
+                    <div className="text-[10px] font-black text-neon-blue uppercase tracking-[0.3em]">Node Connectivity</div>
+                    <div className="text-[8px] font-mono text-white/40 mt-1 uppercase tracking-widest italic animate-pulse">Syncing...</div>
+                </div>
+            </div>
+
+            {/* Node Activity Log */}
+            <div className="lg:col-span-1 glass-panel rounded-2xl border border-white/5 p-6 bg-white/5 flex flex-col">
+                <h4 className="text-[10px] font-bold text-white/40 uppercase tracking-[.3em] mb-4">Node Activity Log</h4>
+                <div className="space-y-3 flex-1">
+                    {user.referralCount > 0 ? (
+                        <div className="flex items-center justify-between p-3 bg-black/40 border border-white/5 rounded-xl">
+                            <div className="flex items-center gap-3">
+                                <div className="size-8 rounded bg-neon-green/20 flex items-center justify-center text-neon-green text-xs font-mono">ID</div>
+                                <div>
+                                    <div className="text-xs font-bold text-white">SECURE_NODE_01</div>
+                                    <div className="text-[10px] text-white/40 uppercase font-mono">STATUS: VALIDATED</div>
                                 </div>
                             </div>
-                        ) : (
-                            <div className="py-12 flex flex-col items-center justify-center text-center gap-4 border-2 border-dashed border-white/5 rounded-2xl flex-1">
-                                <span className="material-symbols-outlined text-white/10 text-5xl">radar</span>
-                                <div className="text-white/20 font-bold uppercase tracking-widest text-xs">No active nodes detected in your subnet.</div>
+                            <div className="text-right">
+                                <div className="text-xs font-bold text-neon-green">+$25.00</div>
+                                <div className="text-[10px] text-white/40 uppercase font-mono">CREDITED</div>
                             </div>
-                        )}
+                        </div>
+                    ) : (
+                        <div className="py-12 flex flex-col items-center justify-center text-center gap-4 border-2 border-dashed border-white/5 rounded-2xl flex-1">
+                            <span className="material-symbols-outlined text-white/10 text-5xl">radar</span>
+                            <div className="text-white/20 font-bold uppercase tracking-widest text-xs">No active nodes detected in your subnet.</div>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Promo Asset */}
+            <div className="glass-panel rounded-2xl border border-quantum-gold/30 p-6 bg-quantum-gold/5 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-3">
+                    <span className="px-2 py-1 bg-quantum-gold text-black text-[8px] font-black rounded uppercase tracking-tighter shadow-gold-glow">4K ASSET</span>
+                </div>
+                <h4 className="text-[10px] font-bold text-quantum-gold uppercase tracking-[.3em] mb-4 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-sm">image</span>
+                    PROMOTIONAL UPLINK MEDIA
+                </h4>
+
+                <div className="relative aspect-video rounded-xl overflow-hidden border border-white/10 group-hover:border-quantum-gold/50 transition-all">
+                    <img
+                        src="/assets/promo/referral_bonus_4k.png"
+                        alt="Referral Bonus Promo"
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
+                    <div className="absolute bottom-3 left-3 right-3 flex justify-between items-end">
+                        <div className="text-[10px] text-white font-black uppercase tracking-widest drop-shadow-lg">
+                            Casino Clash <span className="text-neon-blue">Referral</span>
+                        </div>
                     </div>
                 </div>
 
-                {/* Promo Asset */}
-                <div className="glass-panel rounded-2xl border border-quantum-gold/30 p-6 bg-quantum-gold/5 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-3">
-                        <span className="px-2 py-1 bg-quantum-gold text-black text-[8px] font-black rounded uppercase tracking-tighter shadow-gold-glow">4K ASSET</span>
-                    </div>
-                    <h4 className="text-[10px] font-bold text-quantum-gold uppercase tracking-[.3em] mb-4 flex items-center gap-2">
-                        <span className="material-symbols-outlined text-sm">image</span>
-                        PROMOTIONAL UPLINK MEDIA
-                    </h4>
-
-                    <div className="relative aspect-video rounded-xl overflow-hidden border border-white/10 group-hover:border-quantum-gold/50 transition-all">
-                        <img
-                            src="/assets/promo/referral_bonus_4k.png"
-                            alt="Referral Bonus Promo"
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
-                        <div className="absolute bottom-3 left-3 right-3 flex justify-between items-end">
-                            <div className="text-[10px] text-white font-black uppercase tracking-widest drop-shadow-lg">
-                                Casino Clash <span className="text-neon-blue">Referral</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="mt-4 flex flex-col gap-3">
-                        <div className="flex gap-3">
-                            <a
-                                href="/assets/promo/referral_bonus_4k.png"
-                                download="CasinoClash_Referral_4K.png"
-                                className="flex-1 py-2.5 bg-quantum-gold text-black rounded-xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 hover:scale-105 transition-all shadow-gold-glow"
-                            >
-                                <span className="material-symbols-outlined text-sm">download</span>
-                                Download Image
-                            </a>
-                            <button
-                                onClick={() => window.open('/assets/promo/referral_bonus_4k.png', '_blank')}
-                                className="px-4 py-2.5 bg-white/5 border border-white/10 text-white rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-white/10 transition-all"
-                            >
-                                <span className="material-symbols-outlined text-sm">visibility</span>
-                            </button>
-                        </div>
-
-                        <button
-                            onClick={handleCopyReferral}
-                            className={`w-full py-2.5 rounded-xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 transition-all ${copied ? 'bg-neon-green text-black' : 'bg-white/10 text-white border border-white/10 hover:border-quantum-gold/50'}`}
+                <div className="mt-4 flex flex-col gap-3">
+                    <div className="flex gap-3">
+                        <a
+                            href="/assets/promo/referral_bonus_4k.png"
+                            download="CasinoClash_Referral_4K.png"
+                            className="flex-1 py-2.5 bg-quantum-gold text-black rounded-xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 hover:scale-105 transition-all shadow-gold-glow"
                         >
-                            <span className="material-symbols-outlined text-sm">{copied ? 'check' : 'link'}</span>
-                            {copied ? 'UPLINK COPIED' : 'COPY REFERRAL LINK'}
+                            <span className="material-symbols-outlined text-sm">download</span>
+                            Download Image
+                        </a>
+                        <button
+                            onClick={() => window.open('/assets/promo/referral_bonus_4k.png', '_blank')}
+                            className="px-4 py-2.5 bg-white/5 border border-white/10 text-white rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-white/10 transition-all"
+                        >
+                            <span className="material-symbols-outlined text-sm">visibility</span>
                         </button>
                     </div>
+
+                    <button
+                        onClick={handleCopyReferral}
+                        className={`w-full py-2.5 rounded-xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 transition-all ${copied ? 'bg-neon-green text-black' : 'bg-white/10 text-white border border-white/10 hover:border-quantum-gold/50'}`}
+                    >
+                        <span className="material-symbols-outlined text-sm">{copied ? 'check' : 'link'}</span>
+                        {copied ? 'UPLINK COPIED' : 'COPY REFERRAL LINK'}
+                    </button>
                 </div>
             </div>
         </div>
     );
 };
+
+export default ReferralSection;

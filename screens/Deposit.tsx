@@ -308,13 +308,27 @@ const Deposit: React.FC = () => {
                                 >
                                     Cancel Request
                                 </button>
-                                <button
-                                    onClick={handleSimulatePayment}
-                                    className="py-4 bg-quantum-gold text-black font-black rounded-xl hover:shadow-gold-glow transition-all uppercase text-xs"
-                                >
-                                    Verify Payment
-                                </button>
+
+                                {serverMode === 'TEST' ? (
+                                    <button
+                                        onClick={handleSimulatePayment}
+                                        className="py-4 bg-red-500 text-white font-black rounded-xl hover:bg-red-600 transition-all uppercase text-xs animate-pulse"
+                                    >
+                                        Simulate Confirmation (TEST ONLY)
+                                    </button>
+                                ) : (
+                                    <div className="py-4 bg-white/5 border border-white/10 text-quantum-gold font-bold rounded-xl flex items-center justify-center gap-2 uppercase text-[10px] tracking-widest">
+                                        <div className="w-2 h-2 bg-quantum-gold rounded-full animate-ping"></div>
+                                        Awaiting Multi-Sig Confirmation...
+                                    </div>
+                                )}
                             </div>
+
+                            {serverMode !== 'TEST' && (
+                                <p className="mt-4 text-[10px] text-white/40 italic">
+                                    Funds will be credited automatically once the transaction is detected on-chain.
+                                </p>
+                            )}
                         </div>
                     </div>
                 )}
