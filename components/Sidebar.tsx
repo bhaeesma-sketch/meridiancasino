@@ -17,11 +17,11 @@ export const LeftSidebar: React.FC = () => {
 
     const navItems = [
         { name: 'Lobby', path: 'lobby', icon: 'home' },
-        { name: 'Dice', path: 'dice', icon: 'casino' },
-        { name: 'Roulette', path: 'roulette', icon: 'incomplete_circle' },
-        { name: 'Blackjack', path: 'blackjack', icon: 'playing_cards' },
-        { name: 'Plinko', path: 'plinko', icon: 'apps' },
-        { name: 'Limbo', path: 'limbo', icon: 'trending_up' },
+        { name: 'Market Trends', path: 'dice', icon: 'trending_up' },
+        { name: 'User Activity', path: 'roulette', icon: 'person' },
+        { name: 'Network Traffic', path: 'blackjack', icon: 'wifi_tethering' },
+        { name: 'System Logs', path: 'plinko', icon: 'description' },
+        { name: 'Uplink Velocity', path: 'limbo', icon: 'speed' },
         { name: 'Refer & Earn', path: 'profile?tab=referral', icon: 'groups' },
     ];
 

@@ -79,6 +79,17 @@ const Lobby: React.FC = () => {
       img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBYObtHI8DhYEpYkR-JAzhodSlHBaruhD0lz4rIBUZjdP8LXv7BJ-zxTQGhCQagDxNAtLopbXrtYlzluhDbmDfjKU8qokipBkKXiURiRQUPfR3TIdXYGLdlHdBNJ-8Tjni1q9ol8xfi6IwCGOSUMe7Izz1q8iCVpwYZHWBZppjV11NDys8Si8cH1BP1OCBDo7Uynk02yMOnbBelkgfgjOFSOBjCZSKVvq6IT7bVWQyD80diklnIX20q41sN9MLmfB4APqlMkhNtJ54',
       gradient: 'from-neon-pink/20'
     },
+    {
+      id: 'limbo',
+      name: 'Uplink Velocity', // Limbo -> Uplink Velocity
+      sub: 'LATENCY: 14ms | PKT: 100%',
+      path: '/limbo',
+      icon: 'speed',
+      color: 'text-neon-yellow',
+      bg: 'border-neon-yellow/30 hover:border-neon-yellow',
+      img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBM6cQQ6kFadFp1_-BNFkfInrsKXUox-MhuLAoQMS2qQVNqhEIf4brak0i8gzWF9ZKSCFAgbNOdyMNDF8deV997I1PtRl6kmNQaQb8SvllWZNJUjoztHzY9pxw-HDyk4Yx2vMLEltAcJP_6LmECIoYY6Lj-coktblFRu3lJryNWoezObRIu2t7w5lp2Ju3bcSLNJj1zigoOE0UXv2qlBgOHcYqR5E471G1CkpUDPVVVnZ1W4D0ohGSyGa-c5QsD093Yh1VED3FO5xs',
+      gradient: 'from-neon-yellow/20'
+    },
   ];
 
   if (!context) return null;

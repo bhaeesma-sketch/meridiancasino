@@ -458,7 +458,13 @@ const GlobalTicker = () => {
             </span>
             <span className="text-xs text-white font-bold">{item.username}</span>
             <span className="text-xs font-mono font-bold text-green-400">+${(item.payout * 45000).toFixed(2)} USD</span>
-            <span className="text-[10px] text-white/30">via {item.game}</span>
+            <span className="text-[10px] text-white/30 truncate max-w-[80px]">via {
+              item.game === 'dice' ? 'Market Trends' :
+                item.game === 'roulette' ? 'User Activity' :
+                  item.game === 'blackjack' ? 'Network Traffic' :
+                    item.game === 'plinko' ? 'System Logs' :
+                      item.game === 'limbo' ? 'Uplink Velocity' : item.game
+            }</span>
           </div>
         ))}
       </div>
