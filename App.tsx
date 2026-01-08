@@ -471,11 +471,7 @@ const GlobalTicker = () => {
                 via {
                   item.game.toLowerCase() === 'referral' ? 'Node Bonus' :
                     item.game.toLowerCase() === 'referral_bonus' ? 'Sign-up Reward' :
-                      item.game.toLowerCase() === 'dice' ? 'Market Trends' :
-                        item.game.toLowerCase() === 'roulette' ? 'User Activity' :
-                          item.game.toLowerCase() === 'blackjack' ? 'Network Traffic' :
-                            item.game.toLowerCase() === 'plinko' ? 'System Logs' :
-                              item.game.toLowerCase() === 'limbo' ? 'Uplink Velocity' : item.game
+                      item.game.charAt(0).toUpperCase() + item.game.slice(1)
                 }
               </span>
             </div>

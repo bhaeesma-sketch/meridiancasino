@@ -17,11 +17,11 @@ export const LeftSidebar: React.FC = () => {
 
     const navItems = [
         { name: 'Lobby', path: 'lobby', icon: 'home' },
-        { name: 'Market Trends', path: 'dice', icon: 'trending_up' },
-        { name: 'User Activity', path: 'roulette', icon: 'person' },
-        { name: 'Network Traffic', path: 'blackjack', icon: 'wifi_tethering' },
-        { name: 'System Logs', path: 'plinko', icon: 'description' },
-        { name: 'Uplink Velocity', path: 'limbo', icon: 'speed' },
+        { name: 'Dice', path: 'dice', icon: 'casino' },
+        { name: 'Roulette', path: 'roulette', icon: 'panorama_photosphere' },
+        { name: 'Blackjack', path: 'blackjack', icon: 'playing_cards' },
+        { name: 'Plinko', path: 'plinko', icon: 'blur_on' },
+        { name: 'Limbo', path: 'limbo', icon: 'trending_up' },
         { name: 'Refer & Earn', path: 'profile?tab=referral', icon: 'groups' },
     ];
 
@@ -164,11 +164,7 @@ export const RightSidebar: React.FC = () => {
                                                 {isReferral ? (item.game.toLowerCase() === 'referral' ? 'groups' : 'redeem') : 'bolt'}
                                             </span>
                                             {isReferral ? (item.game.toLowerCase() === 'referral' ? 'Affiliate Node Reward' : 'Signup Bonus') : (
-                                                item.game.toLowerCase() === 'dice' ? 'Market Trends' :
-                                                    item.game.toLowerCase() === 'roulette' ? 'User Activity' :
-                                                        item.game.toLowerCase() === 'blackjack' ? 'Network Traffic' :
-                                                            item.game.toLowerCase() === 'plinko' ? 'System Logs' :
-                                                                item.game.toLowerCase() === 'limbo' ? 'Uplink Velocity' : item.game
+                                                item.game.charAt(0).toUpperCase() + item.game.slice(1)
                                             )}
                                         </div>
                                     </div>

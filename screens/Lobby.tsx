@@ -36,22 +36,21 @@ const Lobby: React.FC = () => {
   const games = [
     {
       id: 'dice',
-      name: 'Market Trends', // Dice -> Market Trends
-      sub: 'VOL: +1.2% (24h)',
+      name: 'Dice',
+      sub: 'Classic High Stakes',
       path: '/dice',
-      icon: 'trending_up',
+      icon: 'casino',
       color: 'text-neon-purple',
       bg: 'border-neon-purple/30 hover:border-neon-purple',
-      // Using placeholder or existing asset
       img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBM6cQQ6kFadFp1_-BNFkfInrsKXUox-MhuLAoQMS2qQVNqhEIf4brak0i8gzWF9ZKSCFAgbNOdyMNDF8deV997I1PtRl6kmNQaQb8SvllWZNJUjoztHzY9pxw-HDyk4Yx2vMLEltAcJP_6LmECIoYY6Lj-coktblFRu3lJryNWoezObRIu2t7w5lp2Ju3bcSLNJj1zigoOE0UXv2qlBgOHcYqR5E471G1CkpUDPVVVnZ1W4D0ohGSyGa-c5QsD093Yh1VED3FO5xs',
       gradient: 'from-neon-purple/20'
     },
     {
       id: 'plinko',
-      name: 'System Logs', // Plinko -> System Logs (dropping balls = logs?)
-      sub: 'ERR: 0 | CPU: 15%',
+      name: 'Plinko',
+      sub: 'Multi-Ball Action',
       path: '/plinko',
-      icon: 'description',
+      icon: 'blur_on',
       color: 'text-neon-green',
       bg: 'border-neon-green/30 hover:border-neon-green',
       img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDkxF6mlo0DmO7947IzixxnCJ8cGjxM1Xd-zQccZXlWw4HLU0mVCEc1mV7H4HatJkfs7mTM5iLFxWu6BIvIb5HmtzOy6_-F271bE8VFpfGz_IAFRy2-NPMYkHPv9mS0M_6JdWFKk3NV5p6JNdu12BHsbBOhzVfX3Rr1_pd7kwhbDj_RACt1j6PxD4kDejU5nGcWpIFLS93mCMzY_Tmz75U8NRL8i2JcqcUgVw5HICWHHXFLwG3pvIf-C6eFF1BFRb6k0cFAhUxkFGk',
@@ -59,21 +58,21 @@ const Lobby: React.FC = () => {
     },
     {
       id: 'blackjack',
-      name: 'Network Traffic', // Blackjack -> Network Traffic
-      sub: 'IN: 124 GB | OUT: 89 GB',
+      name: 'Blackjack',
+      sub: 'Strategy & Luck',
       path: '/blackjack',
-      icon: 'wifi_tethering',
+      icon: 'playing_cards',
       color: 'text-neon-blue',
       bg: 'border-neon-blue/30 hover:border-neon-blue',
-      img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDkxF6mlo0DmO7947IzixxnCJ8cGjxM1Xd-zQccZXlWw4HLU0mVCEc1mV7H4HatJkfs7mTM5iLFxWu6BIvIb5HmtzOy6_-F271bE8VFpfGz_IAFRy2-NPMYkHPv9mS0M_6JdWFKk3NV5p6JNdu12BHsbBOhzVfX3Rr1_pd7kwhbDj_RACt1j6PxD4kDejU5nGcWpIFLS93mCMzY_Tmz75U8NRL8i2JcqcUgVw5HICWHHXFLwG3pvIf-C6eFF1BFRb6k0cFAhUxkFGk', // Reusing for consistent style or fallback
+      img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDkxF6mlo0DmO7947IzixxnCJ8cGjxM1Xd-zQccZXlWw4HLU0mVCEc1mV7H4HatJkfs7mTM5iLFxWu6BIvIb5HmtzOy6_-F271bE8VFpfGz_IAFRy2-NPMYkHPv9mS0M_6JdWFKk3NV5p6JNdu12BHsbBOhzVfX3Rr1_pd7kwhbDj_RACt1j6PxD4kDejU5nGcWpIFLS93mCMzY_Tmz75U8NRL8i2JcqcUgVw5HICWHHXFLwG3pvIf-C6eFF1BFRb6k0cFAhUxkFGk',
       gradient: 'from-neon-blue/20'
     },
     {
       id: 'roulette',
-      name: 'User Activity', // Roulette -> User Activity
-      sub: 'ACTIVE: 345 | NEW: 23',
+      name: 'Roulette',
+      sub: 'The Grand Wheel',
       path: '/roulette',
-      icon: 'person',
+      icon: 'panorama_photosphere',
       color: 'text-neon-pink',
       bg: 'border-neon-pink/30 hover:border-neon-pink',
       img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBYObtHI8DhYEpYkR-JAzhodSlHBaruhD0lz4rIBUZjdP8LXv7BJ-zxTQGhCQagDxNAtLopbXrtYlzluhDbmDfjKU8qokipBkKXiURiRQUPfR3TIdXYGLdlHdBNJ-8Tjni1q9ol8xfi6IwCGOSUMe7Izz1q8iCVpwYZHWBZppjV11NDys8Si8cH1BP1OCBDo7Uynk02yMOnbBelkgfgjOFSOBjCZSKVvq6IT7bVWQyD80diklnIX20q41sN9MLmfB4APqlMkhNtJ54',
@@ -81,10 +80,10 @@ const Lobby: React.FC = () => {
     },
     {
       id: 'limbo',
-      name: 'Uplink Velocity', // Limbo -> Uplink Velocity
-      sub: 'LATENCY: 14ms | PKT: 100%',
+      name: 'Limbo',
+      sub: 'Multiply Your Gains',
       path: '/limbo',
-      icon: 'speed',
+      icon: 'trending_up',
       color: 'text-neon-yellow',
       bg: 'border-neon-yellow/30 hover:border-neon-yellow',
       img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBM6cQQ6kFadFp1_-BNFkfInrsKXUox-MhuLAoQMS2qQVNqhEIf4brak0i8gzWF9ZKSCFAgbNOdyMNDF8deV997I1PtRl6kmNQaQb8SvllWZNJUjoztHzY9pxw-HDyk4Yx2vMLEltAcJP_6LmECIoYY6Lj-coktblFRu3lJryNWoezObRIu2t7w5lp2Ju3bcSLNJj1zigoOE0UXv2qlBgOHcYqR5E471G1CkpUDPVVVnZ1W4D0ohGSyGa-c5QsD093Yh1VED3FO5xs',

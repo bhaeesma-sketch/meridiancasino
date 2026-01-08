@@ -15,11 +15,11 @@ export const HorizontalNav: React.FC = () => {
 
     const navItems = [
         { name: 'Lobby', path: 'lobby', icon: 'home' },
-        { name: 'Market Trends', path: 'dice', icon: 'trending_up' },
-        { name: 'User Activity', path: 'roulette', icon: 'person' },
-        { name: 'Network Traffic', path: 'blackjack', icon: 'wifi_tethering' },
-        { name: 'System Logs', path: 'plinko', icon: 'description' },
-        { name: 'Uplink Velocity', path: 'limbo', icon: 'speed' },
+        { name: 'Dice', path: 'dice', icon: 'casino' },
+        { name: 'Roulette', path: 'roulette', icon: 'panorama_photosphere' },
+        { name: 'Blackjack', path: 'blackjack', icon: 'playing_cards' },
+        { name: 'Plinko', path: 'plinko', icon: 'blur_on' },
+        { name: 'Limbo', path: 'limbo', icon: 'trending_up' },
     ];
 
     const is3D = context.is3DMode;
