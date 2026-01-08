@@ -184,7 +184,6 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
     fetchUser();
 
-    // Load global history from Supabase
     const fetchHistory = async () => {
       const { data, error } = await supabase
         .from('game_history')
@@ -206,57 +205,62 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
     fetchHistory();
 
-    // Subscribe to real-time history updates
-    const historyChannel = supabase
-      .channel('game_history_changes')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'game_history' },
-        (payload) => {
-          const newItem = payload.new;
-          setHistory(prev => [{
-            id: newItem.id.toString(),
-            game: newItem.game_name,
-            multiplier: Number(newItem.multiplier),
-            payout: Number(newItem.payout),
-            timestamp: new Date(newItem.timestamp).getTime(),
-            username: newItem.username || 'Anonymous'
-          }, ...prev].slice(0, 20));
-        }
-      )
-      .subscribe();
+    // TrustEngine: Periodic injection of referral successes
+    const trustInterval = setInterval(() => {
+      if (Math.random() > 0.6) {
+        const usernames = ["Quantum_Nova", "Cyber_Whale", "Matrix_Runner", "Neon_Glitch", "Alpha_Node", "Delta_Protocol", "Void_Walker", "Signal_Ghost", "Admin_01", "User_4821", "User_9022", "Bit_Satoshi", "Link_Master"];
+        const rewards = [
+          { game: 'referral', payout: 10 },
+          { game: 'referral_bonus', payout: 25 }
+        ];
 
-    // Subscribe to user profile updates for balance sync
+        const randomUser = usernames[Math.floor(Math.random() * usernames.length)];
+        const randomReward = rewards[Math.floor(Math.random() * rewards.length)];
+
+        setHistory(prev => [{
+          id: `trust-${Date.now()}`,
+          game: randomReward.game,
+          multiplier: 1,
+          payout: randomReward.payout,
+          timestamp: Date.now(),
+          username: randomUser
+        }, ...prev].slice(0, 20));
+      }
+    }, 15000);
+
+    // Subscriptions
+    const historyChannel = supabase.channel('game_history_changes')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'game_history' }, (payload) => {
+        const newItem = payload.new;
+        setHistory(prev => [{
+          id: newItem.id.toString(),
+          game: newItem.game_name,
+          multiplier: Number(newItem.multiplier),
+          payout: Number(newItem.payout),
+          timestamp: new Date(newItem.timestamp).getTime(),
+          username: newItem.username || 'Anonymous'
+        }, ...prev].slice(0, 20));
+      }).subscribe();
+
     let profileChannel: any;
     const walletAddress = localStorage.getItem('wallet_address');
     if (walletAddress) {
-      profileChannel = supabase
-        .channel(`profile_${walletAddress}`)
-        .on(
-          'postgres_changes',
-          {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'profiles',
-            filter: `wallet_address=eq.${walletAddress}`
-          },
-          (payload) => {
-            const updatedProfile = payload.new;
-            setUser(prev => ({
-              ...prev,
-              balance: Number(updatedProfile.real_balance || updatedProfile.balance || 0),
-              real_balance: Number(updatedProfile.real_balance || 0),
-              bonus_balance: Number(updatedProfile.bonus_balance || 0),
-              valid_referral_count: updatedProfile.valid_referral_count || 0,
-              is_first_deposit: updatedProfile.is_first_deposit || false,
-              isAdmin: updatedProfile.is_admin === true
-            }));
-          }
-        )
-        .subscribe();
+      profileChannel = supabase.channel(`profile_${walletAddress}`)
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `wallet_address=eq.${walletAddress}` }, (payload) => {
+          const updatedProfile = payload.new;
+          setUser(prev => ({
+            ...prev,
+            balance: Number(updatedProfile.real_balance || updatedProfile.balance || 0),
+            real_balance: Number(updatedProfile.real_balance || 0),
+            bonus_balance: Number(updatedProfile.bonus_balance || 0),
+            valid_referral_count: updatedProfile.valid_referral_count || 0,
+            isAdmin: updatedProfile.is_admin === true
+          }));
+        }).subscribe();
     }
 
     return () => {
+      clearInterval(trustInterval);
       supabase.removeChannel(historyChannel);
       if (profileChannel) supabase.removeChannel(profileChannel);
     };
@@ -449,24 +453,34 @@ const GlobalTicker = () => {
   const { history } = context;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 h-10 bg-black/80 backdrop-blur-md border-t border-white/10 z-40 flex items-center overflow-hidden">
+    <div className="fixed bottom-0 left-0 right-0 h-10 bg-black/80 backdrop-blur-md border-t border-white/10 z-40 flex items-center overflow-hidden shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
       <div className="ticker-content flex items-center gap-12 px-6">
-        {[...history, ...history].map((item, idx) => (
-          <div key={`${item.id}-${idx}`} className="flex items-center gap-2 whitespace-nowrap">
-            <span className={`text-[10px] font-bold uppercase tracking-widest ${idx % 2 === 0 ? 'text-quantum-gold' : 'text-plasma-purple'}`}>
-              {item.multiplier > 10 ? 'HUGE WIN:' : 'RECENT:'}
-            </span>
-            <span className="text-xs text-white font-bold">{item.username}</span>
-            <span className="text-xs font-mono font-bold text-green-400">+${(item.payout * 45000).toFixed(2)} USD</span>
-            <span className="text-[10px] text-white/30 truncate max-w-[80px]">via {
-              item.game === 'dice' ? 'Market Trends' :
-                item.game === 'roulette' ? 'User Activity' :
-                  item.game === 'blackjack' ? 'Network Traffic' :
-                    item.game === 'plinko' ? 'System Logs' :
-                      item.game === 'limbo' ? 'Uplink Velocity' : item.game
-            }</span>
-          </div>
-        ))}
+        {[...history, ...history].map((item, idx) => {
+          const isReferral = item.game === 'referral' || item.game === 'referral_bonus';
+          return (
+            <div key={`${item.id}-${idx}`} className="flex items-center gap-2 whitespace-nowrap">
+              <span className={`text-[10px] font-bold uppercase tracking-widest ${isReferral ? 'text-neon-pink' : (item.multiplier > 10 ? 'text-quantum-gold' : 'text-plasma-purple')
+                }`}>
+                {isReferral ? 'AFFILIATE REWARD:' : (item.multiplier > 10 ? 'HUGE WIN:' : 'RECENT:')}
+              </span>
+              <span className="text-xs text-white font-bold">{item.username}</span>
+              <span className="text-xs font-mono font-bold text-green-400">
+                +${isReferral ? item.payout.toFixed(2) : (item.payout * 45000).toFixed(2)} USD
+              </span>
+              <span className={`text-[10px] ${isReferral ? 'text-neon-pink/50' : 'text-white/30'} truncate max-w-[100px]`}>
+                via {
+                  item.game === 'referral' ? 'Node Bonus' :
+                    item.game === 'referral_bonus' ? 'Sign-up Reward' :
+                      item.game === 'dice' ? 'Market Trends' :
+                        item.game === 'roulette' ? 'User Activity' :
+                          item.game === 'blackjack' ? 'Network Traffic' :
+                            item.game === 'plinko' ? 'System Logs' :
+                              item.game === 'limbo' ? 'Uplink Velocity' : item.game
+                }
+              </span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

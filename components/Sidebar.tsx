@@ -141,24 +141,40 @@ export const RightSidebar: React.FC = () => {
 
                 <div className="flex-1 overflow-y-auto space-y-2 custom-scrollbar relative z-10">
                     {context.history.length > 0 ? (
-                        context.history.map((item, idx) => (
-                            <div key={idx} className="flex items-center gap-3 p-2.5 rounded-xl bg-white/5 border border-white/5 hover:border-white/10 hover:bg-white/10 transition-all cursor-default group/item animate-fadeIn">
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex justify-between items-baseline mb-1">
-                                        <span className="text-[11px] font-bold text-white truncate group-hover/item:text-quantum-gold transition-colors">
-                                            {item.username}
-                                        </span>
-                                        <span className="text-[10px] font-mono font-bold text-neon-green group-hover/item:shadow-current transition-all">
-                                            +${(item.payout * 45000).toFixed(2)}
-                                        </span>
-                                    </div>
-                                    <div className="text-[9px] text-white/40 uppercase flex items-center gap-1.5">
-                                        <span className="material-symbols-outlined text-[10px]">bolt</span>
-                                        {item.game}
+                        context.history.map((item, idx) => {
+                            const isReferral = item.game === 'referral' || item.game === 'referral_bonus';
+                            return (
+                                <div key={idx} className={`flex items-center gap-3 p-2.5 rounded-xl border transition-all cursor-default group/item animate-fadeIn ${isReferral
+                                    ? 'bg-neon-pink/5 border-neon-pink/20 hover:bg-neon-pink/10 hover:border-neon-pink/30'
+                                    : 'bg-white/5 border-white/5 hover:border-white/10 hover:bg-white/10'
+                                    }`}>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex justify-between items-baseline mb-1">
+                                            <span className={`text-[11px] font-bold truncate transition-colors ${isReferral ? 'text-neon-pink' : 'text-white group-hover/item:text-quantum-gold'
+                                                }`}>
+                                                {item.username}
+                                            </span>
+                                            <span className={`text-[10px] font-mono font-bold group-hover/item:shadow-current transition-all ${isReferral ? 'text-neon-pink' : 'text-neon-green'
+                                                }`}>
+                                                +${isReferral ? item.payout.toFixed(2) : (item.payout * 45000).toFixed(2)}
+                                            </span>
+                                        </div>
+                                        <div className={`text-[9px] uppercase flex items-center gap-1.5 ${isReferral ? 'text-neon-pink/60' : 'text-white/40'}`}>
+                                            <span className="material-symbols-outlined text-[10px]">
+                                                {isReferral ? (item.game === 'referral' ? 'groups' : 'redeem') : 'bolt'}
+                                            </span>
+                                            {isReferral ? (item.game === 'referral' ? 'Affiliate Node Reward' : 'Signup Bonus') : (
+                                                item.game === 'dice' ? 'Market Trends' :
+                                                    item.game === 'roulette' ? 'User Activity' :
+                                                        item.game === 'blackjack' ? 'Network Traffic' :
+                                                            item.game === 'plinko' ? 'System Logs' :
+                                                                item.game === 'limbo' ? 'Uplink Velocity' : item.game
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))
+                            );
+                        })
                     ) : (
                         <div className="h-full flex flex-col items-center justify-center text-white/20 text-[10px] uppercase font-bold tracking-[0.2em] italic text-center gap-2">
                             <span className="material-symbols-outlined text-2xl opacity-20">radar</span>
