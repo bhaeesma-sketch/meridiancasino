@@ -181,20 +181,30 @@ export const ReferralSection: React.FC<ReferralSectionProps> = ({ user }) => {
                         </div>
                     </div>
 
-                    <div className="mt-4 flex gap-3">
-                        <a
-                            href="/assets/promo/referral_bonus_4k.png"
-                            download="CasinoClash_Referral_4K.png"
-                            className="flex-1 py-2.5 bg-quantum-gold text-black rounded-xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 hover:scale-105 transition-all shadow-gold-glow"
-                        >
-                            <span className="material-symbols-outlined text-sm">download</span>
-                            Download Image
-                        </a>
+                    <div className="mt-4 flex flex-col gap-3">
+                        <div className="flex gap-3">
+                            <a
+                                href="/assets/promo/referral_bonus_4k.png"
+                                download="CasinoClash_Referral_4K.png"
+                                className="flex-1 py-2.5 bg-quantum-gold text-black rounded-xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 hover:scale-105 transition-all shadow-gold-glow"
+                            >
+                                <span className="material-symbols-outlined text-sm">download</span>
+                                Download Image
+                            </a>
+                            <button
+                                onClick={() => window.open('/assets/promo/referral_bonus_4k.png', '_blank')}
+                                className="px-4 py-2.5 bg-white/5 border border-white/10 text-white rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-white/10 transition-all"
+                            >
+                                <span className="material-symbols-outlined text-sm">visibility</span>
+                            </button>
+                        </div>
+
                         <button
-                            onClick={() => window.open('/assets/promo/referral_bonus_4k.png', '_blank')}
-                            className="px-4 py-2.5 bg-white/5 border border-white/10 text-white rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-white/10 transition-all"
+                            onClick={handleCopyReferral}
+                            className={`w-full py-2.5 rounded-xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 transition-all ${copied ? 'bg-neon-green text-black' : 'bg-white/10 text-white border border-white/10 hover:border-quantum-gold/50'}`}
                         >
-                            <span className="material-symbols-outlined text-sm">visibility</span>
+                            <span className="material-symbols-outlined text-sm">{copied ? 'check' : 'link'}</span>
+                            {copied ? 'UPLINK COPIED' : 'COPY REFERRAL LINK'}
                         </button>
                     </div>
                 </div>
