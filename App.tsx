@@ -155,6 +155,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
           if (profile && !error) {
             setUser({
+              id: profile.id,
               address: profile.wallet_address,
               username: profile.username || (profile.wallet_address.slice(0, 8) + '...' + profile.wallet_address.slice(-4)),
               balance: Number(profile.balance),

@@ -2,6 +2,7 @@
 export type GameMode = 'Plinko' | 'Roulette' | 'Dice' | 'Blackjack' | 'Limbo' | 'Lobby' | 'Profile' | 'Rewards' | 'Support';
 
 export interface User {
+  id?: string;
   username: string;
   balance: number;
   avatar: string;
