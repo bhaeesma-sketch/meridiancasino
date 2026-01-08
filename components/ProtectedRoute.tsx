@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { AppContext } from '../App';
+import { DepositWarningModal } from './DepositWarningModal';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -17,7 +18,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requir
 
   // Step 5 Gate: Minimum 10 USDT real balance to play
   if (requireBalance && context.user.real_balance < 10) {
-    return <Navigate to="/deposit" state={{ from: location }} replace />;
+    // Show Warning Modal instead of blocking redirect
+    return <DepositWarningModal />;
   }
 
   return <>{children}</>;

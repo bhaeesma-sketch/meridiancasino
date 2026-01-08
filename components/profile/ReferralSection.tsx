@@ -2,19 +2,16 @@ import React, { useState } from 'react';
 import { getReferralMultiplier, getPremiumReferralBonus } from '../../services/referralService';
 
 interface ReferralSectionProps {
-    user: any; // Using any for simplicity as User type isn't uniform across context yet, or I should import User type
+    user: any;
 }
 
 export const ReferralSection: React.FC<ReferralSectionProps> = ({ user }) => {
     const [copied, setCopied] = useState(false);
 
     const referralCode = user.referralCode || 'GENERATING...';
-    const referralEarnings = user.referralEarnings || 0;
-    const referralCount = user.referralCount || 0;
-    const activeReferrals = user.activeReferrals || 0;
-    const referralMultiplier = getReferralMultiplier(user.tier);
-    const premiumBonus = getPremiumReferralBonus(user.tier);
-    const isPremium = ['VIP Platinum', 'Diamond', 'Elite'].includes(user.tier);
+    // const referralEarnings = user.referralEarnings || 0; 
+    // const referralCount = user.referralCount || 0;
+    // const activeReferrals = user.activeReferrals || 0; // Keeping functional logic, just visual update
     const referralUrl = `clash.gg/ref/${referralCode}`;
 
     const handleCopyReferral = () => {
@@ -24,107 +21,94 @@ export const ReferralSection: React.FC<ReferralSectionProps> = ({ user }) => {
     };
 
     return (
-        <div className="flex flex-col gap-6 md:gap-8">
-            <div className="flex items-center justify-between">
-                <h3 className="text-2xl font-bold flex items-center gap-3">
-                    <span className="material-symbols-outlined text-plasma">hub</span> Referral Empire
-                </h3>
-                {isPremium && (
-                    <span className="px-3 py-1 bg-quantum-gold/20 border border-quantum-gold text-quantum-gold text-xs font-bold uppercase rounded-full flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[14px]">workspace_premium</span>
-                        Premium Benefits
-                    </span>
-                )}
+        <div className="flex flex-col gap-6 animate-deep-fade-up" style={{ animationDelay: '0.2s' }}>
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-neon-green/30 pb-4">
+                <div>
+                    <h3 className="text-xl font-heading font-black text-white uppercase tracking-wider flex items-center gap-2">
+                        <span className="material-symbols-outlined text-neon-green animate-pulse">hub</span>
+                        Network Expansion Protocol
+                    </h3>
+                    <p className="text-neo-text-muted text-[10px] font-mono mt-1">
+                        &gt;&gt; EXPAND THE GRID. EARN REWARDS.
+                    </p>
+                </div>
+                <div className="px-3 py-1 bg-neon-green/10 border border-neon-green text-neon-green text-[10px] font-bold font-mono tracking-widest rounded animate-pulse-glow">
+                    STATUS: ACTIVE
+                </div>
             </div>
-            <div className="bg-black/40 p-6 md:p-8 rounded-3xl border border-white/5 relative overflow-hidden flex flex-col gap-6 md:gap-8">
-                {/* Premium Badge Overlay */}
-                {isPremium && (
-                    <div className="absolute top-4 right-4 px-3 py-1 bg-quantum-gold/20 border border-quantum-gold/50 text-quantum-gold text-[10px] font-bold uppercase rounded-full">
-                        {referralMultiplier * 100}% Commission
-                    </div>
-                )}
 
-                {/* Stats Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-                    <div>
-                        <p className="text-[10px] text-gray-500 font-bold uppercase mb-1">Total Earnings</p>
-                        <p className="text-2xl md:text-3xl font-bold text-primary">${referralEarnings.toFixed(2)}</p>
-                        {isPremium && (
-                            <p className="text-[10px] text-quantum-gold mt-1">+{premiumBonus.wageringBonus * 100}% per wager</p>
-                        )}
-                    </div>
-                    <div>
-                        <p className="text-[10px] text-gray-500 font-bold uppercase mb-1">Total Referrals</p>
-                        <p className="text-2xl md:text-3xl font-bold">{referralCount}</p>
-                        <p className="text-[10px] text-green-400 mt-1">{activeReferrals} active</p>
-                    </div>
-                    <div>
-                        <p className="text-[10px] text-gray-500 font-bold uppercase mb-1">Commission Rate</p>
-                        <p className="text-2xl md:text-3xl font-bold text-plasma">{Math.round(referralMultiplier * 100)}%</p>
-                        {isPremium && (
-                            <p className="text-[10px] text-quantum-gold mt-1">Premium Tier</p>
-                        )}
-                    </div>
-                </div>
+            {/* Main Visual / Stats Container */}
+            <div className="relative overflow-hidden rounded-[var(--neo-border-radius)] border border-[var(--neo-border-color)] bg-[var(--neo-glass-bg)] shadow-[var(--neo-shadow-inset)] group">
+                {/* Visual Background */}
+                <div className="absolute inset-0 z-0 opacity-20 bg-[url('https://as2.ftcdn.net/v2/jpg/02/85/02/76/1000_F_285027663_Ka8w9c2f6y8y2y2y2y2y2y2y2y2y.jpg')] bg-cover mix-blend-screen pointer-events-none"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-[#050510] via-transparent to-[#050510] z-0"></div>
 
-                {/* Premium Benefits Display */}
-                {isPremium && (
-                    <div className="bg-gradient-to-r from-quantum-gold/10 to-yellow-500/5 border border-quantum-gold/30 rounded-xl p-4 md:p-6">
-                        <h4 className="text-sm font-bold text-quantum-gold mb-3 flex items-center gap-2">
-                            <span className="material-symbols-outlined text-lg">workspace_premium</span>
-                            Premium Referral Benefits
-                        </h4>
-                        <div className="grid grid-cols-2 gap-3 text-xs">
-                            <div className="flex items-center gap-2">
-                                <span className="material-symbols-outlined text-quantum-gold text-base">check_circle</span>
-                                <span>${premiumBonus.signupBonus} per signup</span>
+                <div className="relative z-10 p-6 md:p-8 flex flex-col md:flex-row gap-8 items-center">
+
+                    {/* Visual Node Graph (CSS Representation) */}
+                    <div className="relative size-32 md:size-40 flex-shrink-0 flex items-center justify-center">
+                        <div className="absolute inset-0 rounded-full border border-neon-blue/30 animate-spin-slow"></div>
+                        <div className="absolute inset-2 rounded-full border border-dashed border-neon-pink/30 animate-spin-reverse-slower"></div>
+                        <div className="size-16 rounded-full bg-neon-blue/10 border border-neon-blue flex items-center justify-center shadow-[0_0_30px_rgba(0,229,255,0.4)] animate-pulse">
+                            <span className="material-symbols-outlined text-4xl text-neon-blue">share</span>
+                        </div>
+                        {/* Nodes */}
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 size-3 bg-neon-green rounded-full shadow-[0_0_10px_#00FFC0]"></div>
+                        <div className="absolute bottom-4 right-2 size-2 bg-neon-purple rounded-full shadow-[0_0_10px_#4FD1C5]"></div>
+                        <div className="absolute bottom-4 left-2 size-2 bg-neon-yellow rounded-full shadow-[0_0_10px_#A7ECEE]"></div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 w-full space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="p-3 border border-white/5 bg-black/40 rounded">
+                                <div className="text-[10px] text-gray-500 font-mono uppercase">Total Earnings</div>
+                                <div className="text-xl font-bold text-neon-green font-heading">$ {user.referralEarnings?.toFixed(2) || '0.00'}</div>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <span className="material-symbols-outlined text-quantum-gold text-base">check_circle</span>
-                                <span>{premiumBonus.wageringBonus * 100}% wagering bonus</span>
+                            <div className="p-3 border border-white/5 bg-black/40 rounded">
+                                <div className="text-[10px] text-gray-500 font-mono uppercase">Network Size</div>
+                                <div className="text-xl font-bold text-white font-heading">{user.referralCount || 0} nodes</div>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <span className="material-symbols-outlined text-quantum-gold text-base">check_circle</span>
-                                <span>Monthly bonuses</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <span className="material-symbols-outlined text-quantum-gold text-base">check_circle</span>
-                                <span>Exclusive rewards</span>
+                        </div>
+
+                        {/* Link Copy */}
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-neon-blue font-mono uppercase">Unique Uplink Access Code</label>
+                            <div className="flex gap-0">
+                                <div className="flex-1 bg-black/60 border border-neon-blue/30 border-r-0 rounded-l p-3 font-mono text-sm text-gray-300 truncate tracking-wider">
+                                    {referralUrl}
+                                </div>
+                                <button
+                                    onClick={handleCopyReferral}
+                                    className="bg-neon-blue/10 border border-neon-blue text-neon-blue px-6 font-bold uppercase text-xs tracking-widest hover:bg-neon-blue hover:text-black transition-all rounded-r flex items-center gap-2 group/btn"
+                                >
+                                    {copied ? (
+                                        <>
+                                            <span className="material-symbols-outlined text-sm">check</span>
+                                            COPIED
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span className="material-symbols-outlined text-sm group-hover/btn:animate-bounce">content_copy</span>
+                                            COPY
+                                        </>
+                                    )}
+                                </button>
                             </div>
                         </div>
                     </div>
-                )}
-
-                {/* Social Share Buttons (Simplified) */}
-                <div className="flex gap-2 flex-wrap">
-                    <a
-                        href={`https://twitter.com/intent/tweet?text=Join%20me%20on%20Clash&url=${encodeURIComponent(referralUrl)}`}
-                        target="_blank"
-                        className="px-4 py-2 bg-[#1DA1F2]/20 text-[#1DA1F2] border border-[#1DA1F2]/50 font-bold rounded-lg text-xs hover:bg-[#1DA1F2]/30 transition-all flex items-center gap-2"
-                    >
-                        Tweet
-                    </a>
-                    {/* Can add more here later */}
                 </div>
+            </div>
 
-
-                {/* Referral Link */}
-                <div className="bg-black/60 border border-white/10 rounded-2xl p-4 md:p-6 flex flex-col gap-4">
-                    <label className="text-sm font-bold text-gray-400 flex items-center gap-2">
-                        <span className="material-symbols-outlined text-base">link</span>
-                        Your Referral Link
-                    </label>
-                    <div className="flex flex-col sm:flex-row gap-3">
-                        <div className="flex-1 bg-white/5 border border-white/10 p-3 md:p-4 rounded-xl font-mono text-sm md:text-base text-gray-300 truncate flex items-center">
-                            {referralUrl}
-                        </div>
-                        <button
-                            onClick={handleCopyReferral}
-                            className="bg-primary text-black font-bold px-6 md:px-8 py-3 md:py-4 rounded-xl hover:scale-105 transition-all flex items-center justify-center gap-2 whitespace-nowrap"
-                        >
-                            {copied ? 'Copied!' : 'Copy'}
-                        </button>
-                    </div>
+            {/* Promo Banner */}
+            <div className="relative p-4 rounded border border-neon-purple/30 bg-neon-purple/5 flex items-center gap-4 animate-slide-up" style={{ animationDelay: '0.4s' }}>
+                <div className="size-10 rounded-full bg-neon-purple/20 flex items-center justify-center text-neon-purple">
+                    <span className="material-symbols-outlined">diamond</span>
+                </div>
+                <div>
+                    <h4 className="text-white font-bold text-sm uppercase tracking-wider">Premium Access</h4>
+                    <p className="text-xs text-gray-400">Upgrade to VIP to earn 2x network rewards.</p>
                 </div>
             </div>
         </div>

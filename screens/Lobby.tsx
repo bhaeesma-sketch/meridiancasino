@@ -3,208 +3,247 @@ import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../App';
 import { sounds } from '../services/soundService';
 import { NEW_USER_BONUS } from '../services/referralService';
-import { MeridianButton } from '../components/MeridianButton';
+import { DatastreamBonusModal } from '../components/DatastreamBonusModal';
 
-const BonusModal: React.FC<{ onClaim: () => void }> = ({ onClaim }) => {
-  const [isExploding, setIsExploding] = useState(false);
-
-  const handleClaim = () => {
-    setIsExploding(true);
-    setTimeout(onClaim, 1500);
-  };
-
-  return (
-    <div className="bonus-modal-overlay">
-      <div className="bonus-modal-content animate-holo-entry">
-        <div className="bonus-glow"></div>
-
-        <div className="bonus-token-scene">
-          <div className="bonus-token">
-            <div className="token-face token-front">$</div>
-            <div className="token-face token-back">$</div>
-            <div className="token-side"></div>
-          </div>
-        </div>
-
-        <h2 className="text-3xl font-heading font-black text-white uppercase mb-2 tracking-tighter">
-          Quantum Welcome
-        </h2>
-        <p className="text-quantum-gold text-lg font-mono font-bold mb-6 animate-pulse">
-          $5.00 BONUS DETECTED
-        </p>
-
-        <p className="text-white/60 text-xs mb-8 leading-relaxed max-w-[280px] mx-auto">
-          Welcome to the Future of Gaming. Your initial quantum credit is ready for activation.
-        </p>
-
-        <button
-          onClick={handleClaim}
-          disabled={isExploding}
-          className={`w-full py-4 bg-gradient-to-r from-yellow-400 to-quantum-gold text-black font-black uppercase rounded-2xl shadow-gold-glow hover:scale-[1.02] active:scale-95 transition-all relative overflow-hidden ${isExploding ? 'opacity-0' : ''}`}
-        >
-          Activate Bonus
-        </button>
-
-        {isExploding && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="text-quantum-gold font-black text-4xl animate-ping">CRITICAL SUCCESS!</div>
-            {[...Array(20)].map((_, i) => (
-              <div
-                key={i}
-                className="explosion-particle"
-                style={{
-                  left: '50%',
-                  top: '50%',
-                  transform: `translate(${(Math.random() - 0.5) * 400}px, ${(Math.random() - 0.5) * 400}px)`,
-                  transition: 'all 1s ease-out',
-                  opacity: 0,
-                  animation: `explode 1s ease-out forwards`
-                }}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-      <style>{`
-        @keyframes explode {
-          0% { transform: translate(0, 0); opacity: 1; }
-          100% { opacity: 0; }
-        }
-      `}</style>
-    </div>
-  );
-};
+// Reusing BonusModal functionality but styled minimally to fit the new theme if needed
+// For now, we'll focus on the main Lobby layout replacement.
 
 const Lobby: React.FC = () => {
   const navigate = useNavigate();
   const context = useContext(AppContext);
+
+  // Bonus Logic
   const [showBonus, setShowBonus] = useState(false);
 
   useEffect(() => {
-    if (context?.user?.isNewUser && !context?.user?.newUserBonusClaimed) {
-      const timer = setTimeout(() => setShowBonus(true), 1500);
-      return () => clearTimeout(timer);
+    if (context?.user && context.user.isNewUser && !context.user.newUserBonusClaimed) {
+      // Delay slightly for effect
+      setTimeout(() => setShowBonus(true), 1000);
     }
-  }, [context?.user?.isNewUser, context?.user?.newUserBonusClaimed]);
+  }, [context?.user]);
 
-  if (!context) return null;
-
-  const handleClaimBonus = async () => {
-    sounds.playWin();
+  const handleClaimBonus = () => {
+    if (!context) return;
     const bonusAmount = context.user.referredBy ? NEW_USER_BONUS.withReferral : NEW_USER_BONUS.withoutReferral;
-
-    // Update local state and Supabase
-    await context.updateProfile({
-      balance: context.user.balance + bonusAmount,
-      newUserBonusClaimed: true,
-      isNewUser: false // No longer "new" after claiming
-    });
-
+    context.updateBalance(bonusAmount);
+    context.updateProfile({ newUserBonusClaimed: true });
+    sounds.playWin();
     setShowBonus(false);
   };
 
+  // --- Data Mapping for Games ---
+  // Mapping existing games to the "Monitor" aesthetic
   const games = [
-    { name: 'Dice', desc: 'Roll for the stars.', img: '/assets/dice-profile.png', path: '/dice', icon: 'casino', color: 'text-jewel-ruby', theme: 'ruby', glow: 'shadow-jewel-glow-ruby' },
-    { name: 'Plinko', desc: 'Quantum gravity drops.', img: '/assets/plinko-profile.png', path: '/plinko', icon: 'grid_view', color: 'text-jewel-amethyst', theme: 'amethyst', glow: 'shadow-jewel-glow-amethyst' },
-    { name: 'Blackjack', desc: 'Live Dealer experience.', img: '/assets/blackjack-profile.png', path: '/blackjack', icon: 'playing_cards', color: 'text-metal-rose', theme: 'rose', glow: 'shadow-luxury-glow' },
-    { name: 'Roulette', desc: 'Spin & Win legacy.', img: '/assets/roulette-profile.png', path: '/roulette', icon: 'incomplete_circle', color: 'text-jewel-sapphire', theme: 'sapphire', glow: 'shadow-jewel-glow-sapphire' },
-    { name: 'Limbo', desc: 'Crash to the stars.', img: '/assets/limbo-profile.png', path: '/limbo', icon: 'trending_up', color: 'text-jewel-emerald', theme: 'emerald', glow: 'shadow-jewel-glow-emerald' },
+    {
+      id: 'dice',
+      name: 'Market Trends', // Dice -> Market Trends
+      sub: 'VOL: +1.2% (24h)',
+      path: '/dice',
+      icon: 'trending_up',
+      color: 'text-neon-purple',
+      bg: 'border-neon-purple/30 hover:border-neon-purple',
+      // Using placeholder or existing asset
+      img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBM6cQQ6kFadFp1_-BNFkfInrsKXUox-MhuLAoQMS2qQVNqhEIf4brak0i8gzWF9ZKSCFAgbNOdyMNDF8deV997I1PtRl6kmNQaQb8SvllWZNJUjoztHzY9pxw-HDyk4Yx2vMLEltAcJP_6LmECIoYY6Lj-coktblFRu3lJryNWoezObRIu2t7w5lp2Ju3bcSLNJj1zigoOE0UXv2qlBgOHcYqR5E471G1CkpUDPVVVnZ1W4D0ohGSyGa-c5QsD093Yh1VED3FO5xs',
+      gradient: 'from-neon-purple/20'
+    },
+    {
+      id: 'plinko',
+      name: 'System Logs', // Plinko -> System Logs (dropping balls = logs?)
+      sub: 'ERR: 0 | CPU: 15%',
+      path: '/plinko',
+      icon: 'description',
+      color: 'text-neon-green',
+      bg: 'border-neon-green/30 hover:border-neon-green',
+      img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDkxF6mlo0DmO7947IzixxnCJ8cGjxM1Xd-zQccZXlWw4HLU0mVCEc1mV7H4HatJkfs7mTM5iLFxWu6BIvIb5HmtzOy6_-F271bE8VFpfGz_IAFRy2-NPMYkHPv9mS0M_6JdWFKk3NV5p6JNdu12BHsbBOhzVfX3Rr1_pd7kwhbDj_RACt1j6PxD4kDejU5nGcWpIFLS93mCMzY_Tmz75U8NRL8i2JcqcUgVw5HICWHHXFLwG3pvIf-C6eFF1BFRb6k0cFAhUxkFGk',
+      gradient: 'from-neon-green/20'
+    },
+    {
+      id: 'blackjack',
+      name: 'Network Traffic', // Blackjack -> Network Traffic
+      sub: 'IN: 124 GB | OUT: 89 GB',
+      path: '/blackjack',
+      icon: 'wifi_tethering',
+      color: 'text-neon-blue',
+      bg: 'border-neon-blue/30 hover:border-neon-blue',
+      img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDkxF6mlo0DmO7947IzixxnCJ8cGjxM1Xd-zQccZXlWw4HLU0mVCEc1mV7H4HatJkfs7mTM5iLFxWu6BIvIb5HmtzOy6_-F271bE8VFpfGz_IAFRy2-NPMYkHPv9mS0M_6JdWFKk3NV5p6JNdu12BHsbBOhzVfX3Rr1_pd7kwhbDj_RACt1j6PxD4kDejU5nGcWpIFLS93mCMzY_Tmz75U8NRL8i2JcqcUgVw5HICWHHXFLwG3pvIf-C6eFF1BFRb6k0cFAhUxkFGk', // Reusing for consistent style or fallback
+      gradient: 'from-neon-blue/20'
+    },
+    {
+      id: 'roulette',
+      name: 'User Activity', // Roulette -> User Activity
+      sub: 'ACTIVE: 345 | NEW: 23',
+      path: '/roulette',
+      icon: 'person',
+      color: 'text-neon-pink',
+      bg: 'border-neon-pink/30 hover:border-neon-pink',
+      img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBYObtHI8DhYEpYkR-JAzhodSlHBaruhD0lz4rIBUZjdP8LXv7BJ-zxTQGhCQagDxNAtLopbXrtYlzluhDbmDfjKU8qokipBkKXiURiRQUPfR3TIdXYGLdlHdBNJ-8Tjni1q9ol8xfi6IwCGOSUMe7Izz1q8iCVpwYZHWBZppjV11NDys8Si8cH1BP1OCBDo7Uynk02yMOnbBelkgfgjOFSOBjCZSKVvq6IT7bVWQyD80diklnIX20q41sN9MLmfB4APqlMkhNtJ54',
+      gradient: 'from-neon-pink/20'
+    },
   ];
 
+  if (!context) return null;
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col justify-center py-4 px-6 max-w-6xl mx-auto w-full overflow-hidden">
-      <div className="space-y-2 animate-deep-fade-up text-center mb-6">
-        <h2 className="text-3xl md:text-5xl lg:text-5xl font-display font-black text-white leading-[0.9] uppercase drop-shadow-2xl">
-          Epic Fantasy <br />
-          <span className="meridian-title text-4xl md:text-6xl">CASINO GAMES</span>
-        </h2>
-        <p className="text-ice-electric text-xs font-medium mx-auto max-w-lg tracking-wider">
-          ⚔️ High-stakes adventures • 🐉 Dragon-tier rewards • ⚡ Instant payouts
-        </p>
-      </div>
+    <div className="flex-1 relative overflow-hidden h-full flex flex-col font-display">
+      <DatastreamBonusModal
+        isOpen={showBonus}
+        onClaim={handleClaimBonus}
+        bonusAmount={context.user.referredBy ? NEW_USER_BONUS.withReferral : NEW_USER_BONUS.withoutReferral}
+      />
+      {/* Background Effects */}
+      <div className="fixed inset-0 z-[-2] bg-cyber-city transform scale-105"></div>
+      <div className="fixed inset-0 z-[-1] bg-grid pointer-events-none opacity-20"></div>
+      <div className="fixed inset-0 z-[-1] bg-gradient-to-t from-cyber-black via-cyber-black/80 to-transparent pointer-events-none"></div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar-hidden">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mt-2 w-full max-w-5xl mx-auto pb-4">
-          {games.map((game, idx) => {
-            const themeClass = game.theme === 'fire' ? 'fire-theme' :
-              game.theme === 'ice' ? 'ice-theme' : '';
+      <main className="flex-1 relative z-10 flex flex-col lg:flex-row gap-8 px-6 lg:px-12 h-full py-12">
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col justify-center gap-8 lg:gap-10 max-w-6xl mx-auto lg:mx-0">
 
-            return (
+          {/* Hero Section */}
+          <div className="space-y-2 animate-float pl-2 relative">
+            <div className="absolute -left-4 top-0 bottom-0 w-[2px] bg-gradient-to-b from-neon-pink via-neon-purple to-transparent"></div>
+
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-[var(--neo-glass-bg)] border border-neon-purple/50 w-fit rounded-[var(--neo-border-radius)] mb-2 shadow-[var(--neo-shadow-inset)]">
+              <span className="size-2 bg-neon-green animate-pulse shadow-[0_0_8px_#00FFC0]"></span>
+              <span className="text-[10px] font-mono font-bold text-neon-purple uppercase tracking-widest">System Online</span>
+            </div>
+
+            <h2 className="text-6xl md:text-8xl font-heading font-black text-white leading-[0.85] uppercase tracking-tighter drop-shadow-2xl">
+              ACCESS THE <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-yellow via-neon-orange to-neon-yellow animate-pulse-neon glitch-text" data-text="DATASTREAM">
+                DATASTREAM
+              </span>
+            </h2>
+
+            <p className="text-neon-blue/80 text-lg md:text-xl font-refined leading-relaxed max-w-lg drop-shadow-[0_0_5px_rgba(0,229,255,0.3)] mt-4 border-l-[2px] border-neon-blue/30 pl-4">
+                            // SYNCHRONIZING REAL-TIME FEEDS...<br />
+              <span className="text-neo-text-muted text-base font-refined">
+                Unlock unparalleled insights into the global network. select a protocol to begin.
+              </span>
+            </p>
+
+            <div className="flex gap-4 pt-6">
+              <button className="h-12 px-8 bg-neon-purple/20 border border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-white font-refined font-bold text-sm uppercase tracking-wider transition-all shadow-neon-purple hover:shadow-[0_0_40px_rgba(79,209,197,0.6)] flex items-center gap-2 rounded-[var(--neo-border-radius)] hover:-translate-y-1 shadow-[var(--neo-shadow-inset)]"
+                onClick={() => sounds.playClick()}>
+                <span className="material-symbols-outlined">play_circle</span>
+                Monitor Feeds
+              </button>
+              <button className="h-12 px-8 bg-[var(--neo-glass-bg)] border border-white/20 text-white hover:border-neon-blue hover:text-neon-blue font-refined font-bold text-sm uppercase tracking-wider backdrop-blur-md transition-all rounded-[var(--neo-border-radius)] hover:-translate-y-1 shadow-[var(--neo-shadow-inset)]"
+                onClick={() => sounds.playHover()}>
+                View Protocols
+              </button>
+            </div>
+          </div>
+
+          {/* Game Grid (Holographic Cards) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-auto w-full">
+            {games.map((game, idx) => (
               <div
-                key={game.name}
+                key={game.id}
+                onClick={() => navigate(game.path)}
                 onMouseEnter={() => sounds.playHover()}
-                onClick={() => {
-                  sounds.playClick();
-                  navigate(game.path);
-                }}
-                className={`luxury-card velvet-texture group cursor-pointer hover:${game.glow}`}
-                style={{
-                  animationDelay: `${idx * 0.1}s`,
-                  minHeight: '320px'
-                }}
+                className={`group relative h-64 bg-[var(--neo-glass-bg)] border ${game.bg} transition-all duration-300 overflow-hidden rounded-[var(--neo-border-radius)] hologram-card shadow-glassmorphism cursor-pointer`}
+                style={{ animationDelay: `${idx * 100}ms` }}
               >
-                <div className="card-content h-full relative z-10">
-                  <div
-                    className="absolute inset-0 bg-cover bg-center opacity-70 group-hover:opacity-90 transition-all duration-700 ease-out group-hover:scale-110"
-                    style={{ backgroundImage: `url(${game.img})` }}
-                  ></div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-meridian-navy via-meridian-midnight/60 to-transparent"></div>
+                {/* Gradient Overlay */}
+                <div className={`absolute inset-0 bg-gradient-to-b ${game.gradient} to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10`}></div>
 
-                  {/* Mystical Particle Effects */}
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
-                    <div className="particle particle-gold" style={{ top: '20%', left: '30%' }}></div>
-                    <div className="particle particle-cyan" style={{ top: '40%', left: '70%' }}></div>
-                    <div className="particle particle-magenta" style={{ top: '60%', left: '50%' }}></div>
+                {/* Background Image */}
+                <div
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-110 opacity-70 group-hover:opacity-100 mix-blend-luminosity group-hover:mix-blend-normal"
+                  style={{ backgroundImage: `url("${game.img}")` }}
+                ></div>
+
+                {/* Scanline Effect */}
+                <div className={`absolute inset-0 bg-[linear-gradient(transparent_0%,rgba(0,255,192,0.1)_50%,transparent_100%)] bg-[length:100%_1px] opacity-0 group-hover:opacity-100 pointer-events-none animate-scanline`}></div>
+
+                {/* Card Content */}
+                <div className="relative z-20 h-full p-5 flex flex-col justify-between">
+                  <div className="flex justify-end">
+                    <span className={`bg-[var(--neo-glass-bg)] ${game.color} border border-current p-1 rounded-[var(--neo-border-radius)] backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all translate-y-[-10px] group-hover:translate-y-0 shadow-[var(--neo-shadow-inset)]`}>
+                      <span className="material-symbols-outlined text-lg">{game.icon}</span>
+                    </span>
                   </div>
 
-                  <div className="relative z-20 h-full p-5 flex flex-col justify-between">
-                    <div className="flex justify-between items-start">
-                      <div className="p-3 rounded-2xl bg-luxury-velvet/80 border-2 border-metal-rose/30 backdrop-blur-md group-hover:border-metal-rose group-hover:shadow-luxury-glow transition-all duration-500">
-                        <span className={`material-symbols-outlined text-3xl ${game.color} group-hover:scale-110 transition-transform`}>{game.icon}</span>
-                      </div>
-                      <div className="flex flex-col items-end gap-1">
-                        <div className="px-3 py-1 rounded-lg bg-luxury-velvet/80 border border-metal-rose/30 text-[9px] font-mono text-metal-rose uppercase tracking-widest font-bold">
-                          ✦ Luxury Tier
-                        </div>
-                        <div className="text-[8px] font-mono text-jewel-emerald opacity-0 group-hover:opacity-100 transition-opacity animate-pulse">
-                          🔥 LIVE NOW
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col gap-4">
-                      <div className="px-1">
-                        <h4 className="text-3xl md:text-4xl font-display font-black text-white uppercase group-hover:text-metal-rose transition-all duration-500 tracking-tight mb-2">
-                          {game.name}
-                        </h4>
-                        <p className="text-[10px] text-metal-platinum uppercase font-bold tracking-[0.2em]">
-                          {game.desc}
-                        </p>
-                      </div>
-                      <MeridianButton
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          sounds.playClick();
-                          navigate(game.path);
-                        }}
-                        variant="primary"
-                        size="md"
-                        icon={<span className="material-symbols-outlined text-xl">play_arrow</span>}
-                        className="w-full group-hover:translate-y-[-2px] transition-transform"
-                      >
-                        Launch Game
-                      </MeridianButton>
-                    </div>
+                  <div>
+                    <h4 className={`text-xl font-refined font-bold text-neo-text-light group-hover:${game.color} transition-colors uppercase tracking-widest drop-shadow-md`}>
+                      {game.name}
+                    </h4>
+                    <div className={`w-full h-[1px] bg-current opacity-50 my-2 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left ${game.color}`}></div>
+                    <span className={`text-xs font-mono opacity-0 group-hover:opacity-100 transition-opacity delay-75 block ${game.color}`}>
+                      {game.sub}
+                    </span>
                   </div>
                 </div>
               </div>
-            );
-          })}
+            ))}
+          </div>
+        </div>
+
+        {/* Sidebar (Live Feed) - Visual Only for Atmosphere */}
+        <aside className="hidden xl:flex w-80 flex-col gap-4 self-center h-[calc(100vh-8rem)]">
+          <div className="bg-[var(--neo-glass-bg)] backdrop-blur-xl border border-[var(--neo-border-color)] rounded-[var(--neo-border-radius)] flex flex-col h-full relative overflow-hidden group shadow-glassmorphism">
+            <div className="absolute top-0 right-0 w-32 h-32 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/circuit-board.png')] mix-blend-overlay"></div>
+            <div className="p-4 border-b border-[var(--neo-border-color)] bg-[var(--neo-glass-bg)] flex items-center justify-between">
+              <h3 className="font-refined font-bold text-neon-green text-sm uppercase tracking-widest flex items-center gap-2 drop-shadow-[0_0_5px_rgba(0,255,192,0.5)]">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-neon-green opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-neon-green"></span>
+                </span>
+                Live Feed
+              </h3>
+              <span className="material-symbols-outlined text-white/30 text-sm hover:text-neon-blue cursor-pointer transition-colors">settings_ethernet</span>
+            </div>
+
+            {/* Feed Items */}
+            <div className="flex-1 overflow-y-auto p-3 space-y-2 custom-scrollbar">
+              {/* Feed Item 1 */}
+              <div className="flex items-center gap-3 p-3 bg-white/5 border-l-[1px] border-transparent hover:border-neon-green hover:bg-white/10 transition-all group cursor-pointer rounded-[var(--neo-border-radius)] shadow-[var(--neo-shadow-inset)]">
+                <div className="size-8 rounded-[var(--neo-border-radius)] bg-cover bg-center border border-white/10" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuB9e0ZYfFZJopsp3XPAMnix85wut4x1rRTFJ00d1onckNFEKH_KJj5u9OOntRZMrXx_xRBLs80oYiQwrkNM8pU0yMhVjUWto-R2gYyiC39dm-SNMr7vbD8ZGboeYjHIFrJ6WhT-0oPG4mgL80GpjeRp19hElq6PsFAbvKXXBblxJIKhSqqYgXkNoRwrMmYD4cg_a52RSOYJq4NIgcjeHy-9KfpsTL3pC7pErrrA0zZa5SrsjWDmqNh6YQ3pQfjk4q4lBtgewYdb5fg")' }}></div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-xs font-bold text-neo-text-light font-refined tracking-wide group-hover:text-neon-blue transition-colors">Admin_User_01</span>
+                    <span className="text-[10px] font-mono text-neon-green shadow-neo-shadow-green">Login Success</span>
+                  </div>
+                  <div className="flex items-center gap-1 text-[10px] text-neo-text-muted uppercase font-refined mt-0.5">
+                    <span className="material-symbols-outlined text-[10px] text-neon-purple">lock</span> System Log
+                  </div>
+                </div>
+              </div>
+              {/* Feed Item 2 */}
+              <div className="flex items-center gap-3 p-3 bg-white/5 border-l-[1px] border-transparent hover:border-neon-pink hover:bg-white/10 transition-all group cursor-pointer rounded-[var(--neo-border-radius)] shadow-[var(--neo-shadow-inset)]">
+                <div className="size-8 rounded-[var(--neo-border-radius)] bg-cover bg-center border border-white/10" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuC4nlX4RWN8twhQlKA1JCIhSaPfMXCyw8RYaqc8XfQGfciObnCh3D-MwU8YGPqgbl_5KgcglFauluFVE_zzIuYqp4GShsNnHZYb9YyUjZV7-Hzp8EWYjDogiJi2SyQMjM9-Haz6jRvFwNkRSgDx5dFy5kpP0sFsXLklSYs9rX6uhqwgikNs4SFMUqzHW24uy1Qgshkqkl17P1zbLGZme8fCWSTtlvKa7disR4I0QA47O4ZbVO6xtRU9hwqJfNRo3eQ5hy7ipfea5OE")' }}></div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-xs font-bold text-neo-text-light font-refined tracking-wide group-hover:text-neon-blue transition-colors">Server_Node_X</span>
+                    <span className="text-[10px] font-mono text-neon-green shadow-neo-shadow-green">Traffic Peak +24%</span>
+                  </div>
+                  <div className="flex items-center gap-1 text-[10px] text-neo-text-muted uppercase font-refined mt-0.5">
+                    <span className="material-symbols-outlined text-[10px] text-neon-orange">ssid_chart</span> Network
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </main>
+
+      {/* Bottom Ticker */}
+      <div className="fixed bottom-0 left-0 right-0 h-10 bg-[#050505]/80 backdrop-blur-sm border-t border-gray-800 z-40 flex items-center overflow-hidden shadow-[0_-5px_20px_rgba(0,0,0,0.8)]">
+        <div className="w-full flex">
+          <div className="flex animate-ticker whitespace-nowrap">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="flex items-center gap-8 px-4">
+                <span className="text-neon-yellow text-xs font-bold uppercase tracking-widest font-refined drop-shadow-[0_0_5px_rgba(167,236,238,0.6)]">Latest Log:</span>
+                <span className="text-xs text-neo-text-light font-refined font-semibold">User_3451_NYC - Session Start</span>
+                <span className="text-gray-700">|</span>
+                <span className="text-neon-blue text-xs font-bold uppercase tracking-widest font-refined drop-shadow-[0_0_5px_rgba(0,229,255,0.6)]">Market Update:</span>
+                <span className="text-xs text-neo-text-light font-refined font-semibold">MarketBot_Alpha - Report Complete</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
-
-      {showBonus && <BonusModal onClaim={handleClaimBonus} />}
     </div>
   );
 };

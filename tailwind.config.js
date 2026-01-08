@@ -12,15 +12,23 @@ export default {
             colors: {
                 "cyber-black": "#030208",
                 "cyber-dark": "#0a0a12",
-                "neon-pink": "#ff00ff",
-                "neon-blue": "#00f3ff",
-                "neon-green": "#0aff00",
-                "neon-purple": "#bc13fe",
-                "neon-yellow": "#ffea00",
-                "neon-orange": "#ff5500",
-                "cyber-grid": "rgba(0, 243, 255, 0.05)",
+                // Datastream Neon Palette (User Provided)
+                "neon-pink": "#00BCD4",
+                "neon-blue": "#00E5FF",
+                "neon-green": "#00FFC0",
+                "neon-purple": "#4FD1C5",
+                "neon-yellow": "#A7ECEE",
+                "neon-orange": "#6B8E92",
+                "cyber-grid": "rgba(0, 229, 255, 0.05)",
                 "glass-cyber": "rgba(10, 10, 18, 0.7)",
-                // Premium Luxury Backgrounds
+
+                // Neo specific vars
+                "neo-bg": "rgba(10, 10, 20, 0.2)",
+                "neo-border": "rgba(0, 229, 255, 0.3)",
+                "neo-text-light": "#FFFFFF",
+                "neo-text-muted": "#B0D0D4",
+
+                // Legacy luxury mappings (for backward compat if needed)
                 luxury: {
                     midnight: '#1A0F2E',
                     velvet: '#2D1B3D',
@@ -28,7 +36,6 @@ export default {
                     obsidian: '#0A0612',
                     plum: '#4A2C5A',
                 },
-                // Premium Metallic Palette
                 metal: {
                     rose: '#E8B298',
                     roseDark: '#D4A184',
@@ -36,30 +43,19 @@ export default {
                     platinumDark: '#C9C8C6',
                     champagne: '#F7E7CE',
                     bronze: '#CD7F32',
-                    bronzeDark: '#B8732D',
-                    copper: '#B87333',
                 },
-                // Rich Jewel Tones
                 jewel: {
-                    emerald: '#10B981',
-                    emeraldDark: '#059669',
-                    ruby: '#DC143C',
-                    rubyDark: '#B8112A',
-                    sapphire: '#0F52BA',
-                    sapphireDark: '#0C3F8F',
-                    amethyst: '#9966CC',
-                    amethystDark: '#7D4FB3',
-                    topaz: '#FFC87C',
-                    diamond: '#E8F4F8',
+                    emerald: '#00FFC0', // Mapped to neon-green
+                    ruby: '#00BCD4', // Mapped to neon-pink for cyan look
+                    sapphire: '#00E5FF', // Mapped to neon-blue
+                    amethyst: '#4FD1C5', // Mapped to neon-purple
                 },
-                // Meridian Core Backgrounds (Legacy)
                 meridian: {
                     navy: '#0A0E27',
                     midnight: '#1A1F3A',
                     charcoal: '#2C2C3E',
                     stone: '#4A4A5A',
                 },
-                // Gold/Bronze Metallics (Legacy)
                 gold: {
                     primary: '#FFD700',
                     bright: '#FFA500',
@@ -67,81 +63,67 @@ export default {
                     antique: '#B8860B',
                     dark: '#8B6914',
                 },
-                // Ice/Cyan Blues (Legacy)
                 ice: {
                     electric: '#00FFFF',
                     bright: '#00CED1',
                     deep: '#008B8B',
                     light: '#87CEEB',
                 },
-                // Mystical Purple/Magenta (Legacy)
                 mystical: {
                     magenta: '#FF00FF',
                     purple: '#9333EA',
                     royal: '#6B46C1',
                     violet: '#8B00FF',
                 },
-                // Fire/Orange (Legacy)
                 fire: {
                     bright: '#FF6B35',
                     deep: '#FF4500',
                     burnt: '#CC5500',
                     amber: '#FFBF00',
                 },
-                // Legacy colors (keeping for compatibility)
                 space: {
-                    black: '#050505',
-                    dark: '#0a0a15',
-                    card: '#1a1a2e',
+                    black: "#050505",
+                    dark: "#0a0a15",
+                    card: "#1a1a2e",
                 },
                 quantum: {
-                    gold: '#FFD700',
-                    accent: '#FFA500',
+                    gold: "#FFD700",
+                    accent: "#FFA500",
                 },
                 plasma: {
-                    purple: '#9333EA',
-                    blue: '#4F46E5',
+                    purple: "#4FD1C5", // Mapped to new neon-purple
+                    blue: "#00E5FF", // Mapped to new neon-blue
                 },
-                neon: {
-                    green: '#10B981',
-                    red: '#EF4444',
-                    emerald: '#10B981',
-                    ruby: '#DC2626',
-                }
             },
             fontFamily: {
                 sans: ['Inter', 'sans-serif'],
                 display: ['Rajdhani', 'sans-serif'],
                 heading: ['Orbitron', 'sans-serif'],
                 mono: ['Share Tech Mono', 'monospace'],
+                refined: ['Rajdhani', 'sans-serif'],
                 montserrat: ['Montserrat', 'sans-serif'],
                 title: ['Bebas Neue', 'Oswald', 'Impact', 'sans-serif'],
             },
             backgroundImage: {
+                'cyber-gradient': 'linear-gradient(180deg, rgba(3,2,8,0) 0%, rgba(3,2,8,0.8) 100%)',
+                'grid-pattern': 'linear-gradient(rgba(0, 229, 255, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 229, 255, 0.1) 1px, transparent 1px)',
+                'digital-rain': 'linear-gradient(180deg, rgba(0, 229, 255, 0) 0%, rgba(0, 229, 255, 0.1) 50%, rgba(0, 229, 255, 0) 100%)',
+                // Keep existing gradients...
                 'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-                // Premium Luxury Gradients
                 'luxury-rose-gold': 'linear-gradient(135deg, #E8B298 0%, #D4A184 50%, #CD7F32 100%)',
-                'luxury-platinum': 'linear-gradient(135deg, #E5E4E2 0%, #C9C8C6 50%, #B8B8B8 100%)',
-                'luxury-champagne': 'linear-gradient(135deg, #F7E7CE 0%, #E8B298 50%, #D4A184 100%)',
-                'luxury-velvet': 'linear-gradient(145deg, #2D1B3D 0%, #1A0F2E 50%, #0A0612 100%)',
-                'luxury-silk': 'linear-gradient(135deg, #3D2A4A 0%, #2D1B3D 50%, #1A0F2E 100%)',
-                'liquid-metal': 'linear-gradient(135deg, #E5E4E2 0%, #E8B298 25%, #E5E4E2 50%, #D4A184 75%, #E5E4E2 100%)',
-                'liquid-rose': 'linear-gradient(135deg, #E8B298 0%, #F7E7CE 25%, #E8B298 50%, #D4A184 75%, #E8B298 100%)',
-                'jewel-rainbow': 'linear-gradient(135deg, #10B981 0%, #0F52BA 25%, #9966CC 50%, #DC143C 75%, #FFC87C 100%)',
-                'jewel-emerald': 'linear-gradient(135deg, #10B981 0%, #059669 50%, #047857 100%)',
-                'jewel-ruby': 'linear-gradient(135deg, #DC143C 0%, #B8112A 50%, #8B0000 100%)',
-                'jewel-sapphire': 'linear-gradient(135deg, #0F52BA 0%, #0C3F8F 50%, #082A5E 100%)',
-                'jewel-amethyst': 'linear-gradient(135deg, #9966CC 0%, #7D4FB3 50%, #6B46C1 100%)',
-                'velvet-texture': 'repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255,255,255,0.02) 2px, rgba(255,255,255,0.02) 4px)',
-                // Legacy Gradients
-                'holo-gradient': 'linear-gradient(125deg, transparent 0%, rgba(255, 215, 0, 0.03) 30%, rgba(147, 51, 234, 0.05) 50%, rgba(255, 215, 0, 0.03) 70%, transparent 100%)',
                 'gold-metallic': 'linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #CD7F32 100%)',
-                'gold-shine': 'linear-gradient(135deg, #FFA500 0%, #FFD700 50%, #FFBF00 100%)',
-                'gold-pressed': 'linear-gradient(135deg, #CD7F32 0%, #B8860B 50%, #8B6914 100%)',
-                'fire-ice': 'linear-gradient(90deg, #FF6B35 0%, #FFD700 50%, #00FFFF 100%)',
-                'mystical-aura': 'linear-gradient(135deg, #9333EA 0%, #FF00FF 50%, #8B00FF 100%)',
-                'dragon-fire': 'linear-gradient(135deg, #FF4500 0%, #FF6B35 50%, #FFBF00 100%)',
-                'dragon-ice': 'linear-gradient(135deg, #00FFFF 0%, #00CED1 50%, #87CEEB 100%)',
+                'velvet-texture': 'repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255,255,255,0.02) 2px, rgba(255,255,255,0.02) 4px)',
+            },
+            boxShadow: {
+                "neon-blue": "0 0 10px rgba(0, 229, 255, 0.5), 0 0 20px rgba(0, 229, 255, 0.3)",
+                "neon-pink": "0 0 10px rgba(0, 188, 212, 0.5), 0 0 20px rgba(0, 188, 212, 0.3)",
+                "neon-green": "0 0 10px rgba(0, 255, 192, 0.5), 0 0 20px rgba(0, 255, 192, 0.3)",
+                "neon-yellow": "0 0 10px rgba(167, 236, 238, 0.5), 0 0 20px rgba(167, 236, 238, 0.3)",
+                "cyber-card": "0 10px 30px -10px rgba(0,0,0,0.8), 0 0 20px rgba(79, 209, 197, 0.2) inset",
+                "glassmorphism": "0 4px 6px rgba(0, 0, 0, 0.1), 0 0 20px rgba(0, 229, 255, 0.1) inset",
+                // Existing shadows
+                'gold-glow': '0 0 20px rgba(255, 215, 0, 0.4)',
+                'luxury-glow': '0 0 30px rgba(0, 229, 255, 0.4), 0 0 60px rgba(79, 209, 197, 0.2)',
             },
             boxShadow: {
                 // Premium Luxury Shadows
