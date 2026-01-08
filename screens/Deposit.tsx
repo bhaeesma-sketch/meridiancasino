@@ -119,7 +119,7 @@ const Deposit: React.FC = () => {
     };
 
     return (
-        <div className="flex-1 flex flex-col p-6 md:p-10 w-full relative">
+        <div className="flex-1 flex flex-col p-6 pb-40 md:p-10 w-full relative">
             {serverMode === 'TEST' && (
                 <div className="mb-6 bg-red-500/20 border-2 border-red-500 text-red-500 p-4 rounded-xl text-center font-black animate-pulse tracking-widest uppercase">
                     ⚠️ TEST MODE — MICRO DEPOSITS ENABLED ⚠️
