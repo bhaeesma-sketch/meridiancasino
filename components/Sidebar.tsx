@@ -161,14 +161,14 @@ export const RightSidebar: React.FC = () => {
                                         </div>
                                         <div className={`text-[9px] uppercase flex items-center gap-1.5 ${isReferral ? 'text-neon-pink/60' : 'text-white/40'}`}>
                                             <span className="material-symbols-outlined text-[10px]">
-                                                {isReferral ? (item.game === 'referral' ? 'groups' : 'redeem') : 'bolt'}
+                                                {isReferral ? (item.game.toLowerCase() === 'referral' ? 'groups' : 'redeem') : 'bolt'}
                                             </span>
-                                            {isReferral ? (item.game === 'referral' ? 'Affiliate Node Reward' : 'Signup Bonus') : (
-                                                item.game === 'dice' ? 'Market Trends' :
-                                                    item.game === 'roulette' ? 'User Activity' :
-                                                        item.game === 'blackjack' ? 'Network Traffic' :
-                                                            item.game === 'plinko' ? 'System Logs' :
-                                                                item.game === 'limbo' ? 'Uplink Velocity' : item.game
+                                            {isReferral ? (item.game.toLowerCase() === 'referral' ? 'Affiliate Node Reward' : 'Signup Bonus') : (
+                                                item.game.toLowerCase() === 'dice' ? 'Market Trends' :
+                                                    item.game.toLowerCase() === 'roulette' ? 'User Activity' :
+                                                        item.game.toLowerCase() === 'blackjack' ? 'Network Traffic' :
+                                                            item.game.toLowerCase() === 'plinko' ? 'System Logs' :
+                                                                item.game.toLowerCase() === 'limbo' ? 'Uplink Velocity' : item.game
                                             )}
                                         </div>
                                     </div>
