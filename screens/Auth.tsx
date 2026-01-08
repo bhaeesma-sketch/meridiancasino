@@ -62,12 +62,6 @@ const Auth: React.FC = () => {
       const result = createLocalWallet();
 
       if (result && result.connected && result.address) {
-        setWalletAddress(result.address);
-        if (context) {
-          context.setIsConnected(true);
-        }
-        navigate('/lobby');
-
         if (isSupabaseConfigured) {
           const fingerprint = await getDeviceFingerprint();
           const { error: dbError } = await supabase.from('profiles').upsert({
@@ -79,6 +73,11 @@ const Auth: React.FC = () => {
 
           if (dbError) console.error("Supabase Error:", dbError);
         }
+
+        if (context) {
+          context.setIsConnected(true);
+        }
+        navigate('/lobby');
       }
     } catch (err: any) {
       setError(err.message);
@@ -89,7 +88,7 @@ const Auth: React.FC = () => {
 
 
   return (
-    <div className="bg-cyber-black text-white font-display overflow-hidden h-screen flex flex-col selection:bg-neon-pink selection:text-white">
+    <div className="bg-cyber-black text-white font-display min-h-screen flex flex-col selection:bg-neon-pink selection:text-white relative">
       {/* Background Layers */}
       <div className="fixed inset-0 z-[-2] bg-cyber-city transform scale-105"></div>
       <div className="fixed inset-0 z-[-1] bg-grid pointer-events-none opacity-30"></div>
@@ -115,7 +114,7 @@ const Auth: React.FC = () => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 relative z-10 flex items-center justify-center px-4 w-full h-full">
+      <main className="flex-1 relative z-10 flex items-center justify-center px-4 py-24 w-full h-full overflow-y-auto custom-scrollbar">
         <div className="relative w-full max-w-md mx-auto animate-slide-up">
           {/* Decorative border glow */}
           <div className="absolute -inset-1 bg-gradient-to-r from-neon-blue via-neon-purple to-neon-pink rounded-none opacity-50 blur group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-pulse-neon clip-angled-lg"></div>

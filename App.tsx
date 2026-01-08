@@ -522,7 +522,7 @@ const AppContent = () => {
             <main className={`flex-1 flex flex-col ${['/plinko', '/roulette', '/dice', '/blackjack', '/limbo'].includes(location.pathname) ? 'overflow-hidden' : 'overflow-y-auto custom-scrollbar'} relative bg-black/20 rounded-[2rem] border border-white/5 backdrop-blur-sm stage-container ${context.is3DMode ? 'stage-3d' : ''}`}>
               <Routes>
                 <Route path="/" element={<Auth />} />
-                <Route path="/lobby" element={<ProtectedRoute requireBalance={true}><Lobby /></ProtectedRoute>} />
+                <Route path="/lobby" element={<ProtectedRoute><Lobby /></ProtectedRoute>} />
                 <Route path="/plinko" element={<ProtectedRoute requireBalance={true}><Plinko /></ProtectedRoute>} />
                 <Route path="/roulette" element={<ProtectedRoute requireBalance={true}><Roulette /></ProtectedRoute>} />
                 <Route path="/dice" element={<ProtectedRoute requireBalance={true}><Dice /></ProtectedRoute>} />
