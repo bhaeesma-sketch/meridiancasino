@@ -5,22 +5,35 @@
 -- 1. SECURITY DEFINER HARDENING (Fixing "role mutable" / search_path vulnerabilities)
 -- Every SECURITY DEFINER function must have a fixed search_path to prevent path injection.
 
-ALTER FUNCTION public.handle_new_user_bonus() SET search_path = public;
-ALTER FUNCTION public.play_limbo(DECIMAL, DECIMAL, BOOLEAN) SET search_path = public;
-ALTER FUNCTION public.check_withdrawal_eligibility(UUID) SET search_path = public;
-ALTER FUNCTION public.check_referral_limit() SET search_path = public;
-ALTER FUNCTION public.update_updated_at_column() SET search_path = public;
-ALTER FUNCTION public.handle_new_profile() SET search_path = public;
-
--- Fix suspected ghost functions from Supabase Dashboard
 DO $$ 
+DECLARE
+    func_name text;
 BEGIN
-    IF EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'process_deposit') THEN
-        ALTER FUNCTION public.process_deposit(TEXT, DECIMAL) SET search_path = public;
-    END IF;
-    IF EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'check_player_security') THEN
-        ALTER FUNCTION public.check_player_security(UUID) SET search_path = public;
-    END IF;
+    -- List of functions to harden based on Security Advisor and app features
+    FOR func_name IN 
+        SELECT proname 
+        FROM pg_proc p 
+        JOIN pg_namespace n ON p.pronamespace = n.oid 
+        WHERE n.nspname = 'public' 
+        AND proname IN (
+            'handle_new_user_bonus',
+            'play_limbo',
+            'play_dice',
+            'play_plinko',
+            'play_roulette',
+            'play_blackjack',
+            'check_withdrawal_eligibility',
+            'check_referral_limit',
+            'update_updated_at_column',
+            'handle_new_profile',
+            'process_deposit',
+            'check_player_security',
+            'convert_bonus'
+        )
+    LOOP
+        EXECUTE format('ALTER FUNCTION public.%I SET search_path = public', func_name);
+        RAISE NOTICE 'Hardened function: %', func_name;
+    END LOOP;
 END $$;
 
 
