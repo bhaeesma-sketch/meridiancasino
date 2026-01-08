@@ -5,7 +5,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 const hexToUint8Array = (hexString: string) =>
     new Uint8Array(hexString.match(/.{1,2}/g)!.map((byte) => parseInt(byte, 16)));
 
-serve(async (req) => {
+serve(async (req: Request) => {
     try {
         // 1. Validate Signature (Security Critical)
         const ipnSecret = Deno.env.get('NOWPAYMENTS_IPN_SECRET')
@@ -76,6 +76,13 @@ serve(async (req) => {
         }
 
         // 5. Amount Validation (Section 7.3)
+        // Ensure properties exist before parsing to avoid NaN issues if they are somehow missing
+        if (!pay_amount || !existingDeposit.amount) {
+            console.error('Missing amount data', { pay_amount, deposit_amount: existingDeposit.amount });
+            // Depending on logic, maybe return or continue. Throwing error for safety.
+            throw new Error('Missing amount data for validation');
+        }
+
         if (parseFloat(pay_amount) < parseFloat(existingDeposit.amount)) {
             console.error('FRAUD ATTEMPT: Amount paid less than expected', { expected: existingDeposit.amount, received: pay_amount })
             // Mark as fraud/flagged in DB
@@ -114,10 +121,10 @@ serve(async (req) => {
             headers: { 'Content-Type': 'application/json' },
         })
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('Webhook Error:', error)
         return new Response(
-            JSON.stringify({ error: error.message }),
+            JSON.stringify({ error: error.message || 'Unknown error' }),
             { status: 400, headers: { 'Content-Type': 'application/json' } }
         )
     }

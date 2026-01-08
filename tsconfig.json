@@ -34,5 +34,8 @@
     "*.tsx",
     "*.ts",
     "*.d.ts"
+  ],
+  "exclude": [
+    "supabase"
   ]
 }
