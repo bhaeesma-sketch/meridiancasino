@@ -129,29 +129,74 @@ export const ReferralSection: React.FC<ReferralSectionProps> = ({ user }) => {
             </div>
 
             {/* Referral Info / History Table placeholder */}
-            <div className="glass-panel rounded-2xl border border-white/5 p-6 bg-white/5">
-                <h4 className="text-[10px] font-bold text-white/40 uppercase tracking-[.3em] mb-4">Node Activity Log</h4>
-                <div className="space-y-3">
-                    {user.referralCount > 0 ? (
-                        <div className="flex items-center justify-between p-3 bg-black/40 border border-white/5 rounded-xl">
-                            <div className="flex items-center gap-3">
-                                <div className="size-8 rounded bg-neon-green/20 flex items-center justify-center text-neon-green text-xs font-mono">ID</div>
-                                <div>
-                                    <div className="text-xs font-bold text-white">SECURE_NODE_01</div>
-                                    <div className="text-[10px] text-white/40 uppercase font-mono">STATUS: VALIDATED</div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Node Activity Log */}
+                <div className="glass-panel rounded-2xl border border-white/5 p-6 bg-white/5 flex flex-col">
+                    <h4 className="text-[10px] font-bold text-white/40 uppercase tracking-[.3em] mb-4">Node Activity Log</h4>
+                    <div className="space-y-3 flex-1">
+                        {user.referralCount > 0 ? (
+                            <div className="flex items-center justify-between p-3 bg-black/40 border border-white/5 rounded-xl">
+                                <div className="flex items-center gap-3">
+                                    <div className="size-8 rounded bg-neon-green/20 flex items-center justify-center text-neon-green text-xs font-mono">ID</div>
+                                    <div>
+                                        <div className="text-xs font-bold text-white">SECURE_NODE_01</div>
+                                        <div className="text-[10px] text-white/40 uppercase font-mono">STATUS: VALIDATED</div>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <div className="text-xs font-bold text-neon-green">+$25.00</div>
+                                    <div className="text-[10px] text-white/40 uppercase font-mono">CREDITED</div>
                                 </div>
                             </div>
-                            <div className="text-right">
-                                <div className="text-xs font-bold text-neon-green">+$25.00</div>
-                                <div className="text-[10px] text-white/40 uppercase font-mono">CREDITED</div>
+                        ) : (
+                            <div className="py-12 flex flex-col items-center justify-center text-center gap-4 border-2 border-dashed border-white/5 rounded-2xl flex-1">
+                                <span className="material-symbols-outlined text-white/10 text-5xl">radar</span>
+                                <div className="text-white/20 font-bold uppercase tracking-widest text-xs">No active nodes detected in your subnet.</div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Promo Asset */}
+                <div className="glass-panel rounded-2xl border border-quantum-gold/30 p-6 bg-quantum-gold/5 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-3">
+                        <span className="px-2 py-1 bg-quantum-gold text-black text-[8px] font-black rounded uppercase tracking-tighter shadow-gold-glow">4K ASSET</span>
+                    </div>
+                    <h4 className="text-[10px] font-bold text-quantum-gold uppercase tracking-[.3em] mb-4 flex items-center gap-2">
+                        <span className="material-symbols-outlined text-sm">image</span>
+                        PROMOTIONAL UPLINK MEDIA
+                    </h4>
+
+                    <div className="relative aspect-video rounded-xl overflow-hidden border border-white/10 group-hover:border-quantum-gold/50 transition-all">
+                        <img
+                            src="/assets/promo/referral_bonus_4k.png"
+                            alt="Referral Bonus Promo"
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
+                        <div className="absolute bottom-3 left-3 right-3 flex justify-between items-end">
+                            <div className="text-[10px] text-white font-black uppercase tracking-widest drop-shadow-lg">
+                                Casino Clash <span className="text-neon-blue">Referral</span>
                             </div>
                         </div>
-                    ) : (
-                        <div className="py-12 flex flex-col items-center justify-center text-center gap-4 border-2 border-dashed border-white/5 rounded-2xl">
-                            <span className="material-symbols-outlined text-white/10 text-5xl">radar</span>
-                            <div className="text-white/20 font-bold uppercase tracking-widest text-xs">No active nodes detected in your subnet.</div>
-                        </div>
-                    )}
+                    </div>
+
+                    <div className="mt-4 flex gap-3">
+                        <a
+                            href="/assets/promo/referral_bonus_4k.png"
+                            download="CasinoClash_Referral_4K.png"
+                            className="flex-1 py-2.5 bg-quantum-gold text-black rounded-xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 hover:scale-105 transition-all shadow-gold-glow"
+                        >
+                            <span className="material-symbols-outlined text-sm">download</span>
+                            Download Image
+                        </a>
+                        <button
+                            onClick={() => window.open('/assets/promo/referral_bonus_4k.png', '_blank')}
+                            className="px-4 py-2.5 bg-white/5 border border-white/10 text-white rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-white/10 transition-all"
+                        >
+                            <span className="material-symbols-outlined text-sm">visibility</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
