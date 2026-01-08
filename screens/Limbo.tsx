@@ -2,6 +2,8 @@ import React, { useState, useContext, useRef, useEffect } from 'react';
 import { AppContext } from '../App';
 import { sounds } from '../services/soundService';
 import { GameLayout } from '../components/GameLayout';
+import { useSecurity } from '../contexts/SecurityContext';
+import { supabase } from '../services/supabase';
 
 const Limbo: React.FC = () => {
   const context = useContext(AppContext);
@@ -29,28 +31,13 @@ const Limbo: React.FC = () => {
     };
   }, []);
 
-  // Generate crash point using exponential distribution (similar to Stake)
-  const generateCrashPoint = (): number => {
-    // House edge ensures crashes happen frequently
-    // Using exponential distribution with mean that favors house
-    const r = Math.random();
-    // Formula: -ln(r) / lambda, where lambda controls house edge
-    // Lower lambda = higher multipliers on average, but we want low RTP
-    const lambda = 0.15; // Adjust this to control average crash point
-    let crashPoint = -Math.log(r) / lambda;
+  const [useBonus, setUseBonus] = useState(false);
+  const { checkDepositRequirement, handleError } = useSecurity();
 
-    // Cap at reasonable maximum
-    if (crashPoint > 1000) crashPoint = 1000;
+  const startGame = async () => {
+    if (!context || isRunning || bet <= 0) return;
 
-    // Minimum crash point (can't crash before 1.01x)
-    if (crashPoint < 1.01) crashPoint = 1.01;
-
-    return crashPoint;
-  };
-
-  const startGame = () => {
-    if (!context || context.user.balance < bet || isRunning || bet <= 0) {
-      sounds.playLose();
+    if (!checkDepositRequirement(context.user.total_deposited || 0)) {
       return;
     }
 
@@ -61,58 +48,70 @@ const Limbo: React.FC = () => {
     setCurrentMultiplier(1.0);
     sounds.playRoll();
 
-    // Deduct bet immediately
-    context.updateBalance(-bet);
+    try {
+      const { data, error } = await supabase.rpc('play_limbo', {
+        p_bet_amount: bet,
+        p_target_multiplier: targetMultiplier,
+        p_use_bonus: useBonus
+      });
 
-    // Generate crash point
-    const crashPoint = generateCrashPoint();
-    crashPointRef.current = crashPoint;
-    startTimeRef.current = Date.now();
+      if (error) throw error;
 
-    const animate = () => {
-      const elapsed = Date.now() - startTimeRef.current;
-      // Multiplier increases exponentially (similar to Stake)
-      const multiplier = 1.0 + (Math.pow(elapsed / 1000, 1.5) * 0.1);
-      setCurrentMultiplier(multiplier);
+      const crashPoint = data.crash_point;
+      const serverIsWin = data.is_win;
+      const serverBalance = data.balance;
 
-      if (multiplier >= crashPointRef.current) {
-        // Crashed!
-        setCrashedAt(crashPointRef.current);
-        setIsRunning(false);
-        setCurrentMultiplier(crashPointRef.current);
+      crashPointRef.current = crashPoint;
+      startTimeRef.current = Date.now();
 
-        // Check if player won (0.01% RTP)
-        const won = crashPointRef.current >= targetMultiplier;
-        setIsWin(won);
+      const animate = () => {
+        const elapsed = Date.now() - startTimeRef.current;
+        // Multiplier increases exponentially (similar to Stake)
+        const multiplier = 1.0 + (Math.pow(elapsed / 1000, 1.5) * 0.1);
+        setCurrentMultiplier(multiplier);
 
-        setTimeout(() => {
-          if (won) {
-            sounds.playWin();
-            const payout = bet * targetMultiplier;
-            context.updateBalance(payout);
-            context.addHistory({
-              id: Date.now().toString() + Math.random().toString(),
-              game: 'Limbo',
-              multiplier: targetMultiplier,
-              payout: payout / 45000,
-              timestamp: Date.now(),
-              username: context.user.username
-            });
-          } else {
-            sounds.playLose();
-          }
-        }, 300);
+        if (multiplier >= crashPointRef.current) {
+          // Crashed!
+          setCrashedAt(crashPointRef.current);
+          setIsRunning(false);
+          setCurrentMultiplier(crashPointRef.current);
+          setIsWin(serverIsWin);
 
-        setTimeout(() => {
-          setIsWin(null);
-          setHasBet(false);
-        }, 3000);
-      } else {
-        animationFrameRef.current = requestAnimationFrame(animate);
-      }
-    };
+          setTimeout(() => {
+            if (serverIsWin) {
+              sounds.playWin();
+            } else {
+              sounds.playLose();
+            }
 
-    animationFrameRef.current = requestAnimationFrame(animate);
+            // Sync balance
+            if (context) {
+              if (useBonus) {
+                // Direct update if needed or via context
+                // context.updateUser({ ...context.user, bonus_balance: serverBalance });
+              } else {
+                const delta = serverBalance - context.user.real_balance;
+                context.updateBalance(delta);
+              }
+            }
+          }, 300);
+
+          setTimeout(() => {
+            setIsWin(null);
+            setHasBet(false);
+          }, 3000);
+        } else {
+          animationFrameRef.current = requestAnimationFrame(animate);
+        }
+      };
+
+      animationFrameRef.current = requestAnimationFrame(animate);
+
+    } catch (err: any) {
+      console.error("Limbo Error:", err);
+      setIsRunning(false);
+      handleError(err);
+    }
   };
 
   const handleQuickBet = (amount: number) => {
@@ -133,15 +132,33 @@ const Limbo: React.FC = () => {
 
   const Controls = (
     <div className="w-full flex flex-col gap-4">
-      {/* Probability HUD moved to top of controls for visibility */}
-      <div className="w-full grid grid-cols-2 gap-4">
-        <div className="bg-black/40 border border-white/5 rounded-lg p-2 text-center">
-          <div className="text-[8px] text-white/30 uppercase font-black tracking-widest mb-0.5">EST. WIN CHANCE</div>
-          <div className="text-xs font-mono font-bold text-white/80">{winChance.toFixed(2)}%</div>
+      <div className="bg-black/40 rounded-xl p-3 border border-white/5 flex flex-col gap-3">
+        {/* Wallet Toggle */}
+        <div className="flex bg-white/5 rounded-lg p-1 border border-white/10 w-full mb-1">
+          <button
+            onClick={() => setUseBonus(false)}
+            className={`flex-1 py-1.5 text-[10px] font-black uppercase rounded transition-all ${!useBonus ? 'bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.5)]' : 'text-gray-500 hover:text-white'}`}
+          >
+            Real
+          </button>
+          <button
+            onClick={() => setUseBonus(true)}
+            className={`flex-1 py-1.5 text-[10px] font-black uppercase rounded transition-all ${useBonus ? 'bg-purple-500 text-white shadow-[0_0_15px_rgba(168,85,247,0.5)]' : 'text-gray-500 hover:text-white'}`}
+          >
+            Bonus
+          </button>
         </div>
-        <div className="bg-black/40 border border-white/5 rounded-lg p-2 text-center">
-          <div className="text-[8px] text-white/30 uppercase font-black tracking-widest mb-0.5">EST. PAYOUT</div>
-          <div className="text-xs font-mono font-bold text-quantum-gold">$ {maxPayout.toFixed(2)}</div>
+
+        {/* Probability HUD moved to top of controls for visibility */}
+        <div className="w-full grid grid-cols-2 gap-4">
+          <div className="bg-black/40 border border-white/5 rounded-lg p-2 text-center">
+            <div className="text-[8px] text-white/30 uppercase font-black tracking-widest mb-0.5">EST. WIN CHANCE</div>
+            <div className="text-xs font-mono font-bold text-white/80">{winChance.toFixed(2)}%</div>
+          </div>
+          <div className="bg-black/40 border border-white/5 rounded-lg p-2 text-center">
+            <div className="text-[8px] text-white/30 uppercase font-black tracking-widest mb-0.5">EST. PAYOUT</div>
+            <div className="text-xs font-mono font-bold text-quantum-gold">$ {maxPayout.toFixed(2)}</div>
+          </div>
         </div>
       </div>
 

@@ -16,9 +16,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requir
     return <Navigate to="/" replace />;
   }
 
-  // Step 5 Gate: Minimum 10 USDT real balance to play
-  if (requireBalance && context.user.real_balance < 10) {
-    // Show Warning Modal instead of blocking redirect
+  // Mandatory Security Gate: Only unlocked after verified on-chain deposit
+  // Frontend check is a mirror of the backend 'has_deposited' state
+  if (requireBalance && (context.user.total_deposited || 0) < 10) {
+    // Show Security Terminal / Warning Modal
     return <DepositWarningModal />;
   }
 

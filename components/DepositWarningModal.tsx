@@ -34,10 +34,11 @@ export const DepositWarningModal: React.FC = () => {
                     </div>
 
                     {/* Description */}
-                    <p className="text-white/70 text-sm leading-relaxed max-w-sm">
-                        To ensure a premium gaming experience and access real-money tables, proper account activation is required.
+                    <p className="text-white/70 text-sm leading-relaxed max-w-sm font-refined">
+                        To activate your session and verify your connection to the global datastream, a one-time security clearance is required.
                         <br /><br />
-                        <span className="text-quantum-gold font-bold">Requirement:</span> Minimum deposit of <span className="text-white font-bold">$10.00</span>
+                        <span className="text-quantum-gold font-bold uppercase tracking-widest text-[10px]">Mandatory Requirement:</span><br />
+                        <span className="text-white font-black text-xl">10.00 USDT</span>
                     </p>
 
                     {/* Actions */}
@@ -49,15 +50,15 @@ export const DepositWarningModal: React.FC = () => {
                             className="shadow-gold-glow"
                             onClick={() => navigate('/deposit', { state: { from: location } })}
                         >
-                            <span className="material-symbols-outlined">payments</span>
-                            Deposit Now
+                            <span className="material-symbols-outlined font-black">payments</span>
+                            Initialize Gateway
                         </Button>
 
                         <button
-                            onClick={() => navigate('/lobby')}
-                            className="text-xs text-white/40 hover:text-white uppercase tracking-widest font-bold transition-colors py-2"
+                            onClick={() => navigate('/')}
+                            className="text-[10px] text-white/30 hover:text-white uppercase tracking-[0.2em] font-black transition-all py-2"
                         >
-                            Return to Lobby
+                            Back to Connection Terminal
                         </button>
                     </div>
                 </div>

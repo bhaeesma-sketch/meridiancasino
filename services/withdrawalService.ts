@@ -137,78 +137,30 @@ export const submitWithdrawalRequest = async (
   }
 };
 
-// Get withdrawal status
-export const getWithdrawalStatus = async (withdrawalId: string): Promise<WithdrawalStatus | null> => {
-  try {
-    // TODO: Replace with actual backend API call
-    // GET /api/withdrawals/{withdrawalId}
-    const response = await fetch(`/api/withdrawals/${withdrawalId}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-      }
-    });
-
-    if (!response.ok) return null;
-
-    const data = await response.json();
-    return {
-      ...data,
-      requestedAt: new Date(data.requestedAt),
-      approvedAt: data.approvedAt ? new Date(data.approvedAt) : undefined,
-      completedAt: data.completedAt ? new Date(data.completedAt) : undefined,
-      rejectedAt: data.rejectedAt ? new Date(data.rejectedAt) : undefined,
-      autoApproveAt: data.autoApproveAt ? new Date(data.autoApproveAt) : undefined
-    };
-
-  } catch (error) {
-    console.error('Get withdrawal status error:', error);
-    return null;
-  }
-};
-
-// Get user withdrawal limits
-export const getWithdrawalLimits = async (): Promise<WithdrawalLimits | null> => {
-  try {
-    // TODO: Replace with actual backend API call
-    // GET /api/withdrawals/limits
-    const response = await fetch('/api/withdrawals/limits', {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-      }
-    });
-
-    if (!response.ok) return null;
-
-    const data = await response.json();
-    return data;
-
-  } catch (error) {
-    console.error('Get withdrawal limits error:', error);
-    return null;
-  }
-};
-
-// Get user's withdrawal history
+// Get user's withdrawal history from Supabase
 export const getWithdrawalHistory = async (): Promise<WithdrawalStatus[]> => {
   try {
-    // TODO: Replace with actual backend API call
-    // GET /api/withdrawals/history
-    const response = await fetch('/api/withdrawals/history', {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-      }
-    });
+    const { data, error } = await supabase
+      .from('withdrawals')
+      .select('*')
+      .order('created_at', { ascending: false });
 
-    if (!response.ok) return [];
+    if (error) throw error;
 
-    const data = await response.json();
-    return data.map((w: any) => ({
-      ...w,
-      requestedAt: new Date(w.requestedAt),
-      approvedAt: w.approvedAt ? new Date(w.approvedAt) : undefined,
-      completedAt: w.completedAt ? new Date(w.completedAt) : undefined,
-      rejectedAt: w.rejectedAt ? new Date(w.rejectedAt) : undefined,
-      autoApproveAt: w.autoApproveAt ? new Date(w.autoApproveAt) : undefined
+    return (data || []).map((w: any) => ({
+      id: w.id,
+      status: w.status,
+      amount: Number(w.amount),
+      token: w.token,
+      chain: w.chain,
+      destinationAddress: w.destination_address,
+      requestedAt: new Date(w.created_at),
+      approvedAt: w.approved_at ? new Date(w.approved_at) : undefined,
+      completedAt: w.completed_at ? new Date(w.completed_at) : undefined,
+      rejectedAt: w.rejected_at ? new Date(w.rejected_at) : undefined,
+      autoApproveAt: w.auto_approve_at ? new Date(w.auto_approve_at) : undefined,
+      txHash: w.tx_hash,
+      rejectionReason: w.rejection_reason
     }));
 
   } catch (error) {
@@ -217,29 +169,37 @@ export const getWithdrawalHistory = async (): Promise<WithdrawalStatus[]> => {
   }
 };
 
-// Request nonce for withdrawal signature
-export const requestWithdrawalNonce = async (): Promise<{ nonce: string; expiresAt: Date } | null> => {
+// Get user withdrawal limits (constants for now, but could be fetched from server configuration)
+export const getWithdrawalLimits = async (): Promise<WithdrawalLimits | null> => {
   try {
-    // TODO: Replace with actual backend API call
-    // GET /api/withdrawals/nonce
-    const response = await fetch('/api/withdrawals/nonce', {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-      }
-    });
-
-    if (!response.ok) return null;
-
-    const data = await response.json();
+    // In a real app, this might fetch from a 'system_config' table or calculated from user tier
     return {
-      nonce: data.nonce,
-      expiresAt: new Date(data.expiresAt)
+      minAmount: WITHDRAWAL_CONSTANTS.MIN_WITHDRAWAL,
+      maxAmount: WITHDRAWAL_CONSTANTS.MAX_WITHDRAWAL,
+      dailyLimit: WITHDRAWAL_CONSTANTS.DAILY_LIMIT,
+      dailyUsed: 0, // Should be calculated from today's withdrawals
+      dailyRemaining: WITHDRAWAL_CONSTANTS.DAILY_LIMIT,
+      velocityLimit: WITHDRAWAL_CONSTANTS.VELOCITY_LIMIT,
+      velocityUsed: 0,
+      cooldownMinutes: WITHDRAWAL_CONSTANTS.COOLDOWN_MINUTES,
+      token: 'USDT'
     };
-
   } catch (error) {
-    console.error('Request nonce error:', error);
+    console.error('Get withdrawal limits error:', error);
     return null;
   }
+};
+
+// Request nonce for withdrawal signature (Simplified for demo, usually hits a secure server side nonce generator)
+export const requestWithdrawalNonce = async (): Promise<{ nonce: string; expiresAt: Date } | null> => {
+  const nonce = Array.from(crypto.getRandomValues(new Uint8Array(16)))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+
+  return {
+    nonce,
+    expiresAt: new Date(Date.now() + 600000) // 10 mins
+  };
 };
 
 // Generate withdrawal message for signing

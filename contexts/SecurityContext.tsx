@@ -30,10 +30,10 @@ export const SecurityProvider: React.FC<{ children: ReactNode }> = ({ children }
             setModalState({
                 isOpen: true,
                 type: 'DEPOSIT_REQUIRED',
-                message: 'Minimum Deposit Required',
-                description: 'To ensure platform integrity, a minimum lifetime deposit of $10 is required to access game features.',
-                actionLabel: 'OPEN WALLET',
-                actionGoal: '/withdraw' // Route to wallet/withdraw page
+                message: 'Mandatory Security Clearance',
+                description: 'To activate your connection to the global datastream, a verified on-chain deposit of at least $10 is required.',
+                actionLabel: 'INITIALIZE GATEWAY',
+                actionGoal: '/deposit'
             });
             return;
         }
@@ -66,10 +66,10 @@ export const SecurityProvider: React.FC<{ children: ReactNode }> = ({ children }
             setModalState({
                 isOpen: true,
                 type: 'WARNING',
-                message: 'Insufficient Funds',
-                description: 'Your Real Balance is too low for this wager. Bonus funds cannot be used for this game type.',
+                message: 'Insufficient Credits',
+                description: 'Your Real Balance is too low for this wager. Connection terminated.',
                 actionLabel: 'DEPOSIT NOW',
-                actionGoal: '/withdraw'
+                actionGoal: '/deposit'
             });
             return;
         }
@@ -82,10 +82,10 @@ export const SecurityProvider: React.FC<{ children: ReactNode }> = ({ children }
             setModalState({
                 isOpen: true,
                 type: 'DEPOSIT_REQUIRED',
-                message: 'Minimum Deposit Required',
-                description: 'To confirm your identity and unlock gameplay, please deposit at least $10 worth of crypto.',
-                actionLabel: 'DEPOSIT NOW',
-                actionGoal: '/withdraw'
+                message: 'Security Activation Required',
+                description: 'To confirm your node integrity and unlock gameplay, please deposit at least $10 USDT verified on-chain.',
+                actionLabel: 'GO TO GATEWAY',
+                actionGoal: '/deposit'
             });
             return false;
         }
