@@ -53,7 +53,7 @@ export const WITHDRAWAL_CONSTANTS = {
 // Validate withdrawal address format
 export const validateAddress = (address: string, chain: string): boolean => {
   if (!address || address.trim().length === 0) return false;
-  
+
   if (chain === 'ethereum' || chain === 'bsc' || chain === 'polygon') {
     // EVM address format: 0x followed by 40 hex characters
     return /^0x[a-fA-F0-9]{40}$/.test(address);
@@ -61,7 +61,7 @@ export const validateAddress = (address: string, chain: string): boolean => {
     // TRON address format: T followed by 33 alphanumeric characters
     return /^T[A-Za-z1-9]{33}$/.test(address);
   }
-  
+
   return false;
 };
 
@@ -74,33 +74,33 @@ export const validateAmount = (
   if (amount <= 0) {
     return { valid: false, error: 'Amount must be greater than 0' };
   }
-  
+
   if (amount < limits.minAmount) {
     return { valid: false, error: `Minimum withdrawal is ${limits.minAmount} ${limits.token || 'USDT'}` };
   }
-  
+
   if (amount > limits.maxAmount) {
     return { valid: false, error: `Maximum withdrawal is ${limits.maxAmount} ${limits.token || 'USDT'} per request` };
   }
-  
+
   if (amount > balance) {
     return { valid: false, error: 'Insufficient balance' };
   }
-  
+
   if (limits.dailyUsed + amount > limits.dailyLimit) {
-    return { 
-      valid: false, 
-      error: `Daily limit exceeded. Remaining: ${limits.dailyRemaining} ${limits.token || 'USDT'}` 
+    return {
+      valid: false,
+      error: `Daily limit exceeded. Remaining: ${limits.dailyRemaining} ${limits.token || 'USDT'}`
     };
   }
-  
+
   if (limits.velocityUsed >= limits.velocityLimit) {
-    return { 
-      valid: false, 
-      error: `Maximum ${limits.velocityLimit} withdrawals per day. Please try again tomorrow.` 
+    return {
+      valid: false,
+      error: `Maximum ${limits.velocityLimit} withdrawals per day. Please try again tomorrow.`
     };
   }
-  
+
   return { valid: true };
 };
 
@@ -111,32 +111,23 @@ export const submitWithdrawalRequest = async (
   nonce: string
 ): Promise<{ success: boolean; withdrawalId?: string; error?: string }> => {
   try {
-    // TODO: Replace with actual backend API call
-    // POST /api/withdrawals/request
-    const response = await fetch('/api/withdrawals/request', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('auth_token')}` // TODO: Get from auth context
-      },
-      body: JSON.stringify({
-        address: request.destinationAddress,
+    const { data, error } = await supabase.functions.invoke('create-withdrawal', {
+      body: {
+        address: request.address, // Wallet address of user
         amount: request.amount,
         token: request.token,
         chain: request.chain,
+        destinationAddress: request.destinationAddress,
         signature,
         nonce
-      })
+      }
     });
-    
-    if (!response.ok) {
-      const error = await response.json();
-      return { success: false, error: error.message || 'Withdrawal request failed' };
-    }
-    
-    const data = await response.json();
+
+    if (error) throw new Error(error.message || 'Function invocation failed');
+    if (!data.success) throw new Error(data.error || 'Withdrawal failed');
+
     return { success: true, withdrawalId: data.withdrawalId };
-    
+
   } catch (error: any) {
     console.error('Withdrawal request error:', error);
     return { success: false, error: error.message || 'Network error. Please try again.' };
@@ -153,9 +144,9 @@ export const getWithdrawalStatus = async (withdrawalId: string): Promise<Withdra
         'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
       }
     });
-    
+
     if (!response.ok) return null;
-    
+
     const data = await response.json();
     return {
       ...data,
@@ -165,7 +156,7 @@ export const getWithdrawalStatus = async (withdrawalId: string): Promise<Withdra
       rejectedAt: data.rejectedAt ? new Date(data.rejectedAt) : undefined,
       autoApproveAt: data.autoApproveAt ? new Date(data.autoApproveAt) : undefined
     };
-    
+
   } catch (error) {
     console.error('Get withdrawal status error:', error);
     return null;
@@ -182,12 +173,12 @@ export const getWithdrawalLimits = async (): Promise<WithdrawalLimits | null> =>
         'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
       }
     });
-    
+
     if (!response.ok) return null;
-    
+
     const data = await response.json();
     return data;
-    
+
   } catch (error) {
     console.error('Get withdrawal limits error:', error);
     return null;
@@ -204,9 +195,9 @@ export const getWithdrawalHistory = async (): Promise<WithdrawalStatus[]> => {
         'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
       }
     });
-    
+
     if (!response.ok) return [];
-    
+
     const data = await response.json();
     return data.map((w: any) => ({
       ...w,
@@ -216,7 +207,7 @@ export const getWithdrawalHistory = async (): Promise<WithdrawalStatus[]> => {
       rejectedAt: w.rejectedAt ? new Date(w.rejectedAt) : undefined,
       autoApproveAt: w.autoApproveAt ? new Date(w.autoApproveAt) : undefined
     }));
-    
+
   } catch (error) {
     console.error('Get withdrawal history error:', error);
     return [];
@@ -233,15 +224,15 @@ export const requestWithdrawalNonce = async (): Promise<{ nonce: string; expires
         'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
       }
     });
-    
+
     if (!response.ok) return null;
-    
+
     const data = await response.json();
     return {
       nonce: data.nonce,
       expiresAt: new Date(data.expiresAt)
     };
-    
+
   } catch (error) {
     console.error('Request nonce error:', error);
     return null;

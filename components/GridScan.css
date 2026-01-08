@@ -1,0 +1,43 @@
+.gridscan {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.gridscan canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.gridscan__preview {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    z-index: 10;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.gridscan__video {
+    display: block;
+    width: 160px;
+    height: 120px;
+    object-fit: cover;
+}
+
+.gridscan__badge {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    font-size: 10px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    text-align: center;
+    font-family: monospace;
+}

@@ -213,14 +213,45 @@ const Withdraw: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Withdrawal Form */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Balance Card */}
+          {/* Balance Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-black/60 border border-white/10 rounded-xl p-6">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-white/70 text-xs uppercase tracking-widest">Real Balance</span>
+                <span className="material-symbols-outlined text-green-400 text-sm">verified</span>
+              </div>
+              <div className="text-3xl font-black text-white">
+                ${context.user.real_balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+              <div className="text-white/40 text-[10px] uppercase mt-2">Always Withdrawable</div>
+            </div>
+
+            <div className="bg-black/60 border border-white/10 rounded-xl p-6 relative overflow-hidden">
+              {(context.user.bonus_balance > 0 && (context.user.bonus_winnings || 0) < 50) && (
+                <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px] flex items-center justify-center z-10 transition-all">
+                  <div className="text-center group-hover:scale-110 transition-transform">
+                    <span className="text-[10px] font-bold text-quantum-gold uppercase tracking-tighter bg-black/80 px-2 py-1 rounded">Locked (Need $50 Earnings)</span>
+                    <div className="text-[8px] text-white/50 mt-1">Current: ${(context.user.bonus_winnings || 0).toFixed(2)}</div>
+                  </div>
+                </div>
+              )}
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-white/70 text-xs uppercase tracking-widest">Bonus Balance</span>
+                <span className={`material-symbols-outlined ${(context.user.bonus_winnings || 0) >= 50 ? 'text-green-400' : 'text-white/30'} text-sm`}>
+                  {(context.user.bonus_winnings || 0) >= 50 ? 'lock_open' : 'lock'}
+                </span>
+              </div>
+              <div className={`text-3xl font-black ${(context.user.bonus_winnings || 0) >= 50 ? 'text-quantum-gold' : 'text-white/30'}`}>
+                ${context.user.bonus_balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+              <div className="text-white/40 text-[10px] uppercase mt-2">Withdrawable if Earnings ≥ $50</div>
+            </div>
+          </div>
+
           <div className="bg-black/60 border border-white/10 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-white/70 text-sm uppercase tracking-widest">Available Balance</span>
+              <span className="text-white/70 text-sm uppercase tracking-widest">Withdrawal Limit Remaining</span>
               <span className="material-symbols-outlined text-white/30">account_balance_wallet</span>
-            </div>
-            <div className="text-4xl md:text-5xl font-black text-quantum-gold mb-2">
-              ${context.user.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
             <div className="text-white/50 text-sm">
               {limits.dailyRemaining > 0 ? (
@@ -360,7 +391,7 @@ const Withdraw: React.FC = () => {
                 isSubmitting ||
                 amount <= 0 ||
                 !destinationAddress ||
-                amount > context.user.balance ||
+                amount > (context.user.real_balance + ((context.user.bonus_winnings || 0) >= 50 ? context.user.bonus_balance : 0)) ||
                 amount > limits.maxAmount ||
                 amount > limits.dailyRemaining ||
                 limits.velocityUsed >= limits.velocityLimit

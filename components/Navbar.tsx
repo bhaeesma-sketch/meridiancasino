@@ -67,11 +67,24 @@ export const Navbar: React.FC = () => {
                         className="hidden md:flex shadow-gold-glow animate-pulse-slow"
                         onClick={() => {
                             sounds.playClick();
+                            navigate('/deposit');
+                        }}
+                    >
+                        <span className="material-symbols-outlined">payments</span>
+                        <span>Deposit</span>
+                    </Button>
+
+                    <Button
+                        variant="ghost"
+                        size="md"
+                        className="hidden md:flex"
+                        onClick={() => {
+                            sounds.playClick();
                             navigate('/withdraw');
                         }}
                     >
                         <span className="material-symbols-outlined">account_balance_wallet</span>
-                        <span>Wallet</span>
+                        <span>Withdraw</span>
                     </Button>
 
                     {/* Mobile Deposit (Icon Only) */}
@@ -81,10 +94,10 @@ export const Navbar: React.FC = () => {
                         className="md:hidden !px-3"
                         onClick={() => {
                             sounds.playClick();
-                            navigate('/withdraw');
+                            navigate('/deposit');
                         }}
                     >
-                        <span className="material-symbols-outlined">add</span>
+                        <span className="material-symbols-outlined">payments</span>
                     </Button>
 
                     {/* User Avatar */}

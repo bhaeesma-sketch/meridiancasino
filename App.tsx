@@ -16,6 +16,7 @@ import Support from './screens/Support';
 import Auth from './screens/Auth';
 import Admin from './screens/Admin';
 import Withdraw from './screens/Withdraw';
+import Deposit from './screens/Deposit';
 import TermsOfService from './screens/TermsOfService';
 import PrivacyPolicy from './screens/PrivacyPolicy';
 import ResponsibleGaming from './screens/ResponsibleGaming';
@@ -25,6 +26,7 @@ import SettingsModal from './components/SettingsModal';
 import { sounds } from './services/soundService';
 import { Navbar } from './components/Navbar';
 import { HorizontalNav } from './components/HorizontalNav';
+import { MobileNav } from './components/MobileNav';
 import { RightSidebar } from './components/Sidebar';
 import { SecurityProvider } from './contexts/SecurityContext';
 
@@ -43,6 +45,7 @@ export interface AppContextType {
   is3DMode: boolean;
   setIs3DMode: (val: boolean) => void;
   isSyncing: boolean;
+  processFirstDeposit: () => Promise<void>;
 }
 
 export const AppContext = createContext<AppContextType | null>(null);
@@ -137,6 +140,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               activeReferrals: (profile as any).active_referrals || 0,
               real_balance: Number(profile.real_balance || profile.balance || 0),
               bonus_balance: Number(profile.bonus_balance || 0),
+              bonus_winnings: Number(profile.bonus_earnings_total || 0),
               valid_referral_count: profile.valid_referral_count || 0,
               is_first_deposit: profile.is_first_deposit || false,
               isNewUser: profile.is_new_user,
@@ -388,6 +392,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       isConnected, setIsConnected,
       isSettingsOpen, setIsSettingsOpen,
       is3DMode, setIs3DMode: toggleMode,
+      isSyncing,
       processFirstDeposit
     }}>
       {children}
@@ -425,7 +430,7 @@ const AppContent = () => {
   if (!context) return null;
 
   return (
-    <div className="h-screen flex flex-col bg-space-black text-white font-display overflow-hidden relative selection:bg-quantum-gold selection:text-black">
+    <div className="h-screen flex flex-col bg-luxury-midnight text-white font-display overflow-hidden relative selection:bg-metal-rose selection:text-luxury-midnight">
       <div className={`sync-overlay ${context.isSyncing ? 'sync-active' : ''}`}>
         <div className="sync-text">SYNCHRONIZING QUANTUM GEOMETRY...</div>
         <div className="w-48 h-1 bg-quantum-gold/20 mt-4 relative overflow-hidden">
@@ -435,6 +440,7 @@ const AppContent = () => {
 
       <div className="fixed inset-0 z-[-1] full-bleed-background transform scale-105 opacity-30"></div>
       <Navbar />
+      <MobileNav />
       <SettingsModal />
 
       {/* Main Layout Container with Top Padding for Fixed Navbar */}
@@ -444,19 +450,20 @@ const AppContent = () => {
 
         <div className="flex-grow flex items-stretch px-4 md:px-6 lg:px-10 py-4 overflow-hidden gap-4 lg:gap-6">
           {/* Dynamic Game/Content Stage (Full Width) */}
-          <main className={`flex-1 flex flex-col overflow-y-auto custom-scrollbar relative bg-black/20 rounded-[2rem] border border-white/5 backdrop-blur-sm stage-container ${context.is3DMode ? 'stage-3d' : ''}`}>
+          <main className={`flex-1 flex flex-col ${['/plinko', '/roulette', '/dice', '/blackjack', '/limbo'].includes(location.pathname) ? 'overflow-hidden' : 'overflow-y-auto custom-scrollbar'} relative bg-black/20 rounded-[2rem] border border-white/5 backdrop-blur-sm stage-container ${context.is3DMode ? 'stage-3d' : ''}`}>
             <Routes>
               <Route path="/" element={<Auth />} />
-              <Route path="/lobby" element={<ProtectedRoute><Lobby /></ProtectedRoute>} />
-              <Route path="/plinko" element={<ProtectedRoute><Plinko /></ProtectedRoute>} />
-              <Route path="/roulette" element={<ProtectedRoute><Roulette /></ProtectedRoute>} />
-              <Route path="/dice" element={<ProtectedRoute><Dice /></ProtectedRoute>} />
-              <Route path="/blackjack" element={<ProtectedRoute><Blackjack /></ProtectedRoute>} />
-              <Route path="/limbo" element={<ProtectedRoute><Limbo /></ProtectedRoute>} />
+              <Route path="/lobby" element={<ProtectedRoute requireBalance={true}><Lobby /></ProtectedRoute>} />
+              <Route path="/plinko" element={<ProtectedRoute requireBalance={true}><Plinko /></ProtectedRoute>} />
+              <Route path="/roulette" element={<ProtectedRoute requireBalance={true}><Roulette /></ProtectedRoute>} />
+              <Route path="/dice" element={<ProtectedRoute requireBalance={true}><Dice /></ProtectedRoute>} />
+              <Route path="/blackjack" element={<ProtectedRoute requireBalance={true}><Blackjack /></ProtectedRoute>} />
+              <Route path="/limbo" element={<ProtectedRoute requireBalance={true}><Limbo /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="/rewards" element={<ProtectedRoute><Rewards /></ProtectedRoute>} />
               <Route path="/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />
               <Route path="/withdraw" element={<ProtectedRoute><Withdraw /></ProtectedRoute>} />
+              <Route path="/deposit" element={<ProtectedRoute><Deposit /></ProtectedRoute>} />
               <Route path={`/${import.meta.env.VITE_ADMIN_SECRET_PATH || 'admin'}`} element={<ProtectedRoute><Admin /></ProtectedRoute>} />
               <Route path="/terms" element={<TermsOfService />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />

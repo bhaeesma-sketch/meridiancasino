@@ -1,6 +1,7 @@
 // Wallet Service - Handles wallet detection and connection
+import { ethers } from 'ethers';
 
-export type WalletType = 'metamask' | 'tronlink' | 'walletconnect' | null;
+export type WalletType = 'metamask' | 'tronlink' | 'walletconnect' | 'local' | null;
 
 export interface WalletInfo {
   address: string;
@@ -29,7 +30,24 @@ export const getAvailableWallets = (): WalletType[] => {
     wallets.push('tronlink');
   }
 
+  // Check for local wallet
+  if (localStorage.getItem('local_private_key')) {
+    wallets.push('local');
+  }
+
   return wallets;
+};
+
+// Create a local burner wallet
+export const createLocalWallet = (): WalletInfo => {
+  const wallet = ethers.Wallet.createRandom();
+  localStorage.setItem('local_private_key', wallet.privateKey);
+  localStorage.setItem('wallet_address', wallet.address); // Sync with app logic
+  return {
+    address: wallet.address,
+    walletType: 'local',
+    connected: true
+  };
 };
 
 // Request wallet connection
@@ -40,6 +58,9 @@ export const connectWallet = async (walletType: WalletType): Promise<WalletInfo 
 
   try {
     if (walletType === 'metamask') {
+      if (!window.ethereum) {
+        throw new Error('MetaMask is not installed. Please install it to continue.');
+      }
       // Request account access
       const accounts = await window.ethereum.request({
         method: 'eth_requestAccounts'
@@ -54,6 +75,10 @@ export const connectWallet = async (walletType: WalletType): Promise<WalletInfo 
       }
     } else if (walletType === 'tronlink') {
       // TronLink connection
+      if (!window.tronWeb && !(window as any).tronLink) {
+        throw new Error('TronLink is not installed. Please install it to continue.');
+      }
+
       if (window.tronWeb && window.tronWeb.defaultAddress.base58) {
         return {
           address: window.tronWeb.defaultAddress.base58,
@@ -70,6 +95,16 @@ export const connectWallet = async (walletType: WalletType): Promise<WalletInfo 
             connected: true
           };
         }
+      }
+    } else if (walletType === 'local') {
+      const pk = localStorage.getItem('local_private_key');
+      if (pk) {
+        const wallet = new ethers.Wallet(pk);
+        return {
+          address: wallet.address,
+          walletType: 'local',
+          connected: true
+        };
       }
     }
 
@@ -102,6 +137,12 @@ export const signMessage = async (
       if (window.tronWeb && window.tronWeb.trx) {
         const signature = await window.tronWeb.trx.signMessageV2(message);
         return signature;
+      }
+    } else if (walletType === 'local') {
+      const pk = localStorage.getItem('local_private_key');
+      if (pk) {
+        const wallet = new ethers.Wallet(pk);
+        return await wallet.signMessage(message);
       }
     }
 

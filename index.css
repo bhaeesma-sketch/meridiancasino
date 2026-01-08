@@ -1,10 +1,156 @@
 @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Bebas+Neue&family=Inter:wght@400;600;800&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&family=Montserrat:wght@800&family=Inter:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
 
 @import "tailwindcss";
 @config "./tailwind.config.js";
 
+:root {
+  --color-primary: #FFD700;
+  --electric-border-color: #FFD700;
+  --border-radius: 16;
+  --font-heading: 'Orbitron', 'Inter', sans-serif;
+  --font-body: 'Rajdhani', 'Inter', sans-serif;
+}
+
+/* Cyber Utilities */
+.text-neon-stroke {
+  -webkit-text-stroke: 1px rgba(0, 243, 255, 0.5)
+}
+
+.clip-angled {
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)
+}
+
+.clip-angled-sm {
+  clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px)
+}
+
+.clip-angled-lg {
+  clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px)
+}
+
+.bg-grid {
+  background-size: 40px 40px;
+  background-image: linear-gradient(to right, rgba(0, 243, 255, 0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 243, 255, 0.05) 1px, transparent 1px)
+}
+
+.glitch-text {
+  position: relative
+}
+
+.glitch-text::before,
+.glitch-text::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%
+}
+
+.glitch-text::before {
+  left: 2px;
+  text-shadow: -1px 0 #f0f;
+  clip: rect(44px, 450px, 56px, 0);
+  animation: glitch-anim 5s infinite linear alternate-reverse
+}
+
+.glitch-text::after {
+  left: -2px;
+  text-shadow: -1px 0 #00f3ff;
+  clip: rect(44px, 450px, 56px, 0);
+  animation: glitch-anim2 5s infinite linear alternate-reverse
+}
+
+@keyframes glitch-anim {
+  0% {
+    clip: rect(13px, 9999px, 86px, 0);
+  }
+
+  20% {
+    clip: rect(2px, 9999px, 14px, 0);
+  }
+
+  40% {
+    clip: rect(66px, 9999px, 35px, 0);
+  }
+
+  60% {
+    clip: rect(98px, 9999px, 5px, 0);
+  }
+
+  80% {
+    clip: rect(10px, 9999px, 56px, 0);
+  }
+
+  100% {
+    clip: rect(32px, 9999px, 91px, 0);
+  }
+}
+
+@keyframes glitch-anim2 {
+  0% {
+    clip: rect(55px, 9999px, 11px, 0);
+  }
+
+  20% {
+    clip: rect(87px, 9999px, 95px, 0);
+  }
+
+  40% {
+    clip: rect(12px, 9999px, 4px, 0);
+  }
+
+  60% {
+    clip: rect(23px, 9999px, 76px, 0);
+  }
+
+  80% {
+    clip: rect(91px, 9999px, 12px, 0);
+  }
+
+  100% {
+    clip: rect(5px, 9999px, 44px, 0);
+  }
+}
+
+.bg-cyber-city {
+  background:
+    radial-gradient(circle at 50% 50%, rgba(3, 2, 8, 0) 0%, rgba(3, 2, 8, 0.8) 100%),
+    linear-gradient(rgba(0, 243, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 243, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(135deg, #1a0f2e 0%, #030208 100%);
+  background-size: 100% 100%, 40px 40px, 40px 40px, 100% 100%;
+}
+
+.circuit-overlay {
+  background-image: repeating-linear-gradient(45deg,
+      transparent,
+      transparent 10px,
+      rgba(0, 243, 255, 0.03) 10px,
+      rgba(0, 243, 255, 0.03) 20px);
+}
+
+/* Auth Page Specific Font Overrides */
+.auth-page h1,
+.auth-page h2,
+.auth-page h3,
+.auth-page h4 {
+  font-family: var(--font-heading);
+}
+
+.auth-page p,
+.auth-page span,
+.auth-page button,
+.auth-page input {
+  font-family: var(--font-body);
+}
+
 /* ============================================
-   CASINO CLASH - QUANTUM LEGACY 2.0
+   CASINO CLASH - PREMIUM LUXURY EDITION
+   Ultra-Premium Casino Experience
    ============================================ */
 
 /* Base Reset */
@@ -12,7 +158,11 @@ body {
   margin: 0;
   padding: 0;
   font-family: 'Inter', sans-serif;
-  @apply bg-space-black text-white overflow-x-hidden;
+  @apply bg-luxury-midnight text-white overflow-x-hidden;
+  background-image:
+    radial-gradient(circle at 20% 50%, rgba(153, 102, 204, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(220, 20, 60, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 40% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
 }
 
 /* Custom Scrollbar */
@@ -27,12 +177,12 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 215, 0, 0.3);
+  background: linear-gradient(135deg, rgba(232, 178, 152, 0.4), rgba(229, 228, 226, 0.3));
   border-radius: 10px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 215, 0, 0.5);
+  background: linear-gradient(135deg, rgba(232, 178, 152, 0.6), rgba(229, 228, 226, 0.5));
 }
 
 /* ============================================
@@ -83,73 +233,180 @@ body {
 }
 
 /* ============================================
-   MERIDIAN BUTTON SYSTEM
+   PREMIUM LUXURY CARD SYSTEM
    ============================================ */
 
-/* Primary Meridian Button - Gold Metallic */
+/* Velvet Luxury Card */
+.luxury-card {
+  position: relative;
+  background: linear-gradient(145deg, #2D1B3D 0%, #1A0F2E 100%);
+  border: 2px solid rgba(232, 178, 152, 0.3);
+  border-radius: 20px;
+  overflow: hidden;
+  transform-style: preserve-3d;
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  box-shadow:
+    0 20px 60px rgba(10, 6, 18, 0.8),
+    0 0 40px rgba(232, 178, 152, 0.15) inset,
+    0 0 60px rgba(153, 102, 204, 0.1);
+}
+
+.luxury-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(125deg,
+      transparent 0%,
+      rgba(232, 178, 152, 0.05) 30%,
+      rgba(153, 102, 204, 0.08) 50%,
+      rgba(229, 228, 226, 0.05) 70%,
+      transparent 100%);
+  background-size: 200% 200%;
+  pointer-events: none;
+  animation: liquidShimmer 4s linear infinite;
+}
+
+.luxury-card:hover {
+  transform: translateY(-8px) rotateX(3deg) scale(1.02);
+  border-color: rgba(232, 178, 152, 0.6);
+  box-shadow:
+    0 30px 80px rgba(10, 6, 18, 0.9),
+    0 0 60px rgba(232, 178, 152, 0.3) inset,
+    0 0 80px rgba(153, 102, 204, 0.2),
+    0 0 40px rgba(229, 228, 226, 0.1);
+}
+
+/* Crystal Glass Card */
+.crystal-card {
+  position: relative;
+  background: linear-gradient(145deg, rgba(61, 42, 74, 0.4) 0%, rgba(26, 15, 46, 0.6) 100%);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(229, 228, 226, 0.2);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 0 40px rgba(232, 178, 152, 0.1);
+}
+
+.crystal-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.1),
+      transparent);
+  transition: left 0.5s;
+}
+
+.crystal-card:hover::after {
+  left: 100%;
+}
+
+/* Liquid Metal Surface */
+.liquid-metal {
+  position: relative;
+  background: linear-gradient(135deg, #E5E4E2 0%, #E8B298 25%, #E5E4E2 50%, #D4A184 75%, #E5E4E2 100%);
+  background-size: 200% 200%;
+  animation: metalShine 3s linear infinite;
+  box-shadow:
+    0 4px 20px rgba(229, 228, 226, 0.3),
+    0 0 40px rgba(232, 178, 152, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* Velvet Texture Overlay */
+.velvet-texture {
+  position: relative;
+}
+
+.velvet-texture::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255, 255, 255, 0.02) 2px, rgba(255, 255, 255, 0.02) 4px),
+    repeating-linear-gradient(-45deg, transparent, transparent 2px, rgba(255, 255, 255, 0.01) 2px, rgba(255, 255, 255, 0.01) 4px);
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* ============================================
+   MERIDIAN BUTTON SYSTEM - PREMIUM LUXURY
+   ============================================ */
+
+/* Primary Luxury Button - Rose Gold Liquid Metal */
 .meridian-button {
   position: relative;
-  background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #CD7F32 100%);
-  color: #0A0E27;
+  background: linear-gradient(135deg, #E8B298 0%, #D4A184 50%, #CD7F32 100%);
+  color: #1A0F2E;
   font-weight: 800;
   font-family: 'Rajdhani', sans-serif;
   letter-spacing: 0.5px;
-  border: 2px solid #B8860B;
-  border-radius: 12px;
+  border: 2px solid rgba(232, 178, 152, 0.5);
+  border-radius: 14px;
   padding: 14px 32px;
   overflow: hidden;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow:
-    0 4px 15px rgba(255, 215, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    0 4px 20px rgba(232, 178, 152, 0.4),
+    inset 0 2px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.1);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Hover State - Elevated and Brighter */
+/* Hover State - Liquid Metal Shimmer */
 .meridian-button:hover {
-  background: linear-gradient(135deg, #FFA500 0%, #FFD700 50%, #FFBF00 100%);
-  border-color: #FFD700;
-  transform: translateY(-2px);
+  background: linear-gradient(135deg, #F7E7CE 0%, #E8B298 50%, #D4A184 100%);
+  border-color: rgba(247, 231, 206, 0.8);
+  transform: translateY(-3px) scale(1.02);
   box-shadow:
-    0 6px 25px rgba(255, 215, 0, 0.5),
-    0 0 30px rgba(255, 165, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    0 8px 30px rgba(232, 178, 152, 0.6),
+    0 0 40px rgba(229, 228, 226, 0.3),
+    inset 0 2px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.1);
 }
 
-/* Click/Active State - Pressed and Darker */
+/* Click/Active State - Pressed Effect */
 .meridian-button:active {
-  background: linear-gradient(135deg, #CD7F32 0%, #B8860B 50%, #8B6914 100%);
-  border-color: #8B6914;
-  transform: translateY(1px);
+  background: linear-gradient(135deg, #CD7F32 0%, #B8732D 50%, #8B6914 100%);
+  border-color: rgba(184, 115, 45, 0.8);
+  transform: translateY(1px) scale(0.98);
   box-shadow:
-    0 2px 8px rgba(255, 215, 0, 0.2),
-    inset 0 2px 4px rgba(0, 0, 0, 0.3);
+    0 2px 10px rgba(205, 127, 50, 0.3),
+    inset 0 3px 6px rgba(0, 0, 0, 0.3);
 }
 
 /* Disabled State */
 .meridian-button:disabled {
-  background: linear-gradient(135deg, #4A4A5A 0%, #2C2C3E 100%);
-  border-color: #2C2C3E;
+  background: linear-gradient(135deg, #3D2A4A 0%, #2D1B3D 100%);
+  border-color: rgba(61, 42, 74, 0.5);
   color: rgba(255, 255, 255, 0.3);
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
 }
 
-/* Shine Effect on Hover */
+/* Liquid Metal Shine Effect */
 .meridian-button::after {
   content: '';
   position: absolute;
   inset: 0;
   background: linear-gradient(90deg,
       transparent,
-      rgba(255, 255, 255, 0.4),
+      rgba(255, 255, 255, 0.5),
       transparent);
   transform: translateX(-100%);
-  transition: transform 0.6s;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .meridian-button:hover::after {
@@ -1195,6 +1452,21 @@ body {
 .sync-active {
   opacity: 1;
   pointer-events: all;
+}
+
+/* Auth Page Specific Font Overrides */
+.auth-page h1,
+.auth-page h2,
+.auth-page h3,
+.auth-page h4 {
+  font-family: var(--font-heading);
+}
+
+.auth-page p,
+.auth-page span,
+.auth-page button,
+.auth-page input {
+  font-family: var(--font-body);
 }
 
 .sync-text {

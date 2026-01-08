@@ -1,6 +1,7 @@
 import React, { useState, useContext, useEffect, useRef } from 'react';
 import { AppContext } from '../App';
 import { sounds } from '../services/soundService';
+import { GameLayout } from '../components/GameLayout';
 
 interface Card {
   suit: 'hearts' | 'diamonds' | 'clubs' | 'spades';
@@ -52,7 +53,7 @@ const Blackjack: React.FC = () => {
   const [gameState, setGameState] = useState<'IDLE' | 'PLAYING' | 'DEALER_TURN' | 'RESULT'>('IDLE');
   const [message, setMessage] = useState('');
   const [isDealing, setIsDealing] = useState(false);
-  const dealingTimeoutRef = useRef<NodeJS.Timeout>();
+  const dealingTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   useEffect(() => {
     return () => {
@@ -294,118 +295,112 @@ const Blackjack: React.FC = () => {
   // Quick bet buttons
   const quickBets = [50, 250, 500, 1000, 2500];
 
-  return (
-    <div className="flex-1 min-h-0 flex flex-col p-4 md:p-6 h-full overflow-hidden perspective-1000 relative">
-      <div className="scanline-overlay"></div>
-
-      {/* Compact Header */}
-      <div className="flex justify-between items-center z-20 mb-4 shrink-0">
-        <h2 className="text-xl md:text-2xl font-heading font-black text-white tracking-widest uppercase italic">
-          Quantum <span className="text-plasma-purple">Blackjack</span>
-        </h2>
-        <div className="flex items-center gap-2 px-3 py-1 rounded-full border border-plasma-purple/30 bg-plasma-purple/10">
-          <span className="size-1.5 rounded-full bg-plasma-purple animate-pulse"></span>
-          <span className="text-[8px] text-plasma-purple font-black uppercase tracking-widest">Neural Link Active</span>
-        </div>
-      </div>
-
-      {/* Main Table Area - Resized for Viewport */}
-      <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center">
-        {/* Dealer Area - Compact */}
-        <div className="absolute top-2 flex flex-col items-center gap-2 z-30">
-          <div className="size-12 md:size-16 rounded-full p-0.5 bg-red-500/20 border-2 border-red-500/40 shadow-red-500/20">
-            <img className="w-full h-full rounded-full object-cover grayscale opacity-50" src="https://picsum.photos/seed/dealer/200/200" alt="Dealer" />
-          </div>
-          {gameState !== 'IDLE' && (
-            <div className={`px-4 py-1.5 rounded-lg border-red-500/50 bg-black/90 ${dealerScore > 21 ? 'border-red-500 shadow-red-500/50' : ''}`}>
-              <div className="text-[14px] md:text-[18px] font-mono font-black text-red-500">
-                {dealerHidden && gameState === 'PLAYING' ? '??' : dealerScore}
-              </div>
-            </div>
-          )}
+  const Controls = (
+    <div className="w-full bg-black/40 border-t border-white/5 p-4 mt-2 shrink-0 rounded-2xl">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="flex gap-1.5 flex-wrap justify-center w-full md:w-auto">
+          {quickBets.slice(0, 4).map(c => (
+            <button
+              key={c}
+              onClick={() => setBet(Math.min(c, context?.user.balance || 10000))}
+              disabled={isDealing || gameState === 'PLAYING' || gameState === 'DEALER_TURN'}
+              className={`px-3 py-1.5 rounded-lg border font-mono font-bold text-[10px] transition-all ${c === bet ? 'bg-plasma-purple/20 border-plasma-purple text-plasma-purple' : 'bg-white/5 border-white/10 text-white/50'}`}
+            >
+              ${c}
+            </button>
+          ))}
         </div>
 
-        {/* Projection Table - Scaled Down */}
-        <div className="w-full max-w-4xl aspect-[21/9] relative rounded-[10rem] border border-plasma-purple/30 bg-plasma-purple/5 overflow-hidden shadow-plasma-glow transform scale-90 md:scale-100">
-          <div className="absolute inset-0 bg-mesh opacity-5"></div>
-
-          {gameState !== 'IDLE' && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 md:gap-10 z-20 transform -rotateX(20deg)">
-              {/* Dealer Cards - Shrink */}
-              <div className="flex gap-1 md:gap-2 items-center justify-center scale-90 md:scale-100">
-                {dealerCards.map((card, index) => renderCard(card, index, index === 0 && dealerHidden))}
-              </div>
-
-              {/* Player Cards - Shrink */}
-              <div className="flex gap-1 md:gap-2 items-center justify-center scale-90 md:scale-100">
-                {playerCards.map((card, index) => renderCard(card, index, false))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Player Status - Compact */}
-        <div className="absolute bottom-4 flex flex-col items-center gap-2 z-30 bg-black/60 backdrop-blur-md rounded-xl p-3 border border-quantum-gold/30">
-          {gameState !== 'IDLE' && (
+        <div className="flex gap-2 w-full md:w-auto">
+          {gameState === 'IDLE' || gameState === 'RESULT' ? (
+            <button
+              onClick={startGame}
+              disabled={!context || context.user.balance < bet || isDealing}
+              className="flex-1 md:flex-none px-12 py-3 bg-quantum-gold text-black font-black uppercase rounded-xl shadow-gold-glow hover:scale-[1.02] active:scale-95 transition-all text-xs w-full"
+            >
+              INITIATE HAND
+            </button>
+          ) : (
             <>
-              <div className="text-3xl md:text-4xl font-mono font-black text-quantum-gold tracking-tighter">
-                {playerScore}
-              </div>
-              <div className="text-[8px] uppercase tracking-widest text-white/50 animate-pulse">
-                {message || 'SYSTEM SYNCING...'}
-              </div>
+              <button
+                onClick={stand}
+                disabled={isDealing || gameState === 'DEALER_TURN'}
+                className="flex-1 md:flex-none px-8 py-3 bg-white/5 text-white font-bold rounded-xl border border-white/10 hover:bg-white/10 transition-all uppercase text-xs"
+              >
+                HOLD
+              </button>
+              <button
+                onClick={hit}
+                disabled={isDealing || gameState !== 'PLAYING' || playerScore >= 21}
+                className="flex-1 md:flex-none px-12 py-3 bg-plasma-purple text-white font-black rounded-xl shadow-plasma-glow hover:scale-[1.02] active:scale-95 transition-all uppercase text-xs"
+              >
+                HIT
+              </button>
             </>
           )}
         </div>
       </div>
+    </div>
+  );
 
-      {/* Integrated Control Bar - No Fixed Position to prevent scroll */}
-      <div className="w-full bg-black/40 border-t border-white/5 p-4 mt-2 shrink-0">
-        <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex gap-1.5 flex-wrap justify-center">
-            {quickBets.slice(0, 4).map(c => (
-              <button
-                key={c}
-                onClick={() => setBet(Math.min(c, context?.user.balance || 10000))}
-                disabled={isDealing || gameState === 'PLAYING' || gameState === 'DEALER_TURN'}
-                className={`px-3 py-1.5 rounded-lg border font-mono font-bold text-[10px] transition-all ${c === bet ? 'bg-plasma-purple/20 border-plasma-purple text-plasma-purple' : 'bg-white/5 border-white/10 text-white/50'}`}
-              >
-                ${c}
-              </button>
-            ))}
-          </div>
-
-          <div className="flex gap-2 w-full md:w-auto">
-            {gameState === 'IDLE' || gameState === 'RESULT' ? (
-              <button
-                onClick={startGame}
-                disabled={!context || context.user.balance < bet || isDealing}
-                className="flex-1 md:flex-none px-12 py-3 bg-quantum-gold text-black font-black uppercase rounded-xl shadow-gold-glow hover:scale-[1.02] active:scale-95 transition-all text-xs"
-              >
-                INITIATE HAND
-              </button>
-            ) : (
-              <>
-                <button
-                  onClick={stand}
-                  disabled={isDealing || gameState === 'DEALER_TURN'}
-                  className="flex-1 md:flex-none px-8 py-3 bg-white/5 text-white font-bold rounded-xl border border-white/10 hover:bg-white/10 transition-all uppercase text-xs"
-                >
-                  HOLD
-                </button>
-                <button
-                  onClick={hit}
-                  disabled={isDealing || gameState !== 'PLAYING' || playerScore >= 21}
-                  className="flex-1 md:flex-none px-12 py-3 bg-plasma-purple text-white font-black rounded-xl shadow-plasma-glow hover:scale-[1.02] active:scale-95 transition-all uppercase text-xs"
-                >
-                  HIT
-                </button>
-              </>
-            )}
-          </div>
+  const Visuals = (
+    <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center w-full h-full">
+      <div className="scanline-overlay"></div>
+      {/* Dealer Area - Compact */}
+      <div className="absolute top-2 flex flex-col items-center gap-2 z-30">
+        <div className="size-12 md:size-16 rounded-full p-0.5 bg-red-500/20 border-2 border-red-500/40 shadow-red-500/20">
+          <img className="w-full h-full rounded-full object-cover grayscale opacity-50" src="https://picsum.photos/seed/dealer/200/200" alt="Dealer" />
         </div>
+        {gameState !== 'IDLE' && (
+          <div className={`px-4 py-1.5 rounded-lg border-red-500/50 bg-black/90 ${dealerScore > 21 ? 'border-red-500 shadow-red-500/50' : ''}`}>
+            <div className="text-[14px] md:text-[18px] font-mono font-black text-red-500">
+              {dealerHidden && gameState === 'PLAYING' ? '??' : dealerScore}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Projection Table - Scaled Down */}
+      <div className="w-full max-w-4xl aspect-[21/9] relative rounded-[10rem] border border-plasma-purple/30 bg-plasma-purple/5 overflow-hidden shadow-plasma-glow transform scale-90 md:scale-100">
+        <div className="absolute inset-0 bg-mesh opacity-5"></div>
+
+        {gameState !== 'IDLE' && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 md:gap-10 z-20 transform -rotateX(20deg)">
+            {/* Dealer Cards - Shrink */}
+            <div className="flex gap-1 md:gap-2 items-center justify-center scale-90 md:scale-100">
+              {dealerCards.map((card, index) => renderCard(card, index, index === 0 && dealerHidden))}
+            </div>
+
+            {/* Player Cards - Shrink */}
+            <div className="flex gap-1 md:gap-2 items-center justify-center scale-90 md:scale-100">
+              {playerCards.map((card, index) => renderCard(card, index, false))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Player Status - Compact */}
+      <div className="absolute bottom-4 flex flex-col items-center gap-2 z-30 bg-black/60 backdrop-blur-md rounded-xl p-3 border border-quantum-gold/30">
+        {gameState !== 'IDLE' && (
+          <>
+            <div className="text-3xl md:text-4xl font-mono font-black text-quantum-gold tracking-tighter">
+              {playerScore}
+            </div>
+            <div className="text-[8px] uppercase tracking-widest text-white/50 animate-pulse">
+              {message || 'SYSTEM SYNCING...'}
+            </div>
+          </>
+        )}
       </div>
     </div>
+  );
+
+  return (
+    <GameLayout
+      title="Quantum Blackjack"
+      controls={Controls}
+      gameVisuals={Visuals}
+    />
   );
 };
 

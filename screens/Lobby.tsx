@@ -30,7 +30,7 @@ const BonusModal: React.FC<{ onClaim: () => void }> = ({ onClaim }) => {
           Quantum Welcome
         </h2>
         <p className="text-quantum-gold text-lg font-mono font-bold mb-6 animate-pulse">
-          $10.00 BONUS DETECTED
+          $5.00 BONUS DETECTED
         </p>
 
         <p className="text-white/60 text-xs mb-8 leading-relaxed max-w-[280px] mx-auto">
@@ -104,12 +104,13 @@ const Lobby: React.FC = () => {
   };
 
   const games = [
-    { name: 'Dice', desc: 'Roll for the stars.', img: '/assets/dice-profile.png', path: '/dice', icon: 'casino', color: 'text-fire-bright', theme: 'fire' },
-    { name: 'Plinko', desc: 'Quantum gravity drops.', img: '/assets/plinko-profile.png', path: '/plinko', icon: 'grid_view', color: 'text-mystical-purple', theme: 'mystical' },
-    { name: 'Blackjack', desc: 'Live Dealer experience.', img: '/assets/blackjack-profile.png', path: '/blackjack', icon: 'playing_cards', color: 'text-gold-primary', theme: 'gold' },
-    { name: 'Roulette', desc: 'Spin & Win legacy.', img: '/assets/roulette-profile.png', path: '/roulette', icon: 'incomplete_circle', color: 'text-ice-electric', theme: 'ice' },
-    { name: 'Limbo', desc: 'Crash to the stars.', img: '/assets/limbo-profile.png', path: '/limbo', icon: 'trending_up', color: 'text-fire-amber', theme: 'fire' },
+    { name: 'Dice', desc: 'Roll for the stars.', img: '/assets/dice-profile.png', path: '/dice', icon: 'casino', color: 'text-jewel-ruby', theme: 'ruby', glow: 'shadow-jewel-glow-ruby' },
+    { name: 'Plinko', desc: 'Quantum gravity drops.', img: '/assets/plinko-profile.png', path: '/plinko', icon: 'grid_view', color: 'text-jewel-amethyst', theme: 'amethyst', glow: 'shadow-jewel-glow-amethyst' },
+    { name: 'Blackjack', desc: 'Live Dealer experience.', img: '/assets/blackjack-profile.png', path: '/blackjack', icon: 'playing_cards', color: 'text-metal-rose', theme: 'rose', glow: 'shadow-luxury-glow' },
+    { name: 'Roulette', desc: 'Spin & Win legacy.', img: '/assets/roulette-profile.png', path: '/roulette', icon: 'incomplete_circle', color: 'text-jewel-sapphire', theme: 'sapphire', glow: 'shadow-jewel-glow-sapphire' },
+    { name: 'Limbo', desc: 'Crash to the stars.', img: '/assets/limbo-profile.png', path: '/limbo', icon: 'trending_up', color: 'text-jewel-emerald', theme: 'emerald', glow: 'shadow-jewel-glow-emerald' },
   ];
+
 
   return (
     <div className="flex-1 min-h-0 flex flex-col justify-center py-4 px-6 max-w-6xl mx-auto w-full overflow-hidden">
@@ -137,7 +138,7 @@ const Lobby: React.FC = () => {
                   sounds.playClick();
                   navigate(game.path);
                 }}
-                className={`epic-card group cursor-pointer ${themeClass}`}
+                className={`luxury-card velvet-texture group cursor-pointer hover:${game.glow}`}
                 style={{
                   animationDelay: `${idx * 0.1}s`,
                   minHeight: '320px'
@@ -159,14 +160,14 @@ const Lobby: React.FC = () => {
 
                   <div className="relative z-20 h-full p-5 flex flex-col justify-between">
                     <div className="flex justify-between items-start">
-                      <div className="p-3 rounded-2xl bg-meridian-charcoal/80 border-2 border-gold-antique/30 backdrop-blur-md group-hover:border-gold-primary group-hover:shadow-gold-glow transition-all duration-500">
+                      <div className="p-3 rounded-2xl bg-luxury-velvet/80 border-2 border-metal-rose/30 backdrop-blur-md group-hover:border-metal-rose group-hover:shadow-luxury-glow transition-all duration-500">
                         <span className={`material-symbols-outlined text-3xl ${game.color} group-hover:scale-110 transition-transform`}>{game.icon}</span>
                       </div>
                       <div className="flex flex-col items-end gap-1">
-                        <div className="px-3 py-1 rounded-lg bg-meridian-charcoal/80 border border-gold-antique/30 text-[9px] font-mono text-gold-primary uppercase tracking-widest font-bold">
-                          ✦ Epic Tier
+                        <div className="px-3 py-1 rounded-lg bg-luxury-velvet/80 border border-metal-rose/30 text-[9px] font-mono text-metal-rose uppercase tracking-widest font-bold">
+                          ✦ Luxury Tier
                         </div>
-                        <div className="text-[8px] font-mono text-ice-electric opacity-0 group-hover:opacity-100 transition-opacity animate-pulse">
+                        <div className="text-[8px] font-mono text-jewel-emerald opacity-0 group-hover:opacity-100 transition-opacity animate-pulse">
                           🔥 LIVE NOW
                         </div>
                       </div>
@@ -174,10 +175,10 @@ const Lobby: React.FC = () => {
 
                     <div className="flex flex-col gap-4">
                       <div className="px-1">
-                        <h4 className="text-3xl md:text-4xl font-display font-black text-white uppercase group-hover:text-gold-primary transition-all duration-500 tracking-tight mb-2">
+                        <h4 className="text-3xl md:text-4xl font-display font-black text-white uppercase group-hover:text-metal-rose transition-all duration-500 tracking-tight mb-2">
                           {game.name}
                         </h4>
-                        <p className="text-[10px] text-ice-light uppercase font-bold tracking-[0.2em]">
+                        <p className="text-[10px] text-metal-platinum uppercase font-bold tracking-[0.2em]">
                           {game.desc}
                         </p>
                       </div>

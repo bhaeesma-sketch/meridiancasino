@@ -21,6 +21,10 @@ export interface User {
   valid_referral_count: number;
   is_first_deposit: boolean;
   total_deposited?: number;
+  isNewUser?: boolean;
+  newUserBonusClaimed?: boolean;
+  joinedDate?: number;
+  isAdmin?: boolean;
 }
 
 export interface ReferralStats {
@@ -37,5 +41,5 @@ export interface GameHistoryItem {
   multiplier: number;
   payout: number;
   timestamp: number;
-  username?: string;
+  username: string;
 }
