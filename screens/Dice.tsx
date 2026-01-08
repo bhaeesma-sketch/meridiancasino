@@ -15,7 +15,7 @@ const Dice: React.FC = () => {
   const [cubeRotation, setCubeRotation] = useState({ x: -30, y: -45, z: 0 });
   const [displayRoll, setDisplayRoll] = useState<number | null>(null);
   const [isWin, setIsWin] = useState<boolean | null>(null);
-  const animationFrameRef = useRef<number>();
+  const animationFrameRef = useRef<number | undefined>(undefined);
   const startTimeRef = useRef<number>(0);
 
   // Calculate proper multiplier based on win chance

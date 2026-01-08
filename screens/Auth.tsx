@@ -3,6 +3,7 @@ import { useSecurity } from '../contexts/SecurityContext'; // Corrected import
 import { useNavigate } from 'react-router-dom';
 import { connectWallet, createLocalWallet } from '../services/walletService'; // Corrected path and import
 import { supabase, isSupabaseConfigured } from '../services/supabase';
+import { getDeviceFingerprint } from '../services/fingerprintService';
 
 const Auth: React.FC = () => {
   const navigate = useNavigate();
@@ -27,10 +28,11 @@ const Auth: React.FC = () => {
         if (isSupabaseConfigured) {
           const chainType = walletType === 'metamask' ? 'ethereum' : 'tron';
           // Fix: Use 'profiles' table instead of 'users'
+          const fingerprint = await getDeviceFingerprint();
           const { error: dbError } = await supabase.from('profiles').upsert({
             wallet_address: result.address,
-            // chain_type: chainType, // active_chain might be the column name, check schema or omit if not needed
-            last_seen: new Date().toISOString() // last_login might be different
+            device_fingerprint: fingerprint,
+            last_seen: new Date().toISOString()
           }, { onConflict: 'wallet_address' });
 
           if (dbError) console.error("Supabase Error:", dbError);
@@ -59,9 +61,11 @@ const Auth: React.FC = () => {
         navigate('/lobby');
 
         if (isSupabaseConfigured) {
+          const fingerprint = await getDeviceFingerprint();
           const { error: dbError } = await supabase.from('profiles').upsert({
             wallet_address: result.address,
             username: `User ${result.address.slice(0, 6)}`,
+            device_fingerprint: fingerprint,
             last_seen: new Date().toISOString()
           }, { onConflict: 'wallet_address' });
 

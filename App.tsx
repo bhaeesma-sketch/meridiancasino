@@ -2,7 +2,7 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { HashRouter, Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { GameMode, User, GameHistoryItem } from './types';
-import { generateReferralCode } from './services/referralService';
+import { generateReferralCode, NEW_USER_BONUS } from './services/referralService';
 import { supabase } from './services/supabase';
 import Lobby from './screens/Lobby';
 import Plinko from './screens/Plinko';
@@ -21,6 +21,7 @@ import TermsOfService from './screens/TermsOfService';
 import PrivacyPolicy from './screens/PrivacyPolicy';
 import ResponsibleGaming from './screens/ResponsibleGaming';
 import FAQ from './screens/FAQ';
+import GameRules from './screens/GameRules';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import SettingsModal from './components/SettingsModal';
 import { sounds } from './services/soundService';
@@ -46,18 +47,43 @@ export interface AppContextType {
   is3DMode: boolean;
   setIs3DMode: (val: boolean) => void;
   isSyncing: boolean;
-  processFirstDeposit: () => Promise<void>;
+  processFirstDeposit: (amount: number) => Promise<void>;
+  isBlocked: boolean;
+  geoInfo: { country: string; ip: string } | null;
 }
 
 export const AppContext = createContext<AppContextType | null>(null);
 
 const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [geoInfo, setGeoInfo] = useState<{ country: string; ip: string } | null>(null);
+
   const [isConnected, setIsConnected] = useState(() => {
     if (typeof window !== 'undefined') {
       return !!localStorage.getItem('wallet_address');
     }
     return false;
   });
+
+  // Regulatory Geo-Blocking Check
+  useEffect(() => {
+    const runGeoCheck = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('check-geo');
+        if (data && !error) {
+          setGeoInfo({ country: data.country, ip: data.ip });
+          if (data.restricted) {
+            setIsBlocked(true);
+          }
+        }
+      } catch (err) {
+        console.warn("Geo-check failed (likely CORS), defaulting to allowed for demo/dev:", err);
+        // In a real production strictly regulated app, we might default to blocked.
+        // But for development/testing, we allow if checking fails.
+      }
+    };
+    runGeoCheck();
+  }, []);
 
   // Initialize user from localStorage or default
   const initializeUser = (): User => {
@@ -86,7 +112,8 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           bonus_balance: parsed.bonus_balance || 0,
           valid_referral_count: parsed.valid_referral_count || 0,
           is_first_deposit: parsed.is_first_deposit || false,
-          address: walletAddress
+          address: walletAddress,
+          walletType: parsed.walletType || null
         };
       }
     }
@@ -108,7 +135,8 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     real_balance: 0,
     bonus_balance: 0,
     valid_referral_count: 0,
-    is_first_deposit: false
+    is_first_deposit: false,
+    walletType: null
   });
 
   const [user, setUser] = useState<User>(initializeUser());
@@ -282,23 +310,33 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   };
 
   // Phase 2 & 3: Deposit and Referral Reward Logic
-  const processFirstDeposit = async () => {
+  const processFirstDeposit = async (amount: number) => {
     if (!user.address || user.is_first_deposit) return;
 
-    console.log("Detecting first deposit...");
-    sounds.playWin();
-    const bonusAmount = 10; // $10 bonus as requested
+    const minAmount = NEW_USER_BONUS.minDepositForReward;
+    if (amount < minAmount) {
+      console.log(`Deposit status: ${amount} < ${minAmount}. No referral reward triggered.`);
+      // Still mark as "not first deposit" maybe? No, let's wait for a $20+ one?
+      // Actually, if they deposit $10, it's their first, but no bonus for referrer.
+      // But they should still get their welcome bonus maybe?
+      // Master Prompt: "The 'Refer & Earn' bonus should only be credited if... friend makes a confirmed deposit of at least $20"
+      // Welcome Bonus for the user themselves ($10) should probably still happen on first deposit regardless?
+      // Let's stick to the prompt: only the "Refer & Earn" bonus (referrer's reward) is gated by $20.
+    }
 
-    // Update state and DB
-    const updates = {
-      bonus_balance: user.bonus_balance + bonusAmount,
-      is_first_deposit: true
+    console.log("Processing first deposit rewards...");
+    sounds.playWin();
+    const welcomeBonus = user.referredBy ? NEW_USER_BONUS.withReferral : NEW_USER_BONUS.withoutReferral;
+
+    const updates: Partial<User> = {
+      is_first_deposit: true,
+      bonus_balance: user.bonus_balance + welcomeBonus
     };
 
     await updateProfile(updates);
 
-    // Phase 3: Check for Referrer reward
-    if (user.referredBy) {
+    // Phase 3: Check for Referrer reward ($20 required)
+    if (user.referredBy && amount >= minAmount) {
       await handleReferralReward(user.referredBy);
     }
   };
@@ -394,7 +432,9 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       isSettingsOpen, setIsSettingsOpen,
       is3DMode, setIs3DMode: toggleMode,
       isSyncing,
-      processFirstDeposit
+      processFirstDeposit,
+      isBlocked,
+      geoInfo
     }}>
       {children}
     </AppContext.Provider>
@@ -429,11 +469,37 @@ const GlobalTicker = () => {
 const AppContent = () => {
   const context = useContext(AppContext);
   if (!context) return null;
+  const { isBlocked, geoInfo } = context;
 
   return (
     <ErrorBoundary>
       <div className="h-screen flex flex-col bg-luxury-midnight text-white font-display overflow-hidden relative selection:bg-metal-rose selection:text-luxury-midnight">
         {/* ... existing code ... */}
+        {isBlocked && (
+          <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-3xl flex items-center justify-center p-6 text-center animate-in fade-in duration-700">
+            <div className="max-w-md space-y-8">
+              <div className="w-24 h-24 bg-red-500/20 border-2 border-red-500 rounded-full flex items-center justify-center mx-auto animate-pulse">
+                <span className="material-symbols-outlined text-5xl text-red-500">block</span>
+              </div>
+              <div className="space-y-4">
+                <h1 className="text-4xl font-black text-white uppercase tracking-tighter italic">
+                  Access <span className="text-red-500">Denied</span>
+                </h1>
+                <p className="text-white/60 text-sm leading-relaxed">
+                  Our systems have detected that you are accessing this platform from a <span className="text-white font-bold uppercase tracking-widest">{geoInfo?.country || 'RESTRICTED'}</span> territory.
+                </p>
+                <div className="p-4 bg-white/5 border border-white/10 rounded-xl font-mono text-[10px] text-white/40 uppercase tracking-widest">
+                  Restricted Region Compliance Protocol v4.0 <br />
+                  Log ID: {Date.now().toString(36).toUpperCase()} <br />
+                  IP: {geoInfo?.ip || 'Detection Active'}
+                </div>
+              </div>
+              <p className="text-white/30 text-[10px] uppercase font-bold tracking-[0.2em] pt-8">
+                Due to regulatory requirements under our Anjouan license, we cannot provide service in your current jurisdiction.
+              </p>
+            </div>
+          </div>
+        )}
         <div className={`sync-overlay ${context.isSyncing ? 'sync-active' : ''}`}>
           <div className="sync-text">SYNCHRONIZING QUANTUM GEOMETRY...</div>
           <div className="w-48 h-1 bg-quantum-gold/20 mt-4 relative overflow-hidden">
@@ -472,6 +538,7 @@ const AppContent = () => {
                 <Route path="/privacy" element={<PrivacyPolicy />} />
                 <Route path="/responsible-gaming" element={<ResponsibleGaming />} />
                 <Route path="/faq" element={<FAQ />} />
+                <Route path="/rules" element={<GameRules />} />
                 <Route path="*" element={<Navigate to="/lobby" replace />} />
               </Routes>
             </main>

@@ -145,7 +145,7 @@ const Withdraw: React.FC = () => {
       );
 
       if (result.success) {
-        setSuccess(true);
+        setSuccess("Withdrawal request submitted successfully!");
         // Atomic ledger update simulation (backend would do this for real)
         context.setUser(prev => ({ ...prev, balance: prev.balance - amount }));
 

@@ -43,7 +43,7 @@ export const getPremiumReferralBonus = (tier: string): {
   exclusiveRewards: boolean;
 } => {
   const isPremium = ['VIP Platinum', 'Diamond', 'Elite'].includes(tier);
-  
+
   return {
     signupBonus: isPremium ? 50 : 10, // Premium users get $50, others $10 per referral
     wageringBonus: isPremium ? 0.15 : 0.05, // Premium users get 15%, others 5%
@@ -58,5 +58,6 @@ export const NEW_USER_BONUS = {
   withReferral: 25,         // $25 welcome bonus with referral
   minimumWager: 50,         // Minimum wagering requirement
   wageringMultiplier: 1.5,  // 1.5x wagering requirement
+  minDepositForReward: 20,  // $20 min deposit for referral trigger
 };
 

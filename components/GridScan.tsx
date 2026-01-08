@@ -377,10 +377,10 @@ export const GridScan = ({
                 enableGyro &&
                 typeof window !== 'undefined' &&
                 window.DeviceOrientationEvent &&
-                DeviceOrientationEvent.requestPermission
+                (DeviceOrientationEvent as any).requestPermission
             ) {
                 try {
-                    await DeviceOrientationEvent.requestPermission();
+                    await (DeviceOrientationEvent as any).requestPermission();
                 } catch {
                     // noop
                 }

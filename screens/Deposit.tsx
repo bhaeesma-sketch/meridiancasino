@@ -21,7 +21,7 @@ const Deposit: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [depositInfo, setDepositInfo] = useState<DepositResponse | null>(null);
     const [error, setError] = useState<string | null>(null);
-
+    const [isProcessing, setIsProcessing] = useState(false);
     const [serverMode, setServerMode] = useState<'TEST' | 'PRODUCTION' | null>(null);
 
     const handleCreateDeposit = async () => {
@@ -30,7 +30,10 @@ const Deposit: React.FC = () => {
             return;
         }
 
+        if (isProcessing) return; // Prevent double-clicks
+
         setIsLoading(true);
+        setIsProcessing(true);
         setError(null);
         sounds.playClick();
 
@@ -65,8 +68,8 @@ const Deposit: React.FC = () => {
             console.warn("Using Simulation Mode due to:", err.message);
             setTimeout(() => {
                 const mockAddress = chain === 'TRC20'
-                    ? 'T9yCDQr531f82y5235235... (DEMO)'
-                    : '0x12345678901234567890... (DEMO)';
+                    ? 'T9yCDQr531f82y5235235TRoNAdDrEssHere'
+                    : '0x12345678901234567890EthereumAddressHere';
 
                 setDepositInfo({
                     invoiceId: `DEP-${Math.floor(Math.random() * 100000)}`,
@@ -80,6 +83,7 @@ const Deposit: React.FC = () => {
             }, 1000);
         } finally {
             setIsLoading(false);
+            setIsProcessing(false);
         }
     };
 
@@ -89,6 +93,7 @@ const Deposit: React.FC = () => {
         // NOTE: In production, you would NOT expose this. 
         // This is only for the "Simulation Mode" fallback or Dev environment.
         context.updateBalance(amount);
+        context.processFirstDeposit(amount);
         alert(`Successfully simulated deposit of $${amount}!`);
         setDepositInfo(null);
     };

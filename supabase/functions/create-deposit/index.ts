@@ -22,7 +22,21 @@ serve(async (req: Request) => {
         )
 
         // 1. Parse Request
-        const { amount, currency, network, walletAddress } = await req.json()
+        const { amount, currency, currencyType, network, walletAddress } = await req.json()
+
+        let targetCurrency = (currency || currencyType || 'USDT').toLowerCase();
+
+        // Map to NOWPayments Tickers
+        if (targetCurrency === 'usdt') {
+            if (network === 'TRC20') targetCurrency = 'usdttrc20';
+            else if (network === 'ERC20') targetCurrency = 'usdt'; // or usdterc20 depending on NP
+        } else if (targetCurrency === 'trx') {
+            targetCurrency = 'trx';
+        } else if (targetCurrency === 'btc') {
+            targetCurrency = 'btc';
+        } else if (targetCurrency === 'eth') {
+            targetCurrency = 'eth';
+        }
 
         if (!walletAddress) throw new Error('Wallet address is required')
 
@@ -86,7 +100,7 @@ serve(async (req: Request) => {
             body: JSON.stringify({
                 price_amount: amount,
                 price_currency: 'usd',
-                pay_currency: currency || 'usdttrc20',
+                pay_currency: targetCurrency,
                 ipn_callback_url: Deno.env.get('NOWPAYMENTS_WEBHOOK_URL'),
                 order_id: orderId,
                 order_description: `Deposit (${mode}) for User ${walletAddress}`,
@@ -108,7 +122,7 @@ serve(async (req: Request) => {
                 order_id: orderId,
                 payment_id: paymentData.payment_id,
                 amount: amount,
-                currency: currency || 'usdttrc20',
+                currency: targetCurrency,
                 status: 'pending',
                 invoice_url: '#',
                 network: network,

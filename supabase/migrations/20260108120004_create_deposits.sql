@@ -13,6 +13,15 @@ CREATE TABLE IF NOT EXISTS public.deposits (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
+-- Utility Function for Updated At (if not exists)
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = now();
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
 -- RLS Policies for Deposits
 ALTER TABLE public.deposits ENABLE ROW LEVEL SECURITY;
 

@@ -81,11 +81,11 @@ const Lobby: React.FC = () => {
   const [showBonus, setShowBonus] = useState(false);
 
   useEffect(() => {
-    if (context?.user && context.user.isNewUser && !context.user.newUserBonusClaimed) {
+    if (context?.user?.isNewUser && !context?.user?.newUserBonusClaimed) {
       const timer = setTimeout(() => setShowBonus(true), 1500);
       return () => clearTimeout(timer);
     }
-  }, [context?.user]);
+  }, [context?.user?.isNewUser, context?.user?.newUserBonusClaimed]);
 
   if (!context) return null;
 

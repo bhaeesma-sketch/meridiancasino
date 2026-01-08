@@ -62,7 +62,7 @@ export const LeftSidebar: React.FC = () => {
 
                 {/* Footer Actions */}
                 <div className="p-3 border-t border-white/5 space-y-1">
-                    {['FAQ', 'Terms', 'Privacy', 'Responsible Gaming'].map((label) => {
+                    {['FAQ', 'Rules', 'Terms', 'Privacy', 'Responsible Gaming'].map((label) => {
                         const slug = label.toLowerCase().replace(' ', '-');
                         const isResponsible = label === 'Responsible Gaming';
                         return (
@@ -73,7 +73,7 @@ export const LeftSidebar: React.FC = () => {
                                     }`}
                             >
                                 <span className="material-symbols-outlined text-sm">
-                                    {label === 'FAQ' ? 'help' : label === 'Terms' ? 'description' : label === 'Privacy' ? 'shield' : 'health_and_safety'}
+                                    {label === 'FAQ' ? 'help' : label === 'Rules' ? 'gavel' : label === 'Terms' ? 'description' : label === 'Privacy' ? 'shield' : 'health_and_safety'}
                                 </span>
                                 <span className="hidden xl:block">{label}</span>
                             </button>
