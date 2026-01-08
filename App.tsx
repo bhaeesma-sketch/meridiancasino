@@ -469,13 +469,13 @@ const GlobalTicker = () => {
               </span>
               <span className={`text-[10px] ${isReferral ? 'text-neon-pink/50' : 'text-white/30'} truncate max-w-[100px]`}>
                 via {
-                  item.game === 'referral' ? 'Node Bonus' :
-                    item.game === 'referral_bonus' ? 'Sign-up Reward' :
-                      item.game === 'dice' ? 'Market Trends' :
-                        item.game === 'roulette' ? 'User Activity' :
-                          item.game === 'blackjack' ? 'Network Traffic' :
-                            item.game === 'plinko' ? 'System Logs' :
-                              item.game === 'limbo' ? 'Uplink Velocity' : item.game
+                  item.game.toLowerCase() === 'referral' ? 'Node Bonus' :
+                    item.game.toLowerCase() === 'referral_bonus' ? 'Sign-up Reward' :
+                      item.game.toLowerCase() === 'dice' ? 'Market Trends' :
+                        item.game.toLowerCase() === 'roulette' ? 'User Activity' :
+                          item.game.toLowerCase() === 'blackjack' ? 'Network Traffic' :
+                            item.game.toLowerCase() === 'plinko' ? 'System Logs' :
+                              item.game.toLowerCase() === 'limbo' ? 'Uplink Velocity' : item.game
                 }
               </span>
             </div>
