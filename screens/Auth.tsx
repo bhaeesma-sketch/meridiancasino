@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useSecurity } from '../contexts/SecurityContext'; // Corrected import
 import { useNavigate } from 'react-router-dom';
+import { AppContext } from '../App';
 import { connectWallet, createLocalWallet } from '../services/walletService'; // Corrected path and import
 import { supabase, isSupabaseConfigured } from '../services/supabase';
 import { getDeviceFingerprint } from '../services/fingerprintService';
 
 const Auth: React.FC = () => {
   const navigate = useNavigate();
+  const context = useContext(AppContext);
   const { handleError } = useSecurity();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -21,6 +23,9 @@ const Auth: React.FC = () => {
 
       if (result && result.connected && result.address) {
         setWalletAddress(result.address);
+        if (context) {
+          context.setIsConnected(true);
+        }
         // Simulate security scan or just navigate
         navigate('/lobby');
 
@@ -58,6 +63,9 @@ const Auth: React.FC = () => {
 
       if (result && result.connected && result.address) {
         setWalletAddress(result.address);
+        if (context) {
+          context.setIsConnected(true);
+        }
         navigate('/lobby');
 
         if (isSupabaseConfigured) {
