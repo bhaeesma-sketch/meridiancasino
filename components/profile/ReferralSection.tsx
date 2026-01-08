@@ -8,8 +8,10 @@ interface ReferralSectionProps {
 export const ReferralSection: React.FC<ReferralSectionProps> = ({ user }) => {
     const [copied, setCopied] = useState(false);
 
-    const referralCode = user.referralCode || 'GENERATING...';
-    const referralUrl = `clash.gg/ref/${referralCode}`;
+    // Ensure we use the correct property name from the User object
+    const referralCode = user.referralCode || user.referral_code || '...';
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+    const referralUrl = `${baseUrl}/#/auth?ref=${referralCode}`;
     const progress = (user.valid_referral_count || 0) % 5;
     const nextReward = 5 - progress;
 
