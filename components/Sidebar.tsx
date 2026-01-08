@@ -22,6 +22,7 @@ export const LeftSidebar: React.FC = () => {
         { name: 'Blackjack', path: 'blackjack', icon: 'playing_cards' },
         { name: 'Plinko', path: 'plinko', icon: 'apps' },
         { name: 'Limbo', path: 'limbo', icon: 'trending_up' },
+        { name: 'Refer & Earn', path: 'profile?tab=referral', icon: 'groups' },
     ];
 
     const is3D = context.is3DMode;

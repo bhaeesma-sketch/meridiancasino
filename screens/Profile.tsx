@@ -1,4 +1,5 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { AppContext } from '../App';
 import { BalanceDetails } from '../components/profile/BalanceDetails';
 import { StatsChart } from '../components/profile/StatsChart';
@@ -13,7 +14,16 @@ const Profile: React.FC = () => {
   if (!context) return null;
   const { user, updateBalance, updateProfile } = context;
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'stats' | 'security' | 'settings'>('overview');
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState<'overview' | 'stats' | 'security' | 'settings' | 'referral'>('overview');
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tab = params.get('tab');
+    if (tab === 'referral') {
+      setActiveTab('referral');
+    }
+  }, [location.search]);
 
   // Mock bonus balance for now if not in user object
   const bonusBalance = user.bonus_balance || 0;
@@ -43,7 +53,7 @@ const Profile: React.FC = () => {
 
         {/* Quick Actions (Tabs) */}
         <div className="flex-1 w-full flex gap-2 overflow-x-auto pb-2 md:pb-0 justify-start md:justify-end custom-scrollbar">
-          {['overview', 'stats', 'security', 'settings'].map(tab => (
+          {['overview', 'stats', 'referral', 'security', 'settings'].map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab as any)}
@@ -117,6 +127,12 @@ const Profile: React.FC = () => {
         {activeTab === 'settings' && (
           <div className="lg:col-span-8 lg:col-start-3 glass-panel p-6 rounded-2xl border border-white/5">
             <Preferences />
+          </div>
+        )}
+
+        {activeTab === 'referral' && (
+          <div className="lg:col-span-12 glass-panel p-6 rounded-2xl border border-white/5">
+            <ReferralSection user={user} />
           </div>
         )}
       </div>
