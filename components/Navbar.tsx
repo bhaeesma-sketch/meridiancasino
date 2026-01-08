@@ -42,9 +42,9 @@ export const Navbar: React.FC = () => {
             {/* Navigation Links (Desktop) */}
             <nav className="hidden lg:flex items-center gap-2 bg-[var(--neo-glass-bg)] px-6 py-1.5 rounded-[var(--neo-border-radius)] border border-[var(--neo-border-color)] backdrop-blur-md shadow-[var(--neo-shadow-inset)]">
                 {[
-                    { name: 'Dashboards', path: '/lobby', color: 'neon-blue' },
-                    { name: 'Analytics', path: '/history', color: 'neon-pink' },
-                    { name: 'Alerts', path: '/notifications', color: 'neon-purple' }
+                    { name: 'Control Center', path: '/lobby', color: 'neon-blue' },
+                    { name: 'Global Analytics', path: '/history', color: 'neon-pink' },
+                    { name: 'System Alerts', path: '/notifications', color: 'neon-purple' }
                 ].map((item) => (
                     <a
                         key={item.name}
