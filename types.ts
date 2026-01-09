@@ -27,6 +27,7 @@ export interface User {
   joinedDate?: number;
   isAdmin?: boolean;
   walletType?: string | null;
+  lastLogin?: number;
 }
 
 export interface ReferralStats {

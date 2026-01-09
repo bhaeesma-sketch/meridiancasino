@@ -1,4 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../App';
 import { sounds } from '../services/soundService';
 import { supabase } from '../services/supabase';
@@ -23,6 +24,7 @@ enum DepositStatus {
 }
 
 const Deposit: React.FC = () => {
+    const navigate = useNavigate();
     const context = useContext(AppContext);
     const [amount, setAmount] = useState<number>(20);
     const [currency, setCurrency] = useState<string>('USDT');
@@ -71,8 +73,8 @@ const Deposit: React.FC = () => {
     }, [depositInfo, context?.user?.id]);
 
     const handleCreateDeposit = async () => {
-        if (!context || !context.user) {
-            setError('Please connect your wallet first');
+        if (!context || !context.user || !context.isConnected) {
+            navigate('/');
             return;
         }
 
@@ -201,10 +203,13 @@ const Deposit: React.FC = () => {
 
                             <button
                                 onClick={handleCreateDeposit}
-                                disabled={status === DepositStatus.CREATING || amount < (serverMode === 'TEST' ? 0.000001 : 10)}
-                                className="w-full py-6 bg-gradient-to-r from-yellow-400 to-quantum-gold text-black font-black text-xl uppercase rounded-2xl shadow-gold-glow hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
+                                disabled={status === DepositStatus.CREATING || (context?.isConnected && amount < (serverMode === 'TEST' ? 0.000001 : 10))}
+                                className={`w-full py-6 font-black text-xl uppercase rounded-2xl transition-all ${!context?.isConnected
+                                        ? 'bg-neon-blue text-black shadow-[0_0_20px_rgba(0,229,255,0.4)] hover:bg-white'
+                                        : 'bg-gradient-to-r from-yellow-400 to-quantum-gold text-black shadow-gold-glow hover:scale-[1.02] active:scale-95 disabled:opacity-50'
+                                    }`}
                             >
-                                {status === DepositStatus.CREATING ? 'Initializing...' : 'Generate Gateway'}
+                                {status === DepositStatus.CREATING ? 'Initializing...' : !context?.isConnected ? 'Connect Wallet' : 'Generate Gateway'}
                             </button>
                         </div>
                     </div>

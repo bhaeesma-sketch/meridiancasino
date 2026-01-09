@@ -1,11 +1,12 @@
-import React, { ReactNode, useState, useEffect } from 'react';
+import React, { ReactNode, useState, useEffect, useContext } from 'react';
+import { AppContext } from '../App';
 
 interface GameLayoutProps {
     title: string;
     gameVisuals: ReactNode;
     controls: ReactNode;
-    history?: ReactNode; // Optional history sidebar/component
-    stats?: ReactNode;   // Optional stats bar
+    history?: ReactNode; // Optional: If not provided, we will use the default live feed from context
+    stats?: ReactNode;
 }
 
 // Hook to detect screen orientation/size
@@ -36,6 +37,26 @@ const useWindowSize = () => {
 
 export const GameLayout: React.FC<GameLayoutProps> = ({ title, gameVisuals, controls, history, stats }) => {
     const { isMobile, isLandscape } = useWindowSize();
+    const context = useContext(AppContext);
+
+    // Default History Component (Live Feed)
+    const DefaultHistory = context?.history ? (
+        <div className="flex flex-col gap-2 p-2">
+            {context.history.slice(0, 20).map((item) => (
+                <div key={item.id} className={`flex items-center justify-between p-2 rounded bg-white/5 border border-white/5 text-[10px] ${item.payout > 0 ? 'border-l-2 border-l-green-500' : 'border-l-2 border-l-white/20'}`}>
+                    <div className="flex flex-col">
+                        <span className="text-white/40 font-bold uppercase">{item.game}</span>
+                        <span className="text-white/80 font-mono">{item.username.slice(0, 8)}...</span>
+                    </div>
+                    <div className={`font-mono font-bold ${item.payout > 0 ? 'text-green-400' : 'text-gray-500'}`}>
+                        {item.payout > 0 ? `+${(item.payout * 45000).toFixed(2)}` : '0.00'}
+                    </div>
+                </div>
+            ))}
+        </div>
+    ) : null;
+
+    const historyContent = history || DefaultHistory;
 
     // Mobile Portrait: Stacked (Visuals take priority)
     if (isMobile && !isLandscape) {
@@ -86,7 +107,13 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ title, gameVisuals, cont
             {/* Left Panel: Controls */}
             <div className="flex-none w-[350px] flex flex-col gap-4">
                 <div className="flex-1 glass-panel p-6 rounded-3xl border border-white/5 relative overflow-hidden flex flex-col">
-                    <h1 className="text-2xl font-black font-heading text-white mb-6 uppercase tracking-wider">{title}</h1>
+                    <div className="flex items-center justify-between mb-6">
+                        <h1 className="text-2xl font-black font-heading text-white uppercase tracking-wider mb-0">{title}</h1>
+                        <div className="flex items-center gap-1 opacity-50 hover:opacity-100 transition-opacity cursor-help" title="Provably Fair">
+                            <span className="material-symbols-outlined text-sm text-quantum-gold">verified_user</span>
+                            <span className="text-[10px] font-bold text-quantum-gold">FAIR</span>
+                        </div>
+                    </div>
                     <div className="flex-1 flex flex-col justify-center">
                         {controls}
                     </div>

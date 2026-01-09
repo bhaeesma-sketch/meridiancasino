@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect, useRef } from 'react';
 import { AppContext } from '../App';
 import { sounds } from '../services/soundService';
 import { GameLayout } from '../components/GameLayout';
+import { BetControls } from '../components/BetControls';
 
 interface Card {
   suit: 'hearts' | 'diamonds' | 'clubs' | 'spades';
@@ -56,12 +57,27 @@ const Blackjack: React.FC = () => {
   const dealingTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   useEffect(() => {
+    // Hotkey Listener
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        e.preventDefault(); // Prevent scrolling
+        if (gameState === 'IDLE' || gameState === 'RESULT') {
+          if (!isDealing && context && context.user.balance >= bet) startGame();
+        } else if (gameState === 'PLAYING' && !isDealing) {
+          hit();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
     return () => {
+      window.removeEventListener('keydown', handleKeyDown);
       if (dealingTimeoutRef.current) {
         clearTimeout(dealingTimeoutRef.current);
       }
     };
-  }, []);
+  }, [gameState, isDealing, bet, context]); // Add deps
 
   const dealCard = (cards: Card[], newDeck: Card[]): { card: Card; remainingDeck: Card[] } => {
     const card = newDeck.pop()!;
@@ -296,22 +312,19 @@ const Blackjack: React.FC = () => {
   const quickBets = [50, 250, 500, 1000, 2500];
 
   const Controls = (
-    <div className="w-full bg-black/40 border-t border-white/5 p-4 mt-2 shrink-0 rounded-2xl">
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="flex gap-1.5 flex-wrap justify-center w-full md:w-auto">
-          {quickBets.slice(0, 4).map(c => (
-            <button
-              key={c}
-              onClick={() => setBet(Math.min(c, context?.user.balance || 10000))}
-              disabled={isDealing || gameState === 'PLAYING' || gameState === 'DEALER_TURN'}
-              className={`px-3 py-1.5 rounded-lg border font-mono font-bold text-[10px] transition-all ${c === bet ? 'bg-plasma-purple/20 border-plasma-purple text-plasma-purple' : 'bg-white/5 border-white/10 text-white/50'}`}
-            >
-              ${c}
-            </button>
-          ))}
-        </div>
+    <div className="w-full bg-black/40 border-t border-white/5 p-4 mt-2 shrink-0 rounded-2xl flex flex-col gap-4">
+      {/* Pro Bet Controls */}
+      <BetControls
+        betAmount={bet}
+        setBetAmount={setBet}
+        balance={context?.user.balance || 0}
+        disabled={gameState === 'PLAYING' || gameState === 'DEALER_TURN' || isDealing}
+      />
 
-        <div className="flex gap-2 w-full md:w-auto">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+        {/* Removed redundant quick bets, integrated into BetControls */}
+
+        <div className="flex gap-2 w-full">
           {gameState === 'IDLE' || gameState === 'RESULT' ? (
             <button
               onClick={startGame}

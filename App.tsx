@@ -177,8 +177,18 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               newUserBonusClaimed: profile.bonus_claimed,
               joinedDate: new Date(profile.joined_date).getTime(),
               isAdmin: profile.is_admin,
-              total_deposited: Number(profile.total_deposited || 0)
+              total_deposited: Number(profile.total_deposited || 0),
+              lastLogin: profile.last_login_at ? new Date(profile.last_login_at).getTime() : Date.now()
             });
+
+            // Update last login timestamp in background
+            supabase
+              .from('profiles')
+              .update({ last_login_at: new Date().toISOString() })
+              .eq('wallet_address', walletAddress)
+              .then(({ error }) => {
+                if (error) console.error('Error updating last_login_at:', error);
+              });
           }
         }
       }

@@ -125,9 +125,17 @@ const Admin: React.FC = () => {
           referralCode: p.referral_code,
           referredBy: p.referred_by,
           createdAt: new Date(p.created_at),
-          lastLogin: new Date(p.joined_date || p.created_at)
+          lastLogin: p.last_login_at ? new Date(p.last_login_at) : new Date(p.joined_date || p.created_at)
         })));
       }
+
+      // Calculate active users (logged in within last 24h)
+      const now = Date.now();
+      const oneDay = 24 * 60 * 60 * 1000;
+      const activeCount = profiles ? profiles.filter(p => {
+        const lastLoginTime = p.last_login_at ? new Date(p.last_login_at).getTime() : 0;
+        return (now - lastLoginTime) < oneDay;
+      }).length : 0;
 
       // 2. Fetch game history
       const { data: history, error: historyError } = await supabase
@@ -224,7 +232,7 @@ const Admin: React.FC = () => {
 
         setStats({
           totalUsers: profiles?.length || 0,
-          activeUsers: users.length,
+          activeUsers: activeCount,
           totalDeposits: deposits,
           totalWithdrawals: completedWithdrawals,
           pendingWithdrawals: pendingWithdrawals.length,

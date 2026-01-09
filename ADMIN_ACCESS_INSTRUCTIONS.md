@@ -79,3 +79,18 @@ This route:
 - ✅ Redirects to home if not connected
 - ⚠️ No real authentication (anyone connected can access)
 
+
+## 📊 How to Monitor User Activity
+
+### Viewing "Active Users"
+1.  **Access the Dashboard**: Follow the steps above to reach `/#/admin`.
+2.  **Dashboard Overview**:
+    - Look at the top "Key Metrics" grid.
+    - **Active Users**: This number represents unique users who have logged in within the last **24 hours**.
+    - If a user hasn't logged in for >24h, they are not counted here.
+
+### Checking Specific User Activity
+1.  Click the **Users** tab (second tab).
+2.  Locate the user in the table.
+3.  **Status Column**: Shows if they are 'active', 'suspended', etc.
+4.  **Last Login**: Verification of the exact date and time they last accessed the platform.

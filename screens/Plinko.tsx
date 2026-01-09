@@ -4,6 +4,7 @@ import { sounds } from '../services/soundService';
 import { useSecurity } from '../contexts/SecurityContext';
 import { supabase } from '../services/supabase';
 import { GameLayout } from '../components/GameLayout';
+import { BetControls } from '../components/BetControls';
 
 // Calculate multipliers based on row count
 const getMultipliers = (rows: number): number[] => {
@@ -57,6 +58,20 @@ const Plinko: React.FC = () => {
   const ballCounter = useRef(0);
   const animationFrameRef = useRef<number>(0);
   const multipliers = getMultipliers(rows);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        // Plinko allows multiple balls, so isRunning check is different (balls.length < max)
+        if (balls.length < 5 && context && context.user.real_balance >= bet) {
+          dropBall();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [balls.length, bet, context, useBonus, rows]); // Add relevant deps
 
   // Animation loop
   useEffect(() => {
@@ -219,28 +234,12 @@ const Plinko: React.FC = () => {
           </button>
         </div>
 
-        <div className="flex flex-col gap-1">
-          <div className="flex justify-between text-[10px] uppercase font-bold text-gray-500">
-            <span>Bet Amount</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="relative flex-1">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50">$</span>
-              <input
-                type="number"
-                value={bet}
-                onChange={e => setBet(Number(e.target.value))}
-                disabled={balls.length > 0}
-                className="w-full bg-white/5 border border-white/10 rounded-lg py-2 pl-8 pr-4 text-white font-mono font-bold focus:ring-1 focus:ring-quantum-gold focus:border-quantum-gold transition-all"
-              />
-            </div>
-            <div className="flex gap-1 flex-wrap">
-              {quickBets.slice(0, 3).map(amount => (
-                <button key={amount} onClick={() => handleQuickBet(amount)} className="px-1.5 py-0.5 text-[8px] font-mono font-bold rounded bg-white/5 border border-white/10 hover:border-plasma-purple/50 transition-all">${amount}</button>
-              ))}
-            </div>
-          </div>
-        </div>
+        <BetControls
+          betAmount={bet}
+          setBetAmount={setBet}
+          balance={useBonus ? context?.user.bonus_balance || 0 : context?.user.real_balance || 0}
+          disabled={balls.length > 0}
+        />
       </div>
 
       {/* Rows Slider */}

@@ -4,6 +4,7 @@ import { sounds } from '../services/soundService';
 import { useSecurity } from '../contexts/SecurityContext';
 import { supabase } from '../services/supabase';
 import { GameLayout } from '../components/GameLayout';
+import { BetControls } from '../components/BetControls';
 
 const Roulette: React.FC = () => {
   const context = useContext(AppContext);
@@ -20,6 +21,21 @@ const Roulette: React.FC = () => {
   const startTimeRef = useRef<number>(0);
 
   const RED_NUMBERS = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        if (!isSpinning && context && context.user.real_balance >= betAmount) {
+          if (selectedNumber !== null || selectedColor !== null) {
+            handleSpin();
+          }
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isSpinning, betAmount, context, selectedNumber, selectedColor, useBonus]); // Add relevant deps
 
   // Cleanup animation
   useEffect(() => {
@@ -265,17 +281,13 @@ const Roulette: React.FC = () => {
           </div>
         </div>
 
-        {/* Amount Input */}
-        <div className="bg-white/5 border border-white/10 rounded-xl p-3 flex items-center gap-3">
-          <span className="text-quantum-gold text-xs font-black">$</span>
-          <input
-            type="number"
-            value={betAmount}
-            onChange={e => setBetAmount(Number(e.target.value))}
-            disabled={isSpinning}
-            className="bg-transparent border-none p-0 text-white font-mono text-xl font-bold focus:ring-0 w-full"
-          />
-        </div>
+        {/* Pro Bet Controls */}
+        <BetControls
+          betAmount={betAmount}
+          setBetAmount={setBetAmount}
+          balance={useBonus ? context?.user.bonus_balance || 0 : context?.user.real_balance || 0}
+          disabled={isSpinning}
+        />
 
         {/* Execute Button */}
         <button
@@ -286,19 +298,6 @@ const Roulette: React.FC = () => {
           <span className="relative z-10">{isSpinning ? 'SYNCING...' : 'EXECUTE'}</span>
           <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover/spin:translate-x-full transition-transform duration-700"></div>
         </button>
-        {/* Presets */}
-        <div className="flex gap-2 justify-between">
-          {[10, 50, 100, 250, 500].map(amount => (
-            <button
-              key={amount}
-              onClick={() => setBetAmount(amount)}
-              disabled={isSpinning}
-              className="flex-1 py-1.5 text-[9px] font-black font-mono rounded-lg bg-white/5 border border-white/10 hover:border-quantum-gold/50 text-white/50 transition-all uppercase"
-            >
-              ${amount}
-            </button>
-          ))}
-        </div>
       </div>
     </div>
   );

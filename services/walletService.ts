@@ -59,7 +59,7 @@ export const connectWallet = async (walletType: WalletType): Promise<WalletInfo 
   try {
     if (walletType === 'metamask') {
       if (!window.ethereum) {
-        throw new Error('MetaMask is not installed. Please install it to continue.');
+        throw new Error('MetaMask not detected. If you just installed it, please refresh the page.');
       }
       // Request account access
       const accounts = await window.ethereum.request({
@@ -76,7 +76,7 @@ export const connectWallet = async (walletType: WalletType): Promise<WalletInfo 
     } else if (walletType === 'tronlink') {
       // TronLink connection
       if (!window.tronWeb && !(window as any).tronLink) {
-        throw new Error('TronLink is not installed. Please install it to continue.');
+        throw new Error('TronLink not detected. If you just installed it, please refresh the page.');
       }
 
       if (window.tronWeb && window.tronWeb.defaultAddress.base58) {

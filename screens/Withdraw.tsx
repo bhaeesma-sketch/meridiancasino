@@ -123,7 +123,7 @@ const Withdraw: React.FC = () => {
 
       if (walletTypeStored && walletAddress && !walletAddress.startsWith('0xGUEST')) {
         try {
-          const sig = await signMessage(walletTypeStored, walletAddress, message);
+          const sig = await signMessage(walletTypeStored as WalletType, walletAddress, message);
           if (sig) signature = sig;
         } catch (signErr) {
           console.error("Signing failed, continuing with demo sig if guest:", signErr);

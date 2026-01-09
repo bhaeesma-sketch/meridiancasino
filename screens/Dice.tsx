@@ -4,6 +4,7 @@ import { sounds } from '../services/soundService';
 import { useSecurity } from '../contexts/SecurityContext';
 import { supabase } from '../services/supabase';
 import { GameLayout } from '../components/GameLayout';
+import { BetControls } from '../components/BetControls';
 
 const Dice: React.FC = () => {
   const context = useContext(AppContext);
@@ -21,6 +22,19 @@ const Dice: React.FC = () => {
   // Calculate proper multiplier based on win chance
   const winChance = 100 - target;
   const multiplier = winChance > 0 ? (100 / winChance).toFixed(2) : '2.00';
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        if (!isRolling && context && context.user.real_balance >= bet) {
+          rollDice();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isRolling, bet, context, target, useBonus]); // Add relevant deps
 
   // Cleanup animation frame on unmount
   useEffect(() => {
@@ -140,6 +154,7 @@ const Dice: React.FC = () => {
     <div className="flex flex-col gap-4 w-full">
       {/* Wallet Toggle & Amount */}
       <div className="bg-black/40 rounded-xl p-4 border border-white/5 flex flex-col gap-3">
+        {/* Wallet Support is simpler here, let's keep the wallet toggle but use BetControls for amount */}
         <div className="flex bg-white/5 rounded-lg p-1 border border-white/10 w-full">
           <button
             onClick={() => setUseBonus(false)}
@@ -155,41 +170,12 @@ const Dice: React.FC = () => {
           </button>
         </div>
 
-        <div className="flex flex-col gap-1">
-          <div className="flex justify-between text-[10px] uppercase font-bold text-gray-500">
-            <span>Wager Amount</span>
-            <span>Max: ${useBonus ? context?.user.bonus_balance.toFixed(2) : context?.user.real_balance.toFixed(2)}</span>
-          </div>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50">$</span>
-            <input
-              type="number"
-              min="0.1"
-              max={useBonus ? context?.user.bonus_balance : context?.user.real_balance}
-              value={bet}
-              onChange={e => {
-                const bal = useBonus ? context?.user.bonus_balance : context?.user.real_balance;
-                const val = Math.max(0.1, Math.min(Number(e.target.value) || 0.1, bal || 10000));
-                setBet(val);
-              }}
-              disabled={isRolling}
-              className="w-full bg-white/5 border border-white/10 rounded-lg py-2 pl-8 pr-4 text-white font-mono font-bold focus:ring-1 focus:ring-quantum-gold focus:border-quantum-gold transition-all"
-            />
-          </div>
-        </div>
-
-        <div className="flex gap-2 flex-wrap">
-          {quickBets.map(amount => (
-            <button
-              key={amount}
-              onClick={() => handleQuickBet(amount)}
-              disabled={isRolling || !context}
-              className="flex-1 min-w-[3rem] px-2 py-1 text-[10px] font-mono font-bold rounded bg-white/5 border border-white/10 hover:border-quantum-gold/50 hover:bg-white/10 transition-all"
-            >
-              ${amount}
-            </button>
-          ))}
-        </div>
+        <BetControls
+          betAmount={bet}
+          setBetAmount={setBet}
+          balance={useBonus ? context?.user.bonus_balance || 0 : context?.user.real_balance || 0}
+          disabled={isRolling}
+        />
       </div>
 
       {/* Target Slider */}

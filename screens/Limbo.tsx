@@ -2,6 +2,7 @@ import React, { useState, useContext, useRef, useEffect } from 'react';
 import { AppContext } from '../App';
 import { sounds } from '../services/soundService';
 import { GameLayout } from '../components/GameLayout';
+import { BetControls } from '../components/BetControls';
 import { useSecurity } from '../contexts/SecurityContext';
 import { supabase } from '../services/supabase';
 
@@ -20,6 +21,7 @@ const Limbo: React.FC = () => {
 
   // Quick multiplier options
   const quickMultipliers = [1.5, 2.0, 3.0, 5.0, 10.0, 25.0, 50.0, 100.0];
+
   const quickBets = [10, 50, 100, 500, 1000];
 
   // Cleanup animation frame on unmount
@@ -33,6 +35,20 @@ const Limbo: React.FC = () => {
 
   const [useBonus, setUseBonus] = useState(false);
   const { checkDepositRequirement, handleError } = useSecurity();
+
+  // Hotkey Listener
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        if (!isRunning && context && context.user.real_balance >= bet) {
+          startGame();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isRunning, bet, context, targetMultiplier, useBonus]);
 
   const startGame = async () => {
     if (!context || isRunning || bet <= 0) return;
@@ -163,24 +179,13 @@ const Limbo: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-3">
-        {/* Bet Input */}
-        <div className="bg-black/60 border border-white/10 rounded-xl p-3">
-          <label className="text-[8px] text-gray-500 uppercase font-bold tracking-widest mb-1 block">Wager ($)</label>
-          <div className="flex items-center gap-3">
-            <input
-              type="number"
-              value={bet}
-              onChange={e => setBet(Number(e.target.value))}
-              disabled={isRunning}
-              className="bg-transparent border-none p-0 text-white font-mono text-xl font-bold focus:ring-0 w-full"
-            />
-          </div>
-          <div className="flex gap-1 flex-wrap mt-2">
-            {quickBets.slice(0, 4).map(amount => (
-              <button key={amount} onClick={() => handleQuickBet(amount)} className="px-1.5 py-0.5 text-[8px] font-mono font-bold rounded bg-white/5 border border-white/10 hover:border-cyan-400/50 transition-all flex-1">${amount}</button>
-            ))}
-          </div>
-        </div>
+        {/* Pro Bet Controls */}
+        <BetControls
+          betAmount={bet}
+          setBetAmount={setBet}
+          balance={useBonus ? context?.user.bonus_balance || 0 : context?.user.real_balance || 0}
+          disabled={isRunning}
+        />
 
         {/* Target Multiplier */}
         <div className="bg-black/60 border border-white/10 rounded-xl p-3">
