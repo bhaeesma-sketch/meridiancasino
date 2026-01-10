@@ -115,6 +115,14 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           address: walletAddress,
           walletType: parsed.walletType || null
         };
+      } else {
+        // Essential fallback: Ensure address exists for Deposit screen
+        return {
+          ...getDefaultUser(),
+          username: walletAddress.slice(0, 8) + '...' + walletAddress.slice(-4),
+          address: walletAddress,
+          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(walletAddress)}&background=FFD700&color=000&size=128`,
+        };
       }
     }
 

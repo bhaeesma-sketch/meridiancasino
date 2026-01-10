@@ -77,6 +77,9 @@ const Auth: React.FC = () => {
           if (dbError) console.error("Supabase Error:", dbError);
         }
 
+        // FORCE PERSISTENCE for immediate UI reactivity
+        localStorage.setItem('wallet_address', result.address);
+
         if (context) {
           context.setIsConnected(true);
         }
