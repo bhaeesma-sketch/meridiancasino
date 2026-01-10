@@ -205,8 +205,8 @@ const Deposit: React.FC = () => {
                                 onClick={handleCreateDeposit}
                                 disabled={status === DepositStatus.CREATING || (context?.isConnected && amount < (serverMode === 'TEST' ? 0.000001 : 10))}
                                 className={`w-full py-6 font-black text-xl uppercase rounded-2xl transition-all ${!context?.isConnected
-                                        ? 'bg-neon-blue text-black shadow-[0_0_20px_rgba(0,229,255,0.4)] hover:bg-white'
-                                        : 'bg-gradient-to-r from-yellow-400 to-quantum-gold text-black shadow-gold-glow hover:scale-[1.02] active:scale-95 disabled:opacity-50'
+                                    ? 'bg-neon-blue text-black shadow-[0_0_20px_rgba(0,229,255,0.4)] hover:bg-white'
+                                    : 'bg-gradient-to-r from-yellow-400 to-quantum-gold text-black shadow-gold-glow hover:scale-[1.02] active:scale-95 disabled:opacity-50'
                                     }`}
                             >
                                 {status === DepositStatus.CREATING ? 'Initializing...' : !context?.isConnected ? 'Connect Wallet' : 'Generate Gateway'}

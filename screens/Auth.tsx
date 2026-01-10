@@ -23,6 +23,9 @@ const Auth: React.FC = () => {
 
       if (result && result.connected && result.address) {
         setWalletAddress(result.address);
+        // FORCE PERSISTENCE for Mobile/Reloads
+        localStorage.setItem('wallet_address', result.address);
+
         if (context) {
           context.setIsConnected(true);
         }
